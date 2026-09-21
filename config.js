@@ -251,6 +251,9 @@ window.initializesupabase = async function (doFullSync) {
             window.supabaseConnected = true;
             window.cloudSyncReady = true;
             window.supabaseInitializing = false;
+            
+            // சேர்க்கப்பட்ட புதிய வரி - கனெக்ட் ஆனவுடன் ஸ்டேட்டஸ் அப்டேட் செய்யும்
+            updateNetworkStatus();
 
             if (navigator.onLine && doFullSync) {
                 await syncAllCloudData();
@@ -264,6 +267,10 @@ window.initializesupabase = async function (doFullSync) {
             window.supabaseConnected = false;
             window.cloudSyncReady = false;
             window.supabaseInitializing = false;
+            
+            // சேர்க்கப்பட்ட புதிய வரி - எரர் வந்தால் ஸ்டேட்டஸ் அப்டேட் செய்யும்
+            updateNetworkStatus();
+            
             return false;
         }
     })();
@@ -392,7 +399,8 @@ function updateNetworkStatus() {
 window.addEventListener("online", () => { updateNetworkStatus(); setTimeout(syncOfflineQueue, 800); });
 window.addEventListener("offline", () => { window.supabaseConnected = false; updateNetworkStatus(); });
 
-window.addEventListener("DOMContentLoaded", () => {
+// மாற்றப்பட்ட DOMContentLoaded ஈவன்ட்
+window.addEventListener("DOMContentLoaded", async () => {
+    await initializesupabase();
     updateNetworkStatus();
-    setTimeout(() => { initializesupabase(); }, 300);
 });
