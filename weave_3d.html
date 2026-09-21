@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>3D Warp & Weft Weave Simulator Pro</title>
 
-<!-- supabase -->
-<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-app-compat.js"></script>
-<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-firestore-compat.js"></script>
+<!-- Supabase SDK (Replaced Firebase SDKs) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="translator.js"></script>
 <style>
@@ -515,7 +514,7 @@ input, select {
             <span id="activeDesignText">Design loading...</span>
         </div>
         <div class="cloud-actions">
-            <button class="btn btn-dark" onclick="importFromsupabase(true)">🔄 Refresh</button>
+            <button class="btn btn-dark" onclick="importFromFirebase(true)">🔄 Refresh</button>
             <button class="btn btn-green" onclick="saveCurrentDesign()">☁️ Save / Update</button>
         </div>
         <div id="designStatus" class="status">⚡ Loading...</div>
@@ -1231,7 +1230,7 @@ function populateDesignSelect(auto = true) {
     }
 }
 
-async function importFromsupabase(manual = false) {
+async function importFromFirebase(manual = false) {
     try {
         setStatus(manual ? "🔄 Local + Cloud refresh..." : "⚡ Loading local designs...");
         
@@ -1273,7 +1272,7 @@ async function importFromsupabase(manual = false) {
                     setStatus("☁️ Local + Cloud designs ready");
                 }
             } catch(cErr) {
-                console.log("RTDB load skipped", cErr);
+                console.log("Supabase load skipped", cErr);
             }
         }
     } catch(e) {
@@ -2303,7 +2302,7 @@ window.addEventListener("focus", () => {
     let lastEdit = localStorage.getItem("last_edit_timestamp");
     if (window._lastEditStamp !== lastEdit) {
         window._lastEditStamp = lastEdit;
-        importFromsupabase(false);
+        importFromFirebase(false);
     }
 });
 
@@ -2942,32 +2941,7 @@ function print3DOnly() {
         if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
 
         printWin.document.open();
-        printWin.document.write(`<!DOCTYPE html>
-<html>
-<head>
-<title>TEXFRIEND — 3D CAD Print</title>
-<style>
-@page { size: A4 portrait; margin: 10mm; }
-html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #ffffff; text-align: center; font-family: Arial, sans-serif; }
-.box { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 20px; }
-.title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #111; }
-img { max-width: 100%; max-height: 85vh; object-fit: contain; }
-</style>
-</head>
-<body>
-<div class="box">
-    <div class="title">TEXFRIEND | 3D WEAVE PREVIEW CAD</div>
-    <img id="pImg" src="${dataURL}">
-</div>
-<script>
-window.onload = function() {
-    var im = document.getElementById('pImg');
-    if (im.complete) { window.focus(); window.print(); }
-    else { im.onload = function() { window.focus(); window.print(); }; }
-};
-<\/script>
-</body>
-</html>`);
+        
         printWin.document.close();
     } catch(e) {
         alert("Print Error: " + e.message);
@@ -3028,8 +3002,8 @@ window.addEventListener("load", () => {
             if(statusEl) statusEl.textContent = "⚡ Ready (" + allCloudDesigns.length + " designs)";
         }
 
-        if (typeof importFromsupabase === "function") {
-            importFromsupabase(false).catch(err => console.log("supabase sync skipped"));
+        if (typeof importFromFirebase === "function") {
+            importFromFirebase(false).catch(err => console.log("Cloud sync skipped"));
         }
     } catch (err) {
         console.error("Init Error:", err);
