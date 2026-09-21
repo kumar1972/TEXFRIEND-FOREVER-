@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>3D Warp & Weft Weave Simulator Pro</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+<!-- supabase -->
+<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-app-compat.js"></script>
+<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-firestore-compat.js"></script>
 <script src="config.js"></script>
 <script src="translator.js"></script>
 <style>
@@ -515,7 +515,7 @@ input, select {
             <span id="activeDesignText">Design loading...</span>
         </div>
         <div class="cloud-actions">
-            <button class="btn btn-dark" onclick="importFromFirebase(true)">🔄 Refresh</button>
+            <button class="btn btn-dark" onclick="importFromsupabase(true)">🔄 Refresh</button>
             <button class="btn btn-green" onclick="saveCurrentDesign()">☁️ Save / Update</button>
         </div>
         <div id="designStatus" class="status">⚡ Loading...</div>
@@ -882,6 +882,7 @@ function normLine(x, warp) {
     
     let color = lowerX.color ?? lowerX.colour ?? lowerX.col ?? "";
     let name = lowerX.colourname ?? lowerX.colourName ?? lowerX.name ?? lowerX.shade ?? "";
+    let hexCode = lowerX.hex ?? ""; 
     let amount = warp ? (lowerX.ends ?? lowerX.end ?? lowerX.count ?? lowerX.qty ?? lowerX.orderends) : (lowerX.picks ?? lowerX.pick ?? lowerX.count ?? lowerX.qty ?? lowerX.orderpicks);
     let rowSpan = lowerX.span ?? lowerX.setrows ?? lowerX.set_rows ?? lowerX.group ?? lowerX.row_span ?? 1;
     let repCount = lowerX.repeat ?? lowerX.setrep ?? lowerX.set_repeat ?? lowerX.multiplier ?? lowerX.rep_count ?? 1;
@@ -891,7 +892,11 @@ function normLine(x, warp) {
 
     let finalColor = "#ffffff";
     let cTrim = String(color || "").trim();
-    if (/^#[0-9a-f]{3,6}$/i.test(cTrim)) {
+    let hTrim = String(hexCode || "").trim();
+    
+    if (/^#[0-9a-f]{3,6}$/i.test(hTrim)) {
+        finalColor = hTrim.toLowerCase();
+    } else if (/^#[0-9a-f]{3,6}$/i.test(cTrim)) {
         finalColor = cTrim.toLowerCase();
     } else if (cTrim) {
         finalColor = colorName(cTrim).toLowerCase();
@@ -1226,7 +1231,7 @@ function populateDesignSelect(auto = true) {
     }
 }
 
-async function importFromFirebase(manual = false) {
+async function importFromsupabase(manual = false) {
     try {
         setStatus(manual ? "🔄 Local + Cloud refresh..." : "⚡ Loading local designs...");
         
@@ -1258,9 +1263,9 @@ async function importFromFirebase(manual = false) {
             setStatus("💾 Local designs ready");
         }
 
-        if (typeof window.firebaseLoadCloud === "function" && navigator.onLine) {
+        if (typeof window.supabaseLoadCloud === "function" && navigator.onLine) {
             try {
-                const cloudMasters = await window.firebaseLoadCloud("design_masters_data", null);
+                const cloudMasters = await window.supabaseLoadCloud("design_masters_data", null);
                 if (Array.isArray(cloudMasters) && cloudMasters.length > 0) {
                     allCloudDesigns = mergeDesigns(allCloudDesigns.concat(cloudMasters));
                     localStorage.setItem("weave_designs_cache", JSON.stringify(allCloudDesigns));
@@ -1442,7 +1447,9 @@ function getCurrentData() {
             let origName = c.getAttribute('data-orig') || "";
             let shadeTag = c.getAttribute('data-tag') || "";
             let cnt = c.getAttribute('data-cnt') || "";
-            w.push({ colourName: origName, color: c.value, count: cnt, ends: parseInt(e.value)||0, span: span, repeat: rep, shadeTag: shadeTag });
+            
+            let savedColorName = origName ? origName : c.value;
+            w.push({ colourName: origName, color: savedColorName, hex: c.value, count: cnt, ends: parseInt(e.value)||0, span: span, repeat: rep, shadeTag: shadeTag });
             if(span > 1 && rep > 1) { wRanges.push({ start: wCurrentLine, end: wCurrentLine + span - 1, set: rep }); }
             wCurrentLine++;
         }
@@ -1455,7 +1462,9 @@ function getCurrentData() {
             let origName = c.getAttribute('data-orig') || "";
             let shadeTag = c.getAttribute('data-tag') || "";
             let cnt = c.getAttribute('data-cnt') || "";
-            f.push({ colourName: origName, color: c.value, count: cnt, picks: parseInt(p.value)||0, span: span, repeat: rep, shadeTag: shadeTag });
+            
+            let savedColorNameF = origName ? origName : c.value;
+            f.push({ colourName: origName, color: savedColorNameF, hex: c.value, count: cnt, picks: parseInt(p.value)||0, span: span, repeat: rep, shadeTag: shadeTag });
             if(span > 1 && rep > 1) { fRanges.push({ start: fCurrentLine, end: fCurrentLine + span - 1, set: rep }); }
             fCurrentLine++;
         }
@@ -1517,10 +1526,10 @@ async function saveCurrentDesign() {
         });
 
         let cloudSuccess = false;
-        if (typeof window.firebaseSave === "function") {
-            await window.firebaseSave("design_" + cleanName, data);
-            await window.firebaseSave("design_masters_data", local);
-            cloudSuccess = (window.firebaseConnected === true || navigator.onLine === true);
+        if (typeof window.supabaseSave === "function") {
+            await window.supabaseSave("design_" + cleanName, data);
+            await window.supabaseSave("design_masters_data", local);
+            cloudSuccess = (window.supabaseConnected === true || navigator.onLine === true);
         }
 
         let cache = Array.isArray(allCloudDesigns) ? allCloudDesigns.filter(x => cleanDesignName(designName(x)) !== cleanName) : []; 
@@ -2294,7 +2303,7 @@ window.addEventListener("focus", () => {
     let lastEdit = localStorage.getItem("last_edit_timestamp");
     if (window._lastEditStamp !== lastEdit) {
         window._lastEditStamp = lastEdit;
-        importFromFirebase(false);
+        importFromsupabase(false);
     }
 });
 
@@ -3019,8 +3028,8 @@ window.addEventListener("load", () => {
             if(statusEl) statusEl.textContent = "⚡ Ready (" + allCloudDesigns.length + " designs)";
         }
 
-        if (typeof importFromFirebase === "function") {
-            importFromFirebase(false).catch(err => console.log("Firebase sync skipped"));
+        if (typeof importFromsupabase === "function") {
+            importFromsupabase(false).catch(err => console.log("supabase sync skipped"));
         }
     } catch (err) {
         console.error("Init Error:", err);

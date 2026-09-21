@@ -762,16 +762,16 @@ async function quickCompleteToggle() {
     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
     try {
-        if (window.firebaseSave) {
-            await window.firebaseSave('despatch_records', despatchRecords);
-            await window.firebaseSave('despatch_data', despatchData);
-            await window.firebaseSave('design_specs', designSpecs);
+        if (window.supabaseSave) {
+            await window.supabaseSave('despatch_records', despatchRecords);
+            await window.supabaseSave('despatch_data', despatchData);
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if (window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
     } catch(e) {
-        console.error("Firebase Sync Error: ", e);
+        console.error("supabase Sync Error: ", e);
     }
 
     updateDespatchTable();
@@ -842,8 +842,8 @@ async function saveDespatchEntry() {
             if(!designSpecs[specKey]) designSpecs[specKey] = {};
             designSpecs[specKey].status = isCompleted ? 'completed' : 'running';
             
-            if (window.firebaseSaveIndividual) {
-                savePromises.push(window.firebaseSaveIndividual(specKey, designSpecs[specKey]));
+            if (window.supabaseSaveIndividual) {
+                savePromises.push(window.supabaseSaveIndividual(specKey, designSpecs[specKey]));
             }
         }
     });
@@ -874,10 +874,10 @@ async function saveDespatchEntry() {
     localStorage.setItem('despatch_records', JSON.stringify(despatchRecords));
     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
     
-    if (window.firebaseSave) {
-        savePromises.push(window.firebaseSave('despatch_data', despatchList));
-        savePromises.push(window.firebaseSave('despatch_records', despatchRecords));
-        savePromises.push(window.firebaseSave('design_specs', designSpecs));
+    if (window.supabaseSave) {
+        savePromises.push(window.supabaseSave('despatch_data', despatchList));
+        savePromises.push(window.supabaseSave('despatch_records', despatchRecords));
+        savePromises.push(window.supabaseSave('design_specs', designSpecs));
     }
 
     await Promise.all(savePromises);
@@ -987,17 +987,17 @@ async function toggleStatus(index, newStatus) {
                     let specKey = Object.keys(designSpecs).find(k => (k ? k.toString().replace('#', '').trim().toLowerCase() : '') === clean) || item.designNo;
                     if(!designSpecs[specKey]) designSpecs[specKey] = {};
                     designSpecs[specKey].status = newStatus;
-                    if(window.firebaseSaveIndividual) {
-                        await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+                    if(window.supabaseSaveIndividual) {
+                        await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
                     }
                 }
             }
         }
         
         localStorage.setItem('design_specs', JSON.stringify(designSpecs));
-        if(window.firebaseSave) {
-            await window.firebaseSave('despatch_data', despatchList);
-            await window.firebaseSave('design_specs', designSpecs);
+        if(window.supabaseSave) {
+            await window.supabaseSave('despatch_data', despatchList);
+            await window.supabaseSave('design_specs', designSpecs);
         }
 
         updateDespatchTable();
@@ -1081,8 +1081,8 @@ async function deleteDespatch(index) {
         despatchList.splice(index, 1);
         localStorage.setItem('despatch_data', JSON.stringify(despatchList));
         
-        if(window.firebaseSave) {
-            await window.firebaseSave('despatch_data', despatchList);
+        if(window.supabaseSave) {
+            await window.supabaseSave('despatch_data', despatchList);
         }
 
         updateDespatchTable();

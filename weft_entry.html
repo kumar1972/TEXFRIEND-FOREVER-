@@ -2287,32 +2287,32 @@ async function copyToNewDesign() {
 
 
     /* ============================================
-       FIREBASE SYNC
+       supabase SYNC
     ============================================ */
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'pre_design_numbers',
                 preDesignList
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_masters_data',
                 masters
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 specs
             );
         }
 
-        if (window.firebaseSaveIndividual) {
+        if (window.supabaseSaveIndividual) {
 
-            await window.firebaseSaveIndividual(
+            await window.supabaseSaveIndividual(
                 newDNo,
                 specs[newDNo]
             );
@@ -2321,12 +2321,12 @@ async function copyToNewDesign() {
     } catch (error) {
 
         console.error(
-            "Copy Design Firebase Error:",
+            "Copy Design supabase Error:",
             error
         );
 
         alert(
-            "Design local-ஆக copy செய்யப்பட்டது. ஆனால் Cloud sync fail ஆனது. Internet/Firebase connection check pannunga."
+            "Design local-ஆக copy செய்யப்பட்டது. ஆனால் Cloud sync fail ஆனது. Internet/supabase connection check pannunga."
         );
     }
 
@@ -3311,24 +3311,24 @@ async function quickCompleteToggle() {
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_masters_data',
                 masters
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
         }
 
         if (
-            window.firebaseSaveIndividual
+            window.supabaseSaveIndividual
         ) {
 
-            await window.firebaseSaveIndividual(
+            await window.supabaseSaveIndividual(
                 specKey,
                 designSpecs[specKey]
             );
@@ -3343,14 +3343,14 @@ async function quickCompleteToggle() {
     } catch (error) {
 
         console.error(
-            "Firebase sync error:",
+            "supabase sync error:",
             error
         );
 
         renderSavedList();
 
         alert(
-            `Status local-ஆக update ஆனது.\n\nCloud sync failed. Firebase connection check pannunga.`
+            `Status local-ஆக update ஆனது.\n\nCloud sync failed. supabase connection check pannunga.`
         );
     }
 }
@@ -3613,31 +3613,31 @@ async function saveWeftDesign() {
 
 
     /* ============================================
-       FIREBASE
+       supabase
     ============================================ */
 
     let cloudSuccess = true;
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_masters_data',
                 masters
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
         }
 
         if (
-            window.firebaseSaveIndividual
+            window.supabaseSaveIndividual
         ) {
 
-            await window.firebaseSaveIndividual(
+            await window.supabaseSaveIndividual(
                 specKey,
                 designSpecs[specKey]
             );
@@ -3648,7 +3648,7 @@ async function saveWeftDesign() {
         cloudSuccess = false;
 
         console.error(
-            "Firebase save error:",
+            "supabase save error:",
             error
         );
     }
@@ -3670,7 +3670,7 @@ async function saveWeftDesign() {
     } else {
 
         alert(
-            "Weft Pattern local-ஆக save செய்யப்பட்டது ✅\n\nஆனால் Cloud/Firebase sync failed ❌\n\nInternet மற்றும் Firebase connection check pannunga."
+            "Weft Pattern local-ஆக save செய்யப்பட்டது ✅\n\nஆனால் Cloud/supabase sync failed ❌\n\nInternet மற்றும் supabase connection check pannunga."
         );
     }
 }
@@ -3772,24 +3772,24 @@ async function toggleStatus(
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_masters_data',
                 masters
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
         }
 
         if (
-            window.firebaseSaveIndividual
+            window.supabaseSaveIndividual
         ) {
 
-            await window.firebaseSaveIndividual(
+            await window.supabaseSaveIndividual(
                 specKey,
                 designSpecs[specKey]
             );
@@ -3800,7 +3800,7 @@ async function toggleStatus(
     } catch (error) {
 
         console.error(
-            "Firebase status error:",
+            "supabase status error:",
             error
         );
 

@@ -598,14 +598,14 @@
         localStorage.setItem('design_masters_data', JSON.stringify(designMasters));
         if(activeDesignNo) localStorage.setItem('selected_design_number', activeDesignNo);
 
-        if (window.firebaseSave) {
-            await window.firebaseSave('pre_design_numbers', updatedList);
-            await window.firebaseSave('design_specs', updatedSpecs);
-            await window.firebaseSave('design_masters_data', designMasters);
+        if (window.supabaseSave) {
+            await window.supabaseSave('pre_design_numbers', updatedList);
+            await window.supabaseSave('design_specs', updatedSpecs);
+            await window.supabaseSave('design_masters_data', designMasters);
         }
-        if (window.firebaseSaveIndividual && activeDesignNo) {
+        if (window.supabaseSaveIndividual && activeDesignNo) {
             let key = getSpecKey(activeDesignNo);
-            await window.firebaseSaveIndividual(key, updatedSpecs[key]);
+            await window.supabaseSaveIndividual(key, updatedSpecs[key]);
         }
     }
 
@@ -630,7 +630,7 @@
             if(Array.isArray(designMasters)) {
                 designMasters = designMasters.filter(m => cleanDesignName(m.name || m.designNo) !== cleanDesignName(designNo));
                 localStorage.setItem('design_masters_data', JSON.stringify(designMasters));
-                if (window.firebaseSave) await window.firebaseSave('design_masters_data', designMasters);
+                if (window.supabaseSave) await window.supabaseSave('design_masters_data', designMasters);
             }
             
             try {
@@ -695,7 +695,7 @@
                 await syncDesignMasterToCloud(designList, designSpecs, newDesignNo);
                 
                 localStorage.setItem('design_masters_data', JSON.stringify(designMasters));
-                if (window.firebaseSave) { await window.firebaseSave('design_masters_data', designMasters); }
+                if (window.supabaseSave) { await window.supabaseSave('design_masters_data', designMasters); }
 
                 loadDesignDropdowns();
                 document.getElementById('renameInput').value = '';

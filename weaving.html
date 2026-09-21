@@ -702,7 +702,7 @@
                 if(!weavers.includes(name)) {
                     weavers.push(name);
                     localStorage.setItem('tex_master_weavers', JSON.stringify(weavers));
-                    if(window.firebaseSave) window.firebaseSave('tex_master_weavers', weavers);
+                    if(window.supabaseSave) window.supabaseSave('tex_master_weavers', weavers);
                     loadWeaverDropdown();
                     alert(`Weaver '${name}' added successfully! ✅`);
                 }
@@ -731,7 +731,7 @@
                 if(!units.includes(name)) {
                     units.push(name);
                     localStorage.setItem('tex_master_warping_units', JSON.stringify(units));
-                    if(window.firebaseSave) window.firebaseSave('tex_master_warping_units', units);
+                    if(window.supabaseSave) window.supabaseSave('tex_master_warping_units', units);
                     loadWarpingUnitDropdown();
                     alert(`Warping Unit '${name}' added successfully! ✅`);
                 }
@@ -1086,17 +1086,17 @@
             localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
             try {
-                if (window.firebaseSave) {
-                    await window.firebaseSave('weaving_master_data', weavingMasterData);
-                    await window.firebaseSave('weaving_warp_trans', warpTransactions);
-                    await window.firebaseSave('weaving_weft_trans', weftTransactions);
-                    await window.firebaseSave('design_specs', designSpecs);
+                if (window.supabaseSave) {
+                    await window.supabaseSave('weaving_master_data', weavingMasterData);
+                    await window.supabaseSave('weaving_warp_trans', warpTransactions);
+                    await window.supabaseSave('weaving_weft_trans', weftTransactions);
+                    await window.supabaseSave('design_specs', designSpecs);
                 }
-                if (window.firebaseSaveIndividual) {
-                    await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+                if (window.supabaseSaveIndividual) {
+                    await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
                 }
             } catch(e) {
-                console.error("Firebase Sync Error: ", e);
+                console.error("supabase Sync Error: ", e);
             }
 
             updateTables();
@@ -1236,14 +1236,14 @@
             localStorage.setItem('weaving_warp_trans', JSON.stringify(warpTransactions));
             localStorage.setItem('weaving_weft_trans', JSON.stringify(weftTransactions));
 
-            if(window.firebaseSave) {
-                await window.firebaseSave('weaving_master_data', weavingMasterData);
-                await window.firebaseSave('weaving_warp_trans', warpTransactions);
-                await window.firebaseSave('weaving_weft_trans', weftTransactions);
-                await window.firebaseSave('design_specs', designSpecs);
+            if(window.supabaseSave) {
+                await window.supabaseSave('weaving_master_data', weavingMasterData);
+                await window.supabaseSave('weaving_warp_trans', warpTransactions);
+                await window.supabaseSave('weaving_weft_trans', weftTransactions);
+                await window.supabaseSave('design_specs', designSpecs);
             }
-            if(window.firebaseSaveIndividual) {
-                await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+            if(window.supabaseSaveIndividual) {
+                await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
             }
 
             updateTables();
@@ -1356,9 +1356,9 @@
             localStorage.setItem('weaving_warp_trans', JSON.stringify(warpTransactions));
             localStorage.setItem('weaving_weft_trans', JSON.stringify(weftTransactions));
 
-            if(window.firebaseSave) {
-                await window.firebaseSave('weaving_warp_trans', warpTransactions);
-                await window.firebaseSave('weaving_weft_trans', weftTransactions);
+            if(window.supabaseSave) {
+                await window.supabaseSave('weaving_warp_trans', warpTransactions);
+                await window.supabaseSave('weaving_weft_trans', weftTransactions);
             }
 
             updateTables();
@@ -1389,11 +1389,11 @@
                     designSpecs[specKey].status = newStatus;
                     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
                     
-                    if(window.firebaseSave) await window.firebaseSave('design_specs', designSpecs);
-                    if(window.firebaseSaveIndividual) await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+                    if(window.supabaseSave) await window.supabaseSave('design_specs', designSpecs);
+                    if(window.supabaseSaveIndividual) await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
                 }
 
-                if(window.firebaseSave) await window.firebaseSave('weaving_warp_trans', warpTransactions);
+                if(window.supabaseSave) await window.supabaseSave('weaving_warp_trans', warpTransactions);
                 updateTables();
             }
         }
@@ -1415,11 +1415,11 @@
                     designSpecs[specKey].status = newStatus;
                     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
                     
-                    if(window.firebaseSave) await window.firebaseSave('design_specs', designSpecs);
-                    if(window.firebaseSaveIndividual) await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+                    if(window.supabaseSave) await window.supabaseSave('design_specs', designSpecs);
+                    if(window.supabaseSaveIndividual) await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
                 }
 
-                if(window.firebaseSave) await window.firebaseSave('weaving_weft_trans', weftTransactions);
+                if(window.supabaseSave) await window.supabaseSave('weaving_weft_trans', weftTransactions);
                 updateTables();
             }
         }
@@ -1490,7 +1490,7 @@
             if(confirm("Indha warp entry-ai delete pannanuma?")) {
                 warpTransactions = warpTransactions.filter(item => String(item.id) !== String(id));
                 localStorage.setItem('weaving_warp_trans', JSON.stringify(warpTransactions));
-                if(window.firebaseSave) await window.firebaseSave('weaving_warp_trans', warpTransactions);
+                if(window.supabaseSave) await window.supabaseSave('weaving_warp_trans', warpTransactions);
                 updateTables();
             }
         }
@@ -1501,7 +1501,7 @@
             if(confirm("Indha weft entry-ai delete pannanuma?")) {
                 weftTransactions = weftTransactions.filter(item => String(item.id) !== String(id));
                 localStorage.setItem('weaving_weft_trans', JSON.stringify(weftTransactions));
-                if(window.firebaseSave) await window.firebaseSave('weaving_weft_trans', weftTransactions);
+                if(window.supabaseSave) await window.supabaseSave('weaving_weft_trans', weftTransactions);
                 updateTables();
             }
         }

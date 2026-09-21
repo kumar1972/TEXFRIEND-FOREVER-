@@ -491,11 +491,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function syncDataToCloud(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
-    if (window.firebaseSave) {
-        await window.firebaseSave(key, data);
+    if (window.supabaseSave) {
+        await window.supabaseSave(key, data);
     }
-    if (window.firebaseSaveIndividual) {
-        await window.firebaseSaveIndividual(key, data);
+    if (window.supabaseSaveIndividual) {
+        await window.supabaseSaveIndividual(key, data);
     }
 }
 

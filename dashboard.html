@@ -12,7 +12,7 @@
 
 <!-- IMPORTANT: config.js and translator.js already exist -->
 <script src="config.js" defer></script>
-<script src="translator.js" defer></script>
+<script src="translator.js" defer></script>  
 
 <style>
 
@@ -2126,7 +2126,7 @@ function setSyncStatus(message, error){
             indicator.textContent = "● OFFLINE Work Mode";
         } else if(message.includes("Connected")){
             indicator.style.color = "#00ff88";
-            indicator.textContent = "● ONLINE Firebase Auto";
+            indicator.textContent = "● ONLINE supabase  Auto";
         } else {
             indicator.style.color = "#FCD34D";
             indicator.textContent = "● Checking Status...";
@@ -3353,13 +3353,13 @@ async function confirmLogout(){
     try{
 
         if(
-            window.firebaseAuth &&
-            typeof window.firebaseSignOut ===
+            window.supabase Auth &&
+            typeof window.supabase SignOut ===
             "function"
         ){
 
-            await window.firebaseSignOut(
-                window.firebaseAuth
+            await window.supabase SignOut(
+                window.supabase Auth
             );
         }
 
@@ -3397,7 +3397,7 @@ function clearCacheData(){
 
     if(
         !confirm(
-            "Clear local cache?\n\nFirebase Cloud data will NOT be deleted."
+            "Clear local cache?\n\nsupabase cloud data will NOT be deleted."
         )
     )
         return;
@@ -3452,7 +3452,7 @@ function clearCacheData(){
 
 
     alert(
-        "Local cache cleared successfully! ☁️\nFirebase Cloud data is safe."
+        "Local cache cleared successfully! ☁️\nsupabase cloud data is safe."
     );
 
 
@@ -3623,7 +3623,7 @@ function waitForCloudSync(timeout){
             ){
 
                 setSyncStatus(
-                    "☁️ Firebase Connected"
+                    "☁️ supabase  Connected"
                 );
 
                 resolve(true);
@@ -3704,7 +3704,7 @@ window.addEventListener(
             /*
              * Cloud is optional.
              * Dashboard must work even when
-             * Firebase is not loaded.
+             * supabase  is not loaded.
              */
 
             await waitForCloudSync(5000);
@@ -3794,7 +3794,7 @@ window.addEventListener(
 ========================================================= */
 
 window.addEventListener('online', () => {
-    setSyncStatus("☁️ Firebase Connected");
+    setSyncStatus("☁️ supabase  Connected");
 });
 
 window.addEventListener('offline', () => {

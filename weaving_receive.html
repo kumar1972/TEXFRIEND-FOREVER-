@@ -417,7 +417,7 @@
             weavingMasterData[orderIndex].crimpPerc = crimp;
             weavingMasterData[orderIndex].fabricMts = fMtrs;
             localStorage.setItem('weaving_master_data', JSON.stringify(weavingMasterData));
-            if(typeof window.firebaseSave === 'function') window.firebaseSave('weaving_master_data', weavingMasterData);
+            if(typeof window.supabaseSave === 'function') window.supabaseSave('weaving_master_data', weavingMasterData);
         }
     }
 
@@ -487,7 +487,7 @@
             weavingMasterData[orderIndex].weavingMts = newWarpMtrs;
             weavingMasterData[orderIndex].fabricMts = newFabricMtrs;
             localStorage.setItem('weaving_master_data', JSON.stringify(weavingMasterData));
-            if(typeof window.firebaseSave === 'function') await window.firebaseSave('weaving_master_data', weavingMasterData);
+            if(typeof window.supabaseSave === 'function') await window.supabaseSave('weaving_master_data', weavingMasterData);
         }
 
         let entry = {
@@ -512,7 +512,7 @@
         }
 
         localStorage.setItem('weaving_receive_records', JSON.stringify(receiveRecords));
-        if(typeof window.firebaseSave === 'function') await window.firebaseSave('weaving_receive_records', receiveRecords);
+        if(typeof window.supabaseSave === 'function') await window.supabaseSave('weaving_receive_records', receiveRecords);
 
         alert("Entry Saved Successfully! ✅");
         
@@ -589,7 +589,7 @@
         if(confirm("Are you sure you want to delete this entry?")) {
             receiveRecords = receiveRecords.filter(r => String(r.id) !== String(id));
             localStorage.setItem('weaving_receive_records', JSON.stringify(receiveRecords));
-            if(typeof window.firebaseSave === 'function') await window.firebaseSave('weaving_receive_records', receiveRecords);
+            if(typeof window.supabaseSave === 'function') await window.supabaseSave('weaving_receive_records', receiveRecords);
             
             let weaver = document.getElementById('weaverSelect').value;
             let design = document.getElementById('designSelect').value;

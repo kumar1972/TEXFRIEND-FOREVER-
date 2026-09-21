@@ -99,18 +99,18 @@ window.StorageDB.init();
 // ============================================================
 
 window.TEXFRIEND_SUPABASE_CONFIG = {
-    url: "https://your-project-id.supabase.co", // <-- உங்கள் Supabase URL-ஐ இங்கே போடவும்
-    key: "your-anon-key-here"                   // <-- உங்கள் Supabase Anon Key-ஐ இங்கே போடவும்
+    url: "https://tktkpenojgwgdakqsjqs.supabase.co/rest/v1/", // <-- உங்கள் Supabase URL-ஐ இங்கே போடவும்
+    key: "sb_publishable_FvnPcUtAr99fQq60iRamSQ_5xcaHBih"                   // <-- உங்கள் Supabase Anon Key-ஐ இங்கே போடவும்
 };
 
 // ============================================================
 // GLOBAL VARIABLES
 // ============================================================
 window.supabaseClient = null;
-window.firebaseConnected = false; 
+window.supabaseConnected = false; 
 window.cloudSyncReady = false;
-window.firebaseInitializing = false;
-window.firebaseInitStarted = false;
+window.supabaseInitializing = false;
+window.supabaseInitStarted = false;
 window.cloudSyncPromise = null;
 
 window.isDemo = false;
@@ -231,12 +231,12 @@ function loadScript(src) {
 // ============================================================
 // INITIALIZE SUPABASE
 // ============================================================
-window.initializeFirebase = async function (doFullSync) {
+window.initializesupabase = async function (doFullSync) {
     if (doFullSync === undefined) doFullSync = true;
-    if (window.firebaseInitStarted && window.cloudSyncPromise) return window.cloudSyncPromise;
+    if (window.supabaseInitStarted && window.cloudSyncPromise) return window.cloudSyncPromise;
     
-    window.firebaseInitStarted = true;
-    window.firebaseInitializing = true;
+    window.supabaseInitStarted = true;
+    window.supabaseInitializing = true;
 
     window.cloudSyncPromise = (async function () {
         try {
@@ -248,9 +248,9 @@ window.initializeFirebase = async function (doFullSync) {
                 window.TEXFRIEND_SUPABASE_CONFIG.key
             );
 
-            window.firebaseConnected = true;
+            window.supabaseConnected = true;
             window.cloudSyncReady = true;
-            window.firebaseInitializing = false;
+            window.supabaseInitializing = false;
 
             if (navigator.onLine && doFullSync) {
                 await syncAllCloudData();
@@ -261,9 +261,9 @@ window.initializeFirebase = async function (doFullSync) {
             return true;
         } catch (error) {
             console.error("❌ Supabase initialization failed:", error);
-            window.firebaseConnected = false;
+            window.supabaseConnected = false;
             window.cloudSyncReady = false;
-            window.firebaseInitializing = false;
+            window.supabaseInitializing = false;
             return false;
         }
     })();
@@ -305,7 +305,7 @@ async function cloudLoad(key, fallback = null) {
     }
 }
 
-window.firebaseSave = async function (key, data) {
+window.supabaseSave = async function (key, data) {
     try {
         const localSaved = window.localSave(key, data);
         if (!localSaved) return false;
@@ -313,8 +313,8 @@ window.firebaseSave = async function (key, data) {
         queueOfflineData(key, data);
 
         if (navigator.onLine) {
-            if (!window.supabaseClient) await initializeFirebase(false);
-            if (window.supabaseClient && window.firebaseConnected) {
+            if (!window.supabaseClient) await initializesupabase(false);
+            if (window.supabaseClient && window.supabaseConnected) {
                 await cloudSave(key, data);
             }
         }
@@ -324,13 +324,13 @@ window.firebaseSave = async function (key, data) {
     }
 };
 
-window.firebaseLoad = function (key, fallback = null) {
+window.supabaseLoad = function (key, fallback = null) {
     return window.localLoad(key, fallback);
 };
 
-window.firebaseLoadCloud = async function (key, fallback = null) {
+window.supabaseLoadCloud = async function (key, fallback = null) {
     try {
-        if (!window.supabaseClient) await initializeFirebase();
+        if (!window.supabaseClient) await initializesupabase();
         if (window.supabaseClient && navigator.onLine) {
             const data = await cloudLoad(key, null);
             if (data !== null && data !== undefined) {
@@ -358,7 +358,7 @@ async function syncAllCloudData() {
 
 window.syncOfflineQueue = async function () {
     if (!navigator.onLine) return false;
-    if (!window.supabaseClient) await initializeFirebase();
+    if (!window.supabaseClient) await initializesupabase();
     if (!window.supabaseClient) return false;
 
     const queue = Object.assign({}, window.offlineSyncQueue);
@@ -378,8 +378,8 @@ function updateNetworkStatus() {
 
     const bar = document.createElement("div");
     bar.id = "texfriend-network-status";
-    bar.innerHTML = window.firebaseConnected ? "🟢 ONLINE — Supabase Connected" : "📴 OFFLINE — Local Mode";
-    bar.style.background = window.firebaseConnected ? "#10B981" : "#F59E0B";
+    bar.innerHTML = window.supabaseConnected ? "🟢 ONLINE — Supabase Connected" : "📴 OFFLINE — Local Mode";
+    bar.style.background = window.supabaseConnected ? "#10B981" : "#F59E0B";
     bar.style.color = "#FFFFFF";
     bar.style.position = "fixed";
     bar.style.left = "0"; bar.style.right = "0"; bar.style.top = "0";
@@ -390,9 +390,9 @@ function updateNetworkStatus() {
 }
 
 window.addEventListener("online", () => { updateNetworkStatus(); setTimeout(syncOfflineQueue, 800); });
-window.addEventListener("offline", () => { window.firebaseConnected = false; updateNetworkStatus(); });
+window.addEventListener("offline", () => { window.supabaseConnected = false; updateNetworkStatus(); });
 
 window.addEventListener("DOMContentLoaded", () => {
     updateNetworkStatus();
-    setTimeout(() => { initializeFirebase(); }, 300);
+    setTimeout(() => { initializesupabase(); }, 300);
 });

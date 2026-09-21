@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Warp Entry - TEXFRIEND ERP</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+<!-- supabase -->
+<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-app-compat.js"></script>
+<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-firestore-compat.js"></script>
 <script src="config.js"></script>
 <script src="translator.js"></script>
 
@@ -2011,11 +2011,11 @@ async function copyToNewDesign() {
         localStorage.setItem('design_masters_data', JSON.stringify(masters));
 
         try {
-            if (window.firebaseSave) {
-                window.firebaseSave('design_masters_data', masters);
+            if (window.supabaseSave) {
+                window.supabaseSave('design_masters_data', masters);
             }
         } catch (e) {
-            console.error('Firebase masters save error:', e);
+            console.error('supabase masters save error:', e);
         }
     }
     // --- Auto-Copy Logic End ---
@@ -2029,9 +2029,9 @@ async function copyToNewDesign() {
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'pre_design_numbers',
                 preDesignList
             );
@@ -2040,7 +2040,7 @@ async function copyToNewDesign() {
     } catch (e) {
 
         console.error(
-            'Firebase pre-design save error:',
+            'supabase pre-design save error:',
             e
         );
     }
@@ -2600,24 +2600,24 @@ async function quickCompleteToggle() {
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_masters_data',
                 masters
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
         }
 
         if (
-            window.firebaseSaveIndividual
+            window.supabaseSaveIndividual
         ) {
 
-            await window.firebaseSaveIndividual(
+            await window.supabaseSaveIndividual(
                 specKey,
                 designSpecs[specKey]
             );
@@ -2626,7 +2626,7 @@ async function quickCompleteToggle() {
     } catch (e) {
 
         console.error(
-            "Firebase sync error:",
+            "supabase sync error:",
             e
         );
     }
@@ -3006,24 +3006,24 @@ window.saveWarpDesign = async function () {
 
     try {
 
-        if (window.firebaseSave) {
+        if (window.supabaseSave) {
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_masters_data',
                 masters
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
         }
 
         if (
-            window.firebaseSaveIndividual
+            window.supabaseSaveIndividual
         ) {
 
-            await window.firebaseSaveIndividual(
+            await window.supabaseSaveIndividual(
                 specKey,
                 designSpecs[specKey]
             );
@@ -3042,7 +3042,7 @@ window.saveWarpDesign = async function () {
     } catch (e) {
 
         console.error(
-            "Firebase save error:",
+            "supabase save error:",
             e
         );
 
@@ -3053,7 +3053,7 @@ window.saveWarpDesign = async function () {
         }
 
         alert(
-            "Data saved locally, but Cloud Sync failed. Please check your internet/Firebase connection. ⚠️"
+            "Data saved locally, but Cloud Sync failed. Please check your internet/supabase connection. ⚠️"
         );
     }
 };
@@ -3142,24 +3142,24 @@ async function toggleStatus(
 
         try {
 
-            if (window.firebaseSave) {
+            if (window.supabaseSave) {
 
-                await window.firebaseSave(
+                await window.supabaseSave(
                     'design_masters_data',
                     masters
                 );
 
-                await window.firebaseSave(
+                await window.supabaseSave(
                     'design_specs',
                     designSpecs
                 );
             }
 
             if (
-                window.firebaseSaveIndividual
+                window.supabaseSaveIndividual
             ) {
 
-                await window.firebaseSaveIndividual(
+                await window.supabaseSaveIndividual(
                     specKey,
                     designSpecs[specKey]
                 );
@@ -3168,7 +3168,7 @@ async function toggleStatus(
         } catch (e) {
 
             console.error(
-                "Firebase status sync error:",
+                "supabase status sync error:",
                 e
             );
         }

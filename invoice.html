@@ -741,15 +741,15 @@ async function quickCompleteToggle() {
     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
     try {
-        if (window.firebaseSave) {
-            await window.firebaseSave('saved_invoices_data', invs);
-            await window.firebaseSave('design_specs', designSpecs);
+        if (window.supabaseSave) {
+            await window.supabaseSave('saved_invoices_data', invs);
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if (window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
     } catch(e) {
-        console.error("Firebase Sync Error: ", e);
+        console.error("supabase Sync Error: ", e);
     }
 
     updateInvoicesTable();
@@ -847,18 +847,18 @@ async function saveInvoice() {
         designSpecs[specKey].status = isCompleted ? 'completed' : 'running';
         localStorage.setItem('design_specs', JSON.stringify(designSpecs));
         
-        if (window.firebaseSave) {
-            await window.firebaseSave('design_specs', designSpecs);
+        if (window.supabaseSave) {
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if (window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
     }
 
     localStorage.setItem('saved_invoices_data', JSON.stringify(savedInvoices));
     
-    if (window.firebaseSave) {
-        await window.firebaseSave('saved_invoices_data', savedInvoices);
+    if (window.supabaseSave) {
+        await window.supabaseSave('saved_invoices_data', savedInvoices);
     }
 
     updateInvoicesTable();
@@ -919,16 +919,16 @@ async function toggleStatus(id, newStatus) {
                 designSpecs[specKey].status = newStatus;
                 localStorage.setItem('design_specs', JSON.stringify(designSpecs));
                 
-                if(window.firebaseSave) {
-                    await window.firebaseSave('design_specs', designSpecs);
+                if(window.supabaseSave) {
+                    await window.supabaseSave('design_specs', designSpecs);
                 }
-                if(window.firebaseSaveIndividual) {
-                    await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+                if(window.supabaseSaveIndividual) {
+                    await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
                 }
             }
 
-            if(window.firebaseSave) {
-                await window.firebaseSave('saved_invoices_data', savedInvoices);
+            if(window.supabaseSave) {
+                await window.supabaseSave('saved_invoices_data', savedInvoices);
             }
             updateInvoicesTable();
         }
@@ -1071,8 +1071,8 @@ async function deleteInvoice(id) {
         savedInvoices = savedInvoices.filter(x => x.id !== id);
         localStorage.setItem('saved_invoices_data', JSON.stringify(savedInvoices));
         
-        if (window.firebaseSave) {
-            await window.firebaseSave('saved_invoices_data', savedInvoices);
+        if (window.supabaseSave) {
+            await window.supabaseSave('saved_invoices_data', savedInvoices);
         }
 
         updateInvoicesTable();

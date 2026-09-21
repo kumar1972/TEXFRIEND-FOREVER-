@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Advanced Denting, Drawing & Graph Editor</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+<!-- supabase -->
+<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-app-compat.js"></script>
+<script src="https://www.gstatic.com/supabasejs/9.0.0/supabase-firestore-compat.js"></script>
 <script src="config.js"></script>
 <!-- Pre-Stock JS Link -->
 <script src="pre_stock.js"></script>
@@ -684,10 +684,10 @@
                 } catch(e) {}
             });
 
-            if (typeof window.firebaseSave === "function") {
-                await window.firebaseSave("design_" + cleanName, fullData);
-                await window.firebaseSave("design_masters_data", local);
-                cloudSuccess = (window.firebaseConnected === true || navigator.onLine === true);
+            if (typeof window.supabaseSave === "function") {
+                await window.supabaseSave("design_" + cleanName, fullData);
+                await window.supabaseSave("design_masters_data", local);
+                cloudSuccess = (window.supabaseConnected === true || navigator.onLine === true);
             }
         } catch (localErr) {
             console.error(localErr);

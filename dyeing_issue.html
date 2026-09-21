@@ -1346,9 +1346,9 @@ async function syncMasterToCloud(key,data){
 
     try{
 
-        if(typeof window.firebaseSave === 'function'){
+        if(typeof window.supabaseSave === 'function'){
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 key,
                 data
             );
@@ -1358,7 +1358,7 @@ async function syncMasterToCloud(key,data){
     }catch(error){
 
         console.error(
-            'firebaseSave error:',
+            'supabaseSave error:',
             error
         );
 
@@ -3413,14 +3413,14 @@ async function quickCompleteToggle(){
 
     try{
 
-        if(typeof window.firebaseSave === 'function'){
+        if(typeof window.supabaseSave === 'function'){
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'dyeing_issue_records',
                 records
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
@@ -3812,14 +3812,14 @@ async function saveIssueEntries(){
            CLOUD SAVE
         ==================================================== */
 
-        if(typeof window.firebaseSave === 'function'){
+        if(typeof window.supabaseSave === 'function'){
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'dyeing_issue_records',
                 records
             );
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'design_specs',
                 designSpecs
             );
@@ -3832,13 +3832,13 @@ async function saveIssueEntries(){
         */
 
         if(
-            typeof window.firebaseSaveIndividual ===
+            typeof window.supabaseSaveIndividual ===
             'function'
         ){
 
             try{
 
-                await window.firebaseSaveIndividual(
+                await window.supabaseSaveIndividual(
                     specKey,
                     designSpecs[specKey]
                 );
@@ -4141,16 +4141,16 @@ async function toggleStatus(
         try{
 
             if(
-                typeof window.firebaseSave ===
+                typeof window.supabaseSave ===
                 'function'
             ){
 
-                await window.firebaseSave(
+                await window.supabaseSave(
                     'design_specs',
                     designSpecs
                 );
 
-                await window.firebaseSave(
+                await window.supabaseSave(
                     'dyeing_issue_records',
                     records
                 );
@@ -4235,11 +4235,11 @@ async function deleteIssuedRecord(id){
     try{
 
         if(
-            typeof window.firebaseSave ===
+            typeof window.supabaseSave ===
             'function'
         ){
 
-            await window.firebaseSave(
+            await window.supabaseSave(
                 'dyeing_issue_records',
                 records
             );
@@ -4594,7 +4594,7 @@ function renderIssuedList(){
 
 /* ============================================================
    ISSUE PREVIEW + PRINT
-   Preview is UI-only. Existing localStorage/Firebase/cloud logic
+   Preview is UI-only. Existing localStorage/supabase/cloud logic
    is intentionally untouched.
 ============================================================ */
 function getPreviewRows(){

@@ -1135,9 +1135,9 @@ async function pageCloudSave(key,value){
 
     try{
 
-        if(typeof window.firebaseSave === "function"){
+        if(typeof window.supabaseSave === "function"){
 
-            return await window.firebaseSave(
+            return await window.supabaseSave(
                 key,
                 value
             );
@@ -3137,7 +3137,7 @@ async function saveStorageDataFromEditor(){
             await idbSet(key, parsed[key]);
         }
 
-        if(window.firebaseSave){
+        if(window.supabaseSave){
 
             for(
                 const key of
@@ -3163,7 +3163,7 @@ async function saveStorageDataFromEditor(){
                     }catch(e){}
                 }
 
-                await window.firebaseSave(
+                await window.supabaseSave(
                     key,
                     value
                 );

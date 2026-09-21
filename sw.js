@@ -9,7 +9,7 @@
 // ✅ Offline navigation
 // ✅ Online Network First
 // ✅ Offline Cache Fallback
-// ✅ Firebase / Google API NOT cached
+// ✅ supabase / Google API NOT cached
 // ✅ Old TEXFRIEND caches cleaned
 // ✅ Service Worker update support
 // ============================================================
@@ -400,11 +400,11 @@ function isCloudRequest(request) {
         url.includes("/api/") ||
 
         url.includes(
-            "firebaseio.com"
+            "supabaseio.com"
         ) ||
 
         url.includes(
-            "firebasedatabase.app"
+            "supabasedatabase.app"
         ) ||
 
         url.includes(

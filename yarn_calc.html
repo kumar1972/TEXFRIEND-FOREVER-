@@ -953,11 +953,11 @@
         designSpecs[specKey].status = statusText;
         localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
-        if(window.firebaseSave) {
-            await window.firebaseSave('design_specs', designSpecs);
+        if(window.supabaseSave) {
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if(window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if(window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
 
         alert(`Design ${dNo} status '${isCompleted ? 'COMPLETED' : 'RUNNING'}' updated successfully! ✅`);
@@ -1169,12 +1169,12 @@
 
         localStorage.setItem('yarn_calculation_data', JSON.stringify(yarnDataArray));
 
-        if(window.firebaseSave) {
-            await window.firebaseSave('design_specs', designSpecs);
-            await window.firebaseSave('yarn_calculation_data', yarnDataArray);
+        if(window.supabaseSave) {
+            await window.supabaseSave('design_specs', designSpecs);
+            await window.supabaseSave('yarn_calculation_data', yarnDataArray);
         }
-        if(window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if(window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
 
         btn.innerText = origText;
@@ -1201,11 +1201,11 @@
 
         localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
-        if(window.firebaseSave) {
-            await window.firebaseSave('design_specs', designSpecs);
+        if(window.supabaseSave) {
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if(window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if(window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
 
         btn.innerText = origText;

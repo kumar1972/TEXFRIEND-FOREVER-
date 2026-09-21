@@ -625,7 +625,7 @@ function addWarpingUnit() {
         if(!masterUnits.includes(val)) {
             masterUnits.push(val);
             localStorage.setItem('tex_master_warping_units', JSON.stringify(masterUnits));
-            if (window.firebaseSave) window.firebaseSave('tex_master_warping_units', masterUnits);
+            if (window.supabaseSave) window.supabaseSave('tex_master_warping_units', masterUnits);
             loadWarpingUnitSuggestions();
             alert(`Unit '${val}' added successfully! ✅`);
         } else {
@@ -645,7 +645,7 @@ function deleteWarpingUnit() {
         if(idx >= 0 && idx < masterList.length) {
             let deleted = masterList.splice(idx, 1);
             localStorage.setItem('tex_master_warping_units', JSON.stringify(masterList));
-            if (window.firebaseSave) window.firebaseSave('tex_master_warping_units', masterList);
+            if (window.supabaseSave) window.supabaseSave('tex_master_warping_units', masterList);
             loadWarpingUnitSuggestions();
             alert(`'${deleted[0]}' நீக்கப்பட்டது! ✅`);
         } else {
@@ -680,7 +680,7 @@ function addWeaver() {
         if(!masterWeavers.includes(val)) {
             masterWeavers.push(val);
             localStorage.setItem('tex_master_weavers', JSON.stringify(masterWeavers));
-            if (window.firebaseSave) window.firebaseSave('tex_master_weavers', masterWeavers);
+            if (window.supabaseSave) window.supabaseSave('tex_master_weavers', masterWeavers);
             loadWeaverSuggestions();
             alert(`Weaver '${val}' added successfully! ✅`);
         } else {
@@ -700,7 +700,7 @@ function deleteWeaver() {
         if(idx >= 0 && idx < masterList.length) {
             let deleted = masterList.splice(idx, 1);
             localStorage.setItem('tex_master_weavers', JSON.stringify(masterList));
-            if (window.firebaseSave) window.firebaseSave('tex_master_weavers', masterList);
+            if (window.supabaseSave) window.supabaseSave('tex_master_weavers', masterList);
             loadWeaverSuggestions();
             alert(`'${deleted[0]}' நீக்கப்பட்டது! ✅`);
         } else {
@@ -908,9 +908,9 @@ async function quickCompleteToggle() {
     designSpecs[specKey].status = statusText;
     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
-    if (window.firebaseSave) {
-        await window.firebaseSave('warping_issue_records', issues);
-        await window.firebaseSave('design_specs', designSpecs);
+    if (window.supabaseSave) {
+        await window.supabaseSave('warping_issue_records', issues);
+        await window.supabaseSave('design_specs', designSpecs);
     }
     renderCards();
     alert(`Design ${dNo} status '${statusText.toUpperCase()}' ah update aagiduchu ✅`);
@@ -979,9 +979,9 @@ async function saveTopOrder() {
         localStorage.setItem('design_specs', JSON.stringify(designSpecs));
         localStorage.setItem('warping_issue_records', JSON.stringify(issues));
         
-        if (window.firebaseSave) {
-            await window.firebaseSave('warping_issue_records', issues);
-            await window.firebaseSave('design_specs', designSpecs);
+        if (window.supabaseSave) {
+            await window.supabaseSave('warping_issue_records', issues);
+            await window.supabaseSave('design_specs', designSpecs);
         }
         
         alert(editingWarpId ? "Warping Order Updated Successfully! ✅" : "Warping Order Saved Successfully! ✅");
@@ -1100,7 +1100,7 @@ async function saveBottomEntry() {
 
     if(savedCount > 0) {
         localStorage.setItem('warping_receive_records', JSON.stringify(receives));
-        if (window.firebaseSave) await window.firebaseSave('warping_receive_records', receives);
+        if (window.supabaseSave) await window.supabaseSave('warping_receive_records', receives);
 
         alert("Bottom Entry Saved Successfully! ✅");
         document.getElementById('botActiveOrderSelect').value = '';
@@ -1158,7 +1158,7 @@ async function toggleStatusForGroup(dNo, unitName, newStatus) {
         let issues = JSON.parse(localStorage.getItem('warping_issue_records')) || [];
         issues.forEach(r => { if(cleanDesignName(r.designNo) === cleanDesignName(dNo) && r.unit === unitName) r.status = newStatus; });
         localStorage.setItem('warping_issue_records', JSON.stringify(issues));
-        if(window.firebaseSave) await window.firebaseSave('warping_issue_records', issues);
+        if(window.supabaseSave) await window.supabaseSave('warping_issue_records', issues);
         renderCards();
     }
 }
@@ -1206,7 +1206,7 @@ async function deleteWarpingGroup(dNo, unitName) {
     let issues = JSON.parse(localStorage.getItem('warping_issue_records')) || [];
     issues = issues.filter(i => !(cleanDesignName(i.designNo) === cleanDesignName(dNo) && i.unit === unitName));
     localStorage.setItem('warping_issue_records', JSON.stringify(issues));
-    if (window.firebaseSave) await window.firebaseSave('warping_issue_records', issues);
+    if (window.supabaseSave) await window.supabaseSave('warping_issue_records', issues);
     renderCards();
 }
 
@@ -1218,7 +1218,7 @@ function addWarpingUnit() {
         if(!masterUnits.includes(val.trim())) {
             masterUnits.push(val.trim());
             localStorage.setItem('tex_master_warping_units', JSON.stringify(masterUnits));
-            if (window.firebaseSave) window.firebaseSave('tex_master_warping_units', masterUnits);
+            if (window.supabaseSave) window.supabaseSave('tex_master_warping_units', masterUnits);
             loadWarpingUnitSuggestions();
             document.getElementById('topUnit').value = val.trim();
         }
@@ -1233,7 +1233,7 @@ function deleteWarpingUnit() {
         if(idx >= 0 && idx < masterList.length) {
             masterList.splice(idx, 1);
             localStorage.setItem('tex_master_warping_units', JSON.stringify(masterList));
-            if (window.firebaseSave) window.firebaseSave('tex_master_warping_units', masterList);
+            if (window.supabaseSave) window.supabaseSave('tex_master_warping_units', masterList);
             loadWarpingUnitSuggestions();
         }
     }
@@ -1252,7 +1252,7 @@ function addWeaver() {
         if(!masterWeavers.includes(val.trim())) {
             masterWeavers.push(val.trim());
             localStorage.setItem('tex_master_weavers', JSON.stringify(masterWeavers));
-            if (window.firebaseSave) window.firebaseSave('tex_master_weavers', masterWeavers);
+            if (window.supabaseSave) window.supabaseSave('tex_master_weavers', masterWeavers);
             loadWeaverSuggestions();
             document.getElementById('topWeaverTo').value = val.trim();
         }
@@ -1267,7 +1267,7 @@ function deleteWeaver() {
         if(idx >= 0 && idx < masterList.length) {
             masterList.splice(idx, 1);
             localStorage.setItem('tex_master_weavers', JSON.stringify(masterList));
-            if (window.firebaseSave) window.firebaseSave('tex_master_weavers', masterList);
+            if (window.supabaseSave) window.supabaseSave('tex_master_weavers', masterList);
             loadWeaverSuggestions();
         }
     }

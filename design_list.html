@@ -177,15 +177,15 @@ window.toggleBaseDesignStatus = async function(dNo, isChecked) {
     localStorage.setItem('party_orders_data', JSON.stringify(orders));
 
     try {
-        if (window.firebaseSave) {
-            await window.firebaseSave('design_specs', specs);
-            await window.firebaseSave('party_orders_data', orders);
+        if (window.supabaseSave) {
+            await window.supabaseSave('design_specs', specs);
+            await window.supabaseSave('party_orders_data', orders);
         }
-        if (window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, specs[specKey]);
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, specs[specKey]);
         }
     } catch (e) {
-        console.warn("Firebase sync error in design list:", e);
+        console.warn("supabase sync error in design list:", e);
     }
     
     window.renderDesignList();

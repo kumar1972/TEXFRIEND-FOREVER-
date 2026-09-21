@@ -631,7 +631,7 @@ function addWashingUnit() {
         if(!masterUnits.includes(name)) {
             masterUnits.push(name);
             localStorage.setItem('tex_master_washing_units', JSON.stringify(masterUnits));
-            if(window.firebaseSave) window.firebaseSave('tex_master_washing_units', masterUnits);
+            if(window.supabaseSave) window.supabaseSave('tex_master_washing_units', masterUnits);
             loadWashingUnitDropdown();
             alert(`Washing Unit '${name}' added successfully! ✅`);
         }
@@ -823,15 +823,15 @@ async function quickCompleteToggle() {
     localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
     try {
-        if (window.firebaseSave) {
-            await window.firebaseSave('washing_issue_records', issues);
-            await window.firebaseSave('design_specs', designSpecs);
+        if (window.supabaseSave) {
+            await window.supabaseSave('washing_issue_records', issues);
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if (window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
     } catch(e) {
-        console.error("Firebase Sync Error: ", e);
+        console.error("supabase Sync Error: ", e);
     }
 
     renderTable();
@@ -904,12 +904,12 @@ async function saveTopOrder() {
 
         localStorage.setItem('washing_issue_records', JSON.stringify(issues));
         
-        if (window.firebaseSave) {
-            await window.firebaseSave('washing_issue_records', issues);
-            await window.firebaseSave('design_specs', designSpecs);
+        if (window.supabaseSave) {
+            await window.supabaseSave('washing_issue_records', issues);
+            await window.supabaseSave('design_specs', designSpecs);
         }
-        if (window.firebaseSaveIndividual) {
-            await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
         
         alert("Top Order Saved to Cloud Successfully! ✅☁️");
@@ -1067,9 +1067,9 @@ async function saveBottomEntry() {
         localStorage.setItem('washing_issue_records', JSON.stringify(issues));
         localStorage.setItem('washing_receive_records', JSON.stringify(receives));
         
-        if (window.firebaseSave) {
-            await window.firebaseSave('washing_issue_records', issues);
-            await window.firebaseSave('washing_receive_records', receives);
+        if (window.supabaseSave) {
+            await window.supabaseSave('washing_issue_records', issues);
+            await window.supabaseSave('washing_receive_records', receives);
         }
 
         alert("Bottom Entry Saved to Cloud Successfully! ✅☁️");
@@ -1107,16 +1107,16 @@ async function toggleStatus(id, newStatus) {
                 designSpecs[specKey].status = newStatus;
                 localStorage.setItem('design_specs', JSON.stringify(designSpecs));
 
-                if(window.firebaseSave) {
-                    await window.firebaseSave('design_specs', designSpecs);
+                if(window.supabaseSave) {
+                    await window.supabaseSave('design_specs', designSpecs);
                 }
-                if (window.firebaseSaveIndividual) {
-                    await window.firebaseSaveIndividual(specKey, designSpecs[specKey]);
+                if (window.supabaseSaveIndividual) {
+                    await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
                 }
             }
 
-            if(window.firebaseSave) {
-                await window.firebaseSave('washing_issue_records', issues);
+            if(window.supabaseSave) {
+                await window.supabaseSave('washing_issue_records', issues);
             }
             renderTable();
         }
@@ -1137,8 +1137,8 @@ async function editWashingRecord(issueId, isReceived) {
             receives.splice(recIndex, 1);
             localStorage.setItem('washing_receive_records', JSON.stringify(receives));
             
-            if (window.firebaseSave) {
-                window.firebaseSave('washing_receive_records', receives);
+            if (window.supabaseSave) {
+                window.supabaseSave('washing_receive_records', receives);
             }
             
             document.getElementById('botDate').value = recRecord.botDate;
@@ -1166,8 +1166,8 @@ async function editWashingRecord(issueId, isReceived) {
             issues.splice(issueIndex, 1);
             localStorage.setItem('washing_issue_records', JSON.stringify(issues));
             
-            if (window.firebaseSave) {
-                window.firebaseSave('washing_issue_records', issues);
+            if (window.supabaseSave) {
+                window.supabaseSave('washing_issue_records', issues);
             }
             
             document.getElementById('topDate').value = issRecord.date;
@@ -1211,9 +1211,9 @@ async function deleteWashingRecord(issueId, isReceived) {
     localStorage.setItem('washing_receive_records', JSON.stringify(receives));
     localStorage.setItem('washing_issue_records', JSON.stringify(issues));
     
-    if (window.firebaseSave) {
-        await window.firebaseSave('washing_receive_records', receives);
-        await window.firebaseSave('washing_issue_records', issues);
+    if (window.supabaseSave) {
+        await window.supabaseSave('washing_receive_records', receives);
+        await window.supabaseSave('washing_issue_records', issues);
     }
     
     renderTable();
