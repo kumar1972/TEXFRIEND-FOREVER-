@@ -90,7 +90,6 @@ body{
     letter-spacing: 1.5px;
     line-height: 1.5;
 
-    /* Gradient-ல் இன்னும் கொஞ்சம் கலர் சேர்த்து background-size பெரிதாக்கப்பட்டுள்ளது */
     background: linear-gradient(
         135deg,
         #38BDF8,
@@ -101,18 +100,15 @@ body{
     );
     background-size: 300% 300%;
 
-    /* Text Clip Properties */
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 
     text-transform: uppercase;
 
-    /* Glowing Effect மற்றும் Animation */
     animation: colorful-glow 3s ease-in-out infinite;
 }
 
-/* Glow & Color Moving Animation */
 @keyframes colorful-glow {
     0% {
         background-position: 0% 50%;
@@ -2126,7 +2122,7 @@ function setSyncStatus(message, error){
             indicator.textContent = "● OFFLINE Work Mode";
         } else if(message.includes("Connected")){
             indicator.style.color = "#00ff88";
-            indicator.textContent = "● ONLINE supabase  Auto";
+            indicator.textContent = "● ONLINE Supabase Auto";
         } else {
             indicator.style.color = "#FCD34D";
             indicator.textContent = "● Checking Status...";
@@ -3349,28 +3345,13 @@ async function confirmLogout(){
 
     closeLogoutModal();
 
-
     try{
-
-        if(
-            window.supabase Auth &&
-            typeof window.supabase SignOut ===
-            "function"
-        ){
-
-            await window.supabase SignOut(
-                window.supabase Auth
-            );
+        if(window.supabaseClient && typeof window.supabaseClient.auth.signOut === "function"){
+            await window.supabaseClient.auth.signOut();
         }
-
     }catch(error){
-
-        console.warn(
-            "Logout error:",
-            error
-        );
+        console.warn("Logout error:", error);
     }
-
 
     [
         "erp_logged_role",
@@ -3379,13 +3360,10 @@ async function confirmLogout(){
         "username"
     ]
     .forEach(key=>{
-
         localStorage.removeItem(key);
     });
 
-
-    location.href =
-        "index.html";
+    location.href = "index.html";
 }
 
 
@@ -3397,7 +3375,7 @@ function clearCacheData(){
 
     if(
         !confirm(
-            "Clear local cache?\n\nsupabase cloud data will NOT be deleted."
+            "Clear local cache?\n\nSupabase cloud data will NOT be deleted."
         )
     )
         return;
@@ -3452,7 +3430,7 @@ function clearCacheData(){
 
 
     alert(
-        "Local cache cleared successfully! ☁️\nsupabase cloud data is safe."
+        "Local cache cleared successfully! ☁️\nSupabase cloud data is safe."
     );
 
 
@@ -3617,13 +3595,12 @@ function waitForCloudSync(timeout){
             }
 
             if(
-                window.db &&
-                window._getDoc &&
-                window._doc
+                window.supabaseClient &&
+                window.cloudSyncReady
             ){
 
                 setSyncStatus(
-                    "☁️ supabase  Connected"
+                    "☁️ Supabase Connected"
                 );
 
                 resolve(true);
@@ -3704,7 +3681,7 @@ window.addEventListener(
             /*
              * Cloud is optional.
              * Dashboard must work even when
-             * supabase  is not loaded.
+             * Supabase is not loaded.
              */
 
             await waitForCloudSync(5000);
@@ -3794,7 +3771,7 @@ window.addEventListener(
 ========================================================= */
 
 window.addEventListener('online', () => {
-    setSyncStatus("☁️ supabase  Connected");
+    setSyncStatus("☁️ Supabase Connected");
 });
 
 window.addEventListener('offline', () => {
