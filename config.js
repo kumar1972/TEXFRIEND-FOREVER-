@@ -99,7 +99,7 @@ window.StorageDB.init();
 // ============================================================
 
 window.TEXFRIEND_SUPABASE_CONFIG = {
-    url: "https://tktkpenojgwgdakqsjqs.supabase.co/rest/v1/", // <-- உங்கள் Supabase URL-ஐ இங்கே போடவும்
+    url: "https://tktkpenojgwgdakqsjqs.supabase.co", // <-- உங்கள் Supabase URL-ஐ இங்கே போடவும்
     key: "sb_publishable_FvnPcUtAr99fQq60iRamSQ_5xcaHBih"                   // <-- உங்கள் Supabase Anon Key-ஐ இங்கே போடவும்
 };
 
