@@ -12,7 +12,7 @@
 
 <!-- IMPORTANT: config.js and translator.js already exist -->
 <script src="config.js" defer></script>
-<script src="translator.js" defer></script>  
+<script src="translator.js" defer></script>
 
 <style>
 
@@ -36,6 +36,7 @@ body{
     background:#030e12;
     color:#F8FAFC;
     overflow-x:hidden;
+    transition: background 0.3s ease;
 }
 
 body{
@@ -90,6 +91,7 @@ body{
     letter-spacing: 1.5px;
     line-height: 1.5;
 
+    /* Gradient-ல் இன்னும் கொஞ்சம் கலர் சேர்த்து background-size பெரிதாக்கப்பட்டுள்ளது */
     background: linear-gradient(
         135deg,
         #38BDF8,
@@ -100,15 +102,18 @@ body{
     );
     background-size: 300% 300%;
 
+    /* Text Clip Properties */
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 
     text-transform: uppercase;
 
+    /* Glowing Effect மற்றும் Animation */
     animation: colorful-glow 3s ease-in-out infinite;
 }
 
+/* Glow & Color Moving Animation */
 @keyframes colorful-glow {
     0% {
         background-position: 0% 50%;
@@ -3173,6 +3178,17 @@ function setTheme(theme){
         theme
     );
 
+    // Apply color directly to body
+    const themeBgs = {
+        dark: "#030e12",
+        softgreen: "#042018",
+        darkgreen: "#02160e",
+        sunset: "#1a0f05",
+        royalblue: "#070e27"
+    };
+    if(themeBgs[theme]){
+        document.body.style.backgroundColor = themeBgs[theme];
+    }
 
     if(
         typeof window.applySystemTheme ===
@@ -3189,15 +3205,9 @@ function setTheme(theme){
                 "Theme apply error:",
                 error
             );
-
-            location.reload();
         }
 
-    }else{
-
-        location.reload();
     }
-
 
     closeAllMenus();
 }
@@ -3345,13 +3355,27 @@ async function confirmLogout(){
 
     closeLogoutModal();
 
+
     try{
-        if(window.supabaseClient && typeof window.supabaseClient.auth.signOut === "function"){
+
+        if(
+            window.supabaseClient &&
+            window.supabaseClient.auth &&
+            typeof window.supabaseClient.auth.signOut ===
+            "function"
+        ){
+
             await window.supabaseClient.auth.signOut();
         }
+
     }catch(error){
-        console.warn("Logout error:", error);
+
+        console.warn(
+            "Logout error:",
+            error
+        );
     }
+
 
     [
         "erp_logged_role",
@@ -3360,10 +3384,13 @@ async function confirmLogout(){
         "username"
     ]
     .forEach(key=>{
+
         localStorage.removeItem(key);
     });
 
-    location.href = "index.html";
+
+    location.href =
+        "index.html";
 }
 
 
@@ -3375,7 +3402,7 @@ function clearCacheData(){
 
     if(
         !confirm(
-            "Clear local cache?\n\nSupabase cloud data will NOT be deleted."
+            "Clear local cache?\n\nSupabase Cloud data will NOT be deleted."
         )
     )
         return;
@@ -3430,7 +3457,7 @@ function clearCacheData(){
 
 
     alert(
-        "Local cache cleared successfully! ☁️\nSupabase cloud data is safe."
+        "Local cache cleared successfully! ☁️\nSupabase Cloud data is safe."
     );
 
 
@@ -3646,6 +3673,18 @@ window.addEventListener(
     async function(){
 
         try{
+
+            const savedTheme = localStorage.getItem("erp_theme_mode") || "dark";
+            const themeBgs = {
+                dark: "#030e12",
+                softgreen: "#042018",
+                darkgreen: "#02160e",
+                sunset: "#1a0f05",
+                royalblue: "#070e27"
+            };
+            if(themeBgs[savedTheme]){
+                document.body.style.backgroundColor = themeBgs[savedTheme];
+            }
 
             const savedResolution =
                 localStorage.getItem(
