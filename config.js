@@ -178,6 +178,22 @@ window.localLoad = function (key, fallback = null) {
         return fallback;
     }
 };
+// ============================================================
+// OFFLINE AUTHENTICATION GUARD (ADDED TO PREVENT LOGOUT)
+// ============================================================
+(function checkOfflineAuth() {
+    if (window.location.pathname.includes("index.html")) return;
+
+    if (!navigator.onLine) {
+        const loggedUser = window.localLoad("erp_logged_user");
+        if (!loggedUser) {
+            console.warn("Offline Auth Failed: No local user found. Redirecting...");
+            window.location.href = "index.html"; 
+        } else {
+            console.log("🟢 Offline Auth Success: User bypass allowed.");
+        }
+    }
+})();
 
 // ============================================================
 // LOCAL SAVE (Now Powered by StorageDB)
@@ -412,8 +428,11 @@ function updateNetworkStatus() {
     document.body.appendChild(bar);
 
     setTimeout(function () {
-        if (bar && bar.parentNode) { bar.remove(); }
-    }, 3000);
+    try {
+        const el = document.getElementById("texfriend-network-status");
+        if (el) { el.remove(); }
+    } catch(e) {}
+}, 3000);
 }
 
 window.addEventListener("online", function () {
