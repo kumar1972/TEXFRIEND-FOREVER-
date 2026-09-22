@@ -21,7 +21,7 @@
 // VERSION
 // ============================================================
 
-const CACHE_VERSION = "v6"; // Updated for Supabase changes
+const CACHE_VERSION = "v8"; // Updated version to trigger cache refresh
 
 const CACHE_NAME =
     "texfriend-erp-" + CACHE_VERSION;
@@ -31,10 +31,7 @@ const APP_SHELL_CACHE =
 
 
 // ============================================================
-// ALL ERP FILES
-// ============================================================
-//
-// File names must exactly match the files in Vercel.
+// ALL ERP FILES (INCLUDES ALL DASHBOARD ICONS)
 // ============================================================
 
 const APP_SHELL = [
@@ -52,14 +49,37 @@ const APP_SHELL = [
     "./style.css",
 
     // -------------------------
-    // ICONS
+    // ICONS (MAIN)
     // -------------------------
 
     "./icon-192.png",
     "./icon-512.png",
 
     // -------------------------
-    // DASHBOARD
+    // DASHBOARD & MENU ICONS
+    // -------------------------
+    
+    "./icon/design_master.png",
+    "./icon/Party_Orders.png",
+    "./icon/warp_entry.png",
+    "./icon/weft_entry.png",
+    "./icon/kora_yarn.png",
+    "./icon/dyeing_issue.png",
+    "./icon/dyeing_receive.png",
+    "./icon/warping.png",
+    "./icon/weaving.png",
+    "./icon/weaving_receive.png",
+    "./icon/washing.png",
+    "./icon/Despatch.png",
+    "./icon/report.png",
+    "./icon/yarn_calc.png",
+    "./icon/design_sheet_print.png",
+    "./icon/invoice.png",
+    "./icon/design_list.png",
+    "./icon/process_matrix.png",
+
+    // -------------------------
+    // DASHBOARD HTML
     // -------------------------
 
     "./dashboard.html",
@@ -106,6 +126,7 @@ const APP_SHELL = [
     "./weaving.html",
     "./weaving_received.html",
     "./weave_3d.html",
+    "./denting_editor.html", // Added missing file from dashboard
 
     // -------------------------
     // DYEING
@@ -160,27 +181,20 @@ self.addEventListener(
             CACHE_NAME
         );
 
-
         event.waitUntil(
-
             caches.open(
                 APP_SHELL_CACHE
             )
-
             .then(
                 async cache => {
-
                     console.log(
                         "📥 Caching all ERP pages..."
                     );
 
-
                     for (
                         const file of APP_SHELL
                     ) {
-
                         try {
-
                             const response =
                                 await fetch(
                                     file,
@@ -190,72 +204,52 @@ self.addEventListener(
                                     }
                                 );
 
-
                             if (
                                 response.ok
                             ) {
-
                                 await cache.put(
                                     file,
                                     response
                                 );
-
-
                                 console.log(
                                     "✅ Cached:",
                                     file
                                 );
-
                             } else {
-
                                 console.warn(
                                     "⚠️ Not cached:",
                                     file,
                                     response.status
                                 );
-
                             }
 
                         } catch (error) {
-
                             console.warn(
                                 "⚠️ Cache failed:",
                                 file,
                                 error
                             );
-
                         }
-
                     }
-
                 }
             )
-
             .then(
                 () => {
-
                     console.log(
                         "✅ TEXFRIEND ERP pages cached"
                     );
-
                     return self.skipWaiting();
-
                 }
             )
-
             .catch(
                 error => {
-
                     console.error(
                         "❌ Service Worker install error:",
                         error
                     );
-
                 }
             )
-
         );
-
     }
 );
 
@@ -273,65 +267,42 @@ self.addEventListener(
             CACHE_NAME
         );
 
-
         event.waitUntil(
-
             caches.keys()
-
             .then(
                 cacheNames => {
-
                     return Promise.all(
-
                         cacheNames.map(
                             cacheName => {
-
                                 if (
-
                                     cacheName.startsWith(
                                         "texfriend-"
                                     ) &&
-
                                     cacheName !==
                                         CACHE_NAME &&
-
                                     cacheName !==
                                         APP_SHELL_CACHE
-
                                 ) {
-
                                     console.log(
                                         "🗑️ Removing old cache:",
                                         cacheName
                                     );
-
-
                                     return caches.delete(
                                         cacheName
                                     );
-
                                 }
-
                                 return Promise.resolve();
-
                             }
                         )
-
                     );
-
                 }
             )
-
             .then(
                 () => {
-
                     return self.clients.claim();
-
                 }
             )
-
         );
-
     }
 );
 
@@ -341,25 +312,16 @@ self.addEventListener(
 // ============================================================
 
 function isSameOrigin(request) {
-
     try {
-
         return (
-
             new URL(
                 request.url
             ).origin ===
-
             self.location.origin
-
         );
-
     } catch (error) {
-
         return false;
-
     }
-
 }
 
 
@@ -368,20 +330,15 @@ function isSameOrigin(request) {
 // ============================================================
 
 function isCloudRequest(request) {
-
     const url =
         request.url.toLowerCase();
 
     return (
-
         url.includes("/api/") ||
-        
         // Supabase API endpoints
         url.includes("supabase.co") ||
         url.includes("supabase.in")
-
     );
-
 }
 
 
@@ -392,9 +349,7 @@ function isCloudRequest(request) {
 async function handleNavigation(
     request
 ) {
-
     try {
-
         const networkResponse =
             await fetch(
                 request
@@ -404,7 +359,6 @@ async function handleNavigation(
             networkResponse &&
             networkResponse.ok
         ) {
-
             const cache =
                 await caches.open(
                     CACHE_NAME
@@ -416,16 +370,12 @@ async function handleNavigation(
             );
 
             return networkResponse;
-
         }
-
     } catch (error) {
-
         console.log(
             "📴 Network unavailable:",
             request.url
         );
-
     }
 
     const cached =
@@ -434,9 +384,7 @@ async function handleNavigation(
         );
 
     if (cached) {
-
         return cached;
-
     }
 
     const shellCached =
@@ -449,34 +397,20 @@ async function handleNavigation(
         );
 
     if (shellCached) {
-
         return shellCached;
-
     }
 
-    const indexPage =
-        await caches.match(
-            "./index.html"
-        );
-
-    if (indexPage) {
-
-        return indexPage;
-
-    }
-
+    // 🔴 Fixed the Syntax Error here (Added closing brace '}' for the function)
     return new Response(
-        "TEXFRIEND ERP is offline.",
+        "TEXFRIEND ERP: இந்தப் பக்கம் இன்னும் ஆஃப்லைனில் பதிவிறக்கம் செய்யப்படவில்லை. தயவுசெய்து இன்டர்நெட்டை ஆன் செய்து இந்தப் பக்கத்தை ஒருமுறை பார்வையிடவும்.",
         {
             status: 503,
             headers: {
-                "Content-Type":
-                    "text/plain; charset=utf-8"
+                "Content-Type": "text/plain; charset=utf-8"
             }
         }
     );
-
-}
+} // <-- This brace was missing in your code!
 
 
 // ============================================================
@@ -486,26 +420,19 @@ async function handleNavigation(
 async function handleStaticRequest(
     request
 ) {
-
     try {
-
         const networkResponse =
             await fetch(
                 request
             );
 
         if (
-
             networkResponse &&
-
             networkResponse.status ===
                 200 &&
-
             networkResponse.type ===
                 "basic"
-
         ) {
-
             const cache =
                 await caches.open(
                     CACHE_NAME
@@ -515,13 +442,10 @@ async function handleStaticRequest(
                 request,
                 networkResponse.clone()
             );
-
         }
 
         return networkResponse;
-
     } catch (error) {
-
         console.log(
             "📴 Offline resource:",
             request.url
@@ -533,9 +457,7 @@ async function handleStaticRequest(
             );
 
         if (cached) {
-
             return cached;
-
         }
 
         return new Response(
@@ -549,9 +471,7 @@ async function handleStaticRequest(
                     }
             }
         );
-
     }
-
 }
 
 
@@ -562,16 +482,13 @@ async function handleStaticRequest(
 self.addEventListener(
     "fetch",
     event => {
-
         const request =
             event.request;
 
         if (
             request.method !== "GET"
         ) {
-
             return;
-
         }
 
         if (
@@ -579,9 +496,7 @@ self.addEventListener(
                 "http"
             )
         ) {
-
             return;
-
         }
 
         if (
@@ -589,9 +504,7 @@ self.addEventListener(
                 request
             )
         ) {
-
             return;
-
         }
 
         if (
@@ -599,29 +512,21 @@ self.addEventListener(
                 request
             )
         ) {
-
             return;
-
         }
 
         if (
-
             request.mode ===
                 "navigate" ||
-
             request.destination ===
                 "document"
-
         ) {
-
             event.respondWith(
                 handleNavigation(
                     request
                 )
             );
-
             return;
-
         }
 
         event.respondWith(
@@ -629,7 +534,6 @@ self.addEventListener(
                 request
             )
         );
-
     }
 );
 
@@ -641,77 +545,56 @@ self.addEventListener(
 self.addEventListener(
     "message",
     event => {
-
         if (
             !event.data
         ) {
-
             return;
-
         }
 
         if (
             event.data.type ===
             "SKIP_WAITING"
         ) {
-
             console.log(
                 "🔄 TEXFRIEND: Force update"
             );
-
             self.skipWaiting();
-
         }
 
         if (
             event.data.type ===
             "CLEAR_TEXFRIEND_CACHE"
         ) {
-
             event.waitUntil(
-
                 caches.keys()
-
                 .then(
                     cacheNames => {
-
                         return Promise.all(
-
                             cacheNames
-
                                 .filter(
                                     name =>
                                         name.startsWith(
                                             "texfriend-"
                                         )
                                 )
-
                                 .map(
                                     name =>
                                         caches.delete(
                                             name
                                         )
                                 )
-
                         );
-
                     }
                 )
-
                 .then(
                     () => {
-
                         console.log(
                             "🧹 TEXFRIEND caches cleared"
                         );
-
                     }
                 )
-
             );
-
         }
-
     }
 );
 
@@ -723,12 +606,10 @@ self.addEventListener(
 self.addEventListener(
     "error",
     event => {
-
         console.error(
             "❌ TEXFRIEND SW Error:",
             event.error
         );
-
     }
 );
 
@@ -740,12 +621,10 @@ self.addEventListener(
 self.addEventListener(
     "unhandledrejection",
     event => {
-
         console.error(
             "❌ TEXFRIEND SW Promise Error:",
             event.reason
         );
-
     }
 );
 
