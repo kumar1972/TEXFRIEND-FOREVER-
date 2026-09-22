@@ -9,7 +9,7 @@
 // ✅ Offline navigation
 // ✅ Online Network First
 // ✅ Offline Cache Fallback
-// ✅ supabase / Google API NOT cached
+// ✅ Supabase API NOT cached
 // ✅ Old TEXFRIEND caches cleaned
 // ✅ Service Worker update support
 // ============================================================
@@ -21,7 +21,7 @@
 // VERSION
 // ============================================================
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v6"; // Updated for Supabase changes
 
 const CACHE_NAME =
     "texfriend-erp-" + CACHE_VERSION;
@@ -175,13 +175,6 @@ self.addEventListener(
                     );
 
 
-                    /*
-                     * Cache files individually.
-                     *
-                     * If one optional file is missing,
-                     * installation should continue.
-                     */
-
                     for (
                         const file of APP_SHELL
                     ) {
@@ -245,11 +238,6 @@ self.addEventListener(
                         "✅ TEXFRIEND ERP pages cached"
                     );
 
-
-                    /*
-                     * Activate immediately.
-                     */
-
                     return self.skipWaiting();
 
                 }
@@ -298,11 +286,6 @@ self.addEventListener(
                         cacheNames.map(
                             cacheName => {
 
-                                /*
-                                 * Delete old TEXFRIEND
-                                 * caches.
-                                 */
-
                                 if (
 
                                     cacheName.startsWith(
@@ -329,7 +312,6 @@ self.addEventListener(
 
                                 }
 
-
                                 return Promise.resolve();
 
                             }
@@ -342,10 +324,6 @@ self.addEventListener(
 
             .then(
                 () => {
-
-                    /*
-                     * Control all open pages.
-                     */
 
                     return self.clients.claim();
 
@@ -386,7 +364,7 @@ function isSameOrigin(request) {
 
 
 // ============================================================
-// CLOUD / API CHECK
+// CLOUD / API CHECK (UPDATED FOR SUPABASE)
 // ============================================================
 
 function isCloudRequest(request) {
@@ -394,30 +372,13 @@ function isCloudRequest(request) {
     const url =
         request.url.toLowerCase();
 
-
     return (
 
         url.includes("/api/") ||
-
-        url.includes(
-            "supabaseio.com"
-        ) ||
-
-        url.includes(
-            "supabasedatabase.app"
-        ) ||
-
-        url.includes(
-            "googleapis.com"
-        ) ||
-
-        url.includes(
-            "firestore.googleapis.com"
-        ) ||
-
-        url.includes(
-            "supabase.co"
-        )
+        
+        // Supabase API endpoints
+        url.includes("supabase.co") ||
+        url.includes("supabase.in")
 
     );
 
@@ -427,13 +388,6 @@ function isCloudRequest(request) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-//
-// ONLINE:
-// Network → Cache
-//
-// OFFLINE:
-// Cache → index.html
-// ============================================================
 
 async function handleNavigation(
     request
@@ -441,36 +395,25 @@ async function handleNavigation(
 
     try {
 
-        /*
-         * Try network first.
-         */
-
         const networkResponse =
             await fetch(
                 request
             );
-
 
         if (
             networkResponse &&
             networkResponse.ok
         ) {
 
-            /*
-             * Save latest page version.
-             */
-
             const cache =
                 await caches.open(
                     CACHE_NAME
                 );
 
-
             await cache.put(
                 request,
                 networkResponse.clone()
             );
-
 
             return networkResponse;
 
@@ -485,27 +428,16 @@ async function handleNavigation(
 
     }
 
-
-    /*
-     * Offline fallback.
-     */
-
     const cached =
         await caches.match(
             request
         );
-
 
     if (cached) {
 
         return cached;
 
     }
-
-
-    /*
-     * Try APP SHELL cache.
-     */
 
     const shellCached =
         await caches.match(
@@ -516,31 +448,22 @@ async function handleNavigation(
             }
         );
 
-
     if (shellCached) {
 
         return shellCached;
 
     }
 
-
-    /*
-     * Last fallback:
-     * index.html
-     */
-
     const indexPage =
         await caches.match(
             "./index.html"
         );
-
 
     if (indexPage) {
 
         return indexPage;
 
     }
-
 
     return new Response(
         "TEXFRIEND ERP is offline.",
@@ -559,13 +482,6 @@ async function handleNavigation(
 // ============================================================
 // STATIC FILE REQUEST
 // ============================================================
-//
-// ONLINE:
-// Network → Cache
-//
-// OFFLINE:
-// Cache
-// ============================================================
 
 async function handleStaticRequest(
     request
@@ -577,7 +493,6 @@ async function handleStaticRequest(
             await fetch(
                 request
             );
-
 
         if (
 
@@ -596,7 +511,6 @@ async function handleStaticRequest(
                     CACHE_NAME
                 );
 
-
             await cache.put(
                 request,
                 networkResponse.clone()
@@ -604,9 +518,7 @@ async function handleStaticRequest(
 
         }
 
-
         return networkResponse;
-
 
     } catch (error) {
 
@@ -615,19 +527,16 @@ async function handleStaticRequest(
             request.url
         );
 
-
         const cached =
             await caches.match(
                 request
             );
-
 
         if (cached) {
 
             return cached;
 
         }
-
 
         return new Response(
             "TEXFRIEND ERP offline.\n\n" +
@@ -637,7 +546,7 @@ async function handleStaticRequest(
                 headers: {
                     "Content-Type":
                         "text/plain; charset=utf-8"
-                }
+                    }
             }
         );
 
@@ -657,11 +566,6 @@ self.addEventListener(
         const request =
             event.request;
 
-
-        /*
-         * GET only.
-         */
-
         if (
             request.method !== "GET"
         ) {
@@ -669,11 +573,6 @@ self.addEventListener(
             return;
 
         }
-
-
-        /*
-         * HTTP / HTTPS only.
-         */
 
         if (
             !request.url.startsWith(
@@ -685,11 +584,6 @@ self.addEventListener(
 
         }
 
-
-        /*
-         * Never intercept cloud/API.
-         */
-
         if (
             isCloudRequest(
                 request
@@ -700,12 +594,6 @@ self.addEventListener(
 
         }
 
-
-        /*
-         * External domains:
-         * browser handles normally.
-         */
-
         if (
             !isSameOrigin(
                 request
@@ -715,11 +603,6 @@ self.addEventListener(
             return;
 
         }
-
-
-        /*
-         * HTML navigation.
-         */
 
         if (
 
@@ -740,12 +623,6 @@ self.addEventListener(
             return;
 
         }
-
-
-        /*
-         * CSS / JS / images /
-         * local assets.
-         */
 
         event.respondWith(
             handleStaticRequest(
@@ -773,11 +650,6 @@ self.addEventListener(
 
         }
 
-
-        /*
-         * Force update.
-         */
-
         if (
             event.data.type ===
             "SKIP_WAITING"
@@ -787,15 +659,9 @@ self.addEventListener(
                 "🔄 TEXFRIEND: Force update"
             );
 
-
             self.skipWaiting();
 
         }
-
-
-        /*
-         * Clear TEXFRIEND caches.
-         */
 
         if (
             event.data.type ===

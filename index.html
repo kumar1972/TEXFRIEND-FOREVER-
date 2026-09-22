@@ -1436,359 +1436,135 @@
 
 
     /* ========================================================
-       VALIDATE LOGIN
+       VALIDATE LOGIN (ONLINE & OFFLINE SUPPORTED)
     ======================================================== */
 
-    window.validateLogin =
-        function () {
-
-            const usernameInput =
-                getElement("loginUser");
-
-
-            const passwordInput =
-                getElement("loginPass");
-
-
-            const rememberCheckbox =
-                getElement("rememberMe");
-
-
-            const loginButton =
-                getElement("loginButton");
-
-
-            if (
-                !usernameInput ||
-                !passwordInput
-            ) {
-
-                console.error(
-                    "Login form elements are missing."
-                );
-
-                return;
-            }
-
-
-            const username =
-                usernameInput.value.trim();
-
-
-            const password =
-                passwordInput.value;
-
-
-            const remember =
-                rememberCheckbox
-                    ? rememberCheckbox.checked
-                    : false;
-
-
-            /* =================================================
-               EMPTY
-            ================================================= */
-
-            if (
-                !username ||
-                !password
-            ) {
-
-                showError(
-                    "⚠️ அனைத்து விவரங்களையும் நிரப்பவும்!"
-                );
-
-
-                if (!username) {
-
-                    usernameInput.focus();
-
-                }
-
-                else {
-
-                    passwordInput.focus();
-
-                }
-
-
-                return;
-
-            }
-
-
-            /* =================================================
-               REMEMBER
-            ================================================= */
-
-            if (remember) {
-
-                safeSetItem(
-                    "erp_remembered_user",
-                    username
-                );
-
-            }
-
-            else {
-
-                safeRemoveItem(
-                    "erp_remembered_user"
-                );
-
-            }
-
-
-            /* =================================================
-               DOUBLE CLICK
-            ================================================= */
-
-            if (loginButton) {
-
-                loginButton.disabled =
-                    true;
-
-                loginButton.textContent =
-                    "Checking... / சரிபார்க்கிறது...";
-
-            }
-
-
-            const systemUsers =
-                getSystemUsers();
-
-
-            const cleanUsername =
-                username.toLowerCase();
-
-
-            /* =================================================
-               ADMIN
-            ================================================= */
-
-            if (
-                window.currentRole ===
-                "admin"
-            ) {
-
-                const dynamicAdmin =
-                    systemUsers.find(
-                        function (usr) {
-
-                            if (
-                                !usr ||
-                                typeof usr !==
-                                "object"
-                            ) {
-
-                                return false;
-
-                            }
-
-
-                            const storedUsername =
-                                typeof usr.username ===
-                                "string"
-
-                                    ? usr.username
-                                        .toLowerCase()
-
-                                    : "";
-
-
-                            return (
-                                storedUsername ===
-                                    cleanUsername &&
-
-                                usr.password ===
-                                    password &&
-
-                                (
-                                    usr.role ===
-                                        "Administrator" ||
-
-                                    usr.role ===
-                                        "Admin"
-                                )
-                            );
-
-                        }
-                    );
-
-
-                const masterAdmin =
-                    cleanUsername ===
-                        "kumar" &&
-
-                    password ===
-                        "1972";
-
-
-                if (
-                    masterAdmin ||
-                    dynamicAdmin
-                ) {
-
-                    const loggedRole =
-                        "Administrator";
-
-
-                    safeSetItem(
-                        "erp_logged_role",
-                        loggedRole
-                    );
-
-
-                    safeSetItem(
-                        "user_role",
-                        loggedRole
-                    );
-
-
-                    safeSetItem(
-                        "erp_logged_user",
-                        username
-                    );
-
-
-                    safeSetItem(
-                        "username",
-                        username
-                    );
-
-
-                    window.location.href =
-                        "dashboard.html";
-
-
-                    return;
-
-                }
-
-
-                showError(
-                    "⚠️ தவறான அட்மின் விவரங்கள்!"
-                );
-
-
-                resetLoginButton();
-
-
+    window.validateLogin = async function () {
+
+        const usernameInput = getElement("loginUser");
+        const passwordInput = getElement("loginPass");
+        const rememberCheckbox = getElement("rememberMe");
+        const loginButton = getElement("loginButton");
+
+        if (!usernameInput || !passwordInput) {
+            console.error("Login form elements are missing.");
+            return;
+        }
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        const remember = rememberCheckbox ? rememberCheckbox.checked : false;
+
+        /* =================================================
+           EMPTY
+        ================================================= */
+        if (!username || !password) {
+            showError("⚠️ அனைத்து விவரங்களையும் நிரப்பவும்!");
+            if (!username) {
+                usernameInput.focus();
+            } else {
                 passwordInput.focus();
+            }
+            return;
+        }
 
+        /* =================================================
+           REMEMBER
+        ================================================= */
+        if (remember) {
+            safeSetItem("erp_remembered_user", username);
+        } else {
+            safeRemoveItem("erp_remembered_user");
+        }
 
+        /* =================================================
+           DOUBLE CLICK
+        ================================================= */
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.textContent = "Checking... / சரிபார்க்கிறது...";
+        }
+
+        const cleanUsername = username.toLowerCase();
+
+        // Master login check (Offline & Online bypass)
+        const masterAdmin = cleanUsername === "kumar" && password === "1972";
+
+        /* =================================================
+           ONLINE MODE (SUPABASE / CLOUD LOGIN)
+        ================================================= */
+        if (navigator.onLine && !masterAdmin) {
+            try {
+                // TODO: Replace this block with your actual Supabase login function if needed
+                // Example: const { data, error } = await supabase.auth.signInWithPassword({ email: cleanUsername, password: password });
+                
+                console.log("🟢 Online mode: Connecting to Supabase (Mock Call)...");
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+            } catch (error) {
+                console.error("Cloud login failed:", error);
+                showError("⚠️ சர்வர் பிழை. மீண்டும் முயற்சிக்கவும்.");
+                resetLoginButton();
                 return;
+            }
+        } else {
+             console.log("🔴 Offline mode: Using local cached data...");
+        }
 
+        /* =================================================
+           LOCAL DATA VALIDATION (OFFLINE FALLBACK & MASTER)
+        ================================================= */
+        const systemUsers = getSystemUsers();
+
+        // ---------------- ADMIN ----------------
+        if (window.currentRole === "admin") {
+            const dynamicAdmin = systemUsers.find(function (usr) {
+                if (!usr || typeof usr !== "object") return false;
+                const storedUsername = typeof usr.username === "string" ? usr.username.toLowerCase() : "";
+                return (
+                    storedUsername === cleanUsername &&
+                    usr.password === password &&
+                    (usr.role === "Administrator" || usr.role === "Admin")
+                );
+            });
+
+            if (masterAdmin || dynamicAdmin) {
+                const loggedRole = "Administrator";
+                safeSetItem("erp_logged_role", loggedRole);
+                safeSetItem("user_role", loggedRole);
+                safeSetItem("erp_logged_user", username);
+                safeSetItem("username", username);
+                window.location.href = "dashboard.html";
+                return;
             }
 
-
-            /* =================================================
-               USER / STAFF
-            ================================================= */
-
-            const validUser =
-                systemUsers.find(
-                    function (usr) {
-
-                        if (
-                            !usr ||
-                            typeof usr !==
-                            "object"
-                        ) {
-
-                            return false;
-
-                        }
-
-
-                        const storedUsername =
-                            typeof usr.username ===
-                            "string"
-
-                                ? usr.username
-                                    .toLowerCase()
-
-                                : "";
-
-
-                        return (
-                            storedUsername ===
-                                cleanUsername &&
-
-                            usr.password ===
-                                password
-                        );
-
-                    }
-                );
-
-
-            const masterUser =
-                cleanUsername ===
-                    "kumar" &&
-
-                password ===
-                    "1972";
-
-
-            if (
-                validUser ||
-                masterUser
-            ) {
-
-                const assignedRole =
-                    validUser &&
-                    validUser.role
-
-                        ? validUser.role
-
-                        : "Standard User";
-
-
-                safeSetItem(
-                    "erp_logged_role",
-                    assignedRole
-                );
-
-
-                safeSetItem(
-                    "user_role",
-                    assignedRole
-                );
-
-
-                safeSetItem(
-                    "erp_logged_user",
-                    username
-                );
-
-
-                safeSetItem(
-                    "username",
-                    username
-                );
-
-
-                window.location.href =
-                    "dashboard.html";
-
-
-                return;
-
-            }
-
-
-            showError(
-                "⚠️ தவறான யூசர் விவரங்கள்!"
-            );
-
-
+            showError("⚠️ தவறான அட்மின் விவரங்கள்!");
             resetLoginButton();
-
-
             passwordInput.focus();
+            return;
+        }
 
-        };
+        // ---------------- USER / STAFF ----------------
+        const validUser = systemUsers.find(function (usr) {
+            if (!usr || typeof usr !== "object") return false;
+            const storedUsername = typeof usr.username === "string" ? usr.username.toLowerCase() : "";
+            return (storedUsername === cleanUsername && usr.password === password);
+        });
+
+        if (validUser || masterAdmin) {
+            const assignedRole = validUser && validUser.role ? validUser.role : "Standard User";
+            safeSetItem("erp_logged_role", assignedRole);
+            safeSetItem("user_role", assignedRole);
+            safeSetItem("erp_logged_user", username);
+            safeSetItem("username", username);
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        showError("⚠️ தவறான யூசர் விவரங்கள்!");
+        resetLoginButton();
+        passwordInput.focus();
+    };
 
 
     /* ========================================================
@@ -1852,4 +1628,3 @@
 
 </body>
 </html>
-
