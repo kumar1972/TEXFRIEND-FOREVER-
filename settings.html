@@ -675,6 +675,34 @@ General Profile
 </div>
 
 
+<!-- NEWLY ADDED: DATABASE CONNECTION (SUPABASE) -->
+
+<div class="form-section" style="border-left:4px solid #F59E0B">
+
+<div class="section-badge amber">
+☁️ Database Connection
+</div>
+
+<div class="form-group">
+<label style="color:#2F4F38;font-size:12px">Supabase Project URL</label>
+<input type="text" id="supabaseUrlInput" placeholder="e.g., https://xxxxxx.supabase.co">
+</div>
+
+<div class="form-group">
+<label style="color:#2F4F38;font-size:12px">Supabase Anon Key</label>
+<input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+</div>
+
+<button type="button"
+        class="btn-action btn-warning"
+        style="width:100%"
+        onclick="saveSupabaseConfig()">
+💾 Update Database Connection
+</button>
+
+</div>
+
+
 <!-- DESIGN ASSETS -->
 
 <div class="form-section">
@@ -2612,6 +2640,28 @@ async function saveCompanyLogoSafely(){
 
 
 /* ============================================================
+   SAVE SUPABASE CONFIG (NEW)
+============================================================ */
+
+function saveSupabaseConfig() {
+    const url = $("supabaseUrlInput").value.trim();
+    const key = $("supabaseKeyInput").value.trim();
+
+    if(!url || !key) {
+        toast("Please enter both URL and Key!", false);
+        return;
+    }
+
+    safeSave("custom_supabase_url", url);
+    safeSave("custom_supabase_key", key);
+
+    toast("Database Connection Updated!", true, function(){
+        window.location.reload();
+    });
+}
+
+
+/* ============================================================
    SAVE ALL SETTINGS
    LOCAL FIRST + BACKGROUND CLOUD
 ============================================================ */
@@ -3249,7 +3299,7 @@ async function initialiseSettings(){
     const address =
         safeLoad(
             "company_full_address",
-            "TEXFRIEND ERP SOLUTIONS\nSalem, Tamil Nadu."
+            "TEXFRIEND FOREVER ,Salem, Tamil Nadu."
         );
 
     if($("set_comp_addr")){
@@ -3271,6 +3321,16 @@ async function initialiseSettings(){
     showCompanyLogo(
         tempLogoData
     );
+
+
+    /* SUPABASE CONFIG (NEW) */
+
+    if($("supabaseUrlInput")){
+        $("supabaseUrlInput").value = safeLoad("custom_supabase_url", "");
+    }
+    if($("supabaseKeyInput")){
+        $("supabaseKeyInput").value = safeLoad("custom_supabase_key", "");
+    }
 
 
     /* OTHER DATA */

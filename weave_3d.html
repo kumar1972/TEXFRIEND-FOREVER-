@@ -1847,6 +1847,7 @@ function draw3DWeave(){
         const singleWarp = baseWarp.slice(); 
         const singleWeft = baseWeft.slice();
         
+        // டிசைன் தோற்றத்தை நேர்த்தியாகக் காண 1.5 Repeat சேர்க்கப்பட்டுள்ளது
         const halfWarpCount = Math.floor(singleWarp.length * 0.5);
         const warp = [...singleWarp, ...singleWarp.slice(0, halfWarpCount)]; 
         const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, halfWarpCount)]; 
@@ -1881,18 +1882,23 @@ function draw3DWeave(){
         if(dentsRequired <= 0) dentsRequired = realWarpLength;
         
         const RULER = 32; 
-        const availW = Math.max(10, W - RULER - 36); 
-        const availH = Math.max(10, H - RULER - 46);
-        let px_per_mm = Math.min(availW / Math.max(0.01, physW_mm), availH / Math.max(0.01, physH_mm));
-        if(!isFinite(px_per_mm) || px_per_mm <= 0) px_per_mm = 2;
+        
+        // Steel Ruler 5.0 cm வைத்தால் திரையிலும் துல்லியமாக 5.0 cm பொருந்தும் அளவு
+        const isMobileScreen = (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) || (window.innerWidth <= 768);
+        let px_per_mm = isMobileScreen ? (window.innerWidth / 65.38) : (96 / 25.4);
+        if(!isFinite(px_per_mm) || px_per_mm <= 0) px_per_mm = 5.99;
+
+        window.__weaveScale = { pxPerMm: px_per_mm, dpr: dpr };
         
         const drawW = Math.round(physW_mm * px_per_mm); 
         const drawH = Math.round(physH_mm * px_per_mm);
 
         const totalBlockW = drawW + RULER;
         const totalBlockH = drawH + RULER;
-        const originX = Math.max(10, Math.floor((W - totalBlockW) / 2));
-        const originY = Math.max(10, Math.floor((H - totalBlockH) / 2));
+        
+        // (0, 0) cm இடது கீழ் மூலையிலிருந்து ஸ்க்ரோல் செய்யும்படி தொடக்க அமைப்பு
+        const originX = (totalBlockW <= W) ? Math.floor((W - totalBlockW) / 2) : 10;
+        const originY = (totalBlockH <= H) ? Math.floor((H - totalBlockH) / 2) : Math.floor(H - totalBlockH - 12);
 
         const left = originX + RULER;
         const top = originY;
@@ -2022,7 +2028,7 @@ function draw3DWeave(){
                         ctx.fillRect(curX, y, edgeH, cellH);
                         ctx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
-                    if(effectiveCellW >= 2.0) {
+                    if(effectiveCellH >= 2.0) {
                         ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
                         const edgeW = Math.max(0.3, curW * 0.12);
                         ctx.fillRect(curX, y, edgeW, cellH);
@@ -2163,6 +2169,7 @@ function draw3DWeave(){
         ctx.font = "bold 10px Arial, sans-serif";
         ctx.fillText("cm", left - RULER / 2, bottom + RULER / 2);
 
+        // பிளாக் பாக்ஸ்: 100% சரியான 1 Repeat அளவு மட்டுமே கணக்கிட்டுக் காட்டுகிறது
         const singleWarpVal = singleWarp.length;
         const singleWeftVal = singleWeft.length;
         const singleW_mm = (singleWarpVal / reed) * 25.4;
@@ -2252,8 +2259,8 @@ if(fsContent) {
             pointX = e.touches[0].clientX - startX; 
             pointY = e.touches[0].clientY - startY; 
             
-            pointX = Math.max(-1200, Math.min(1200, pointX));
-            pointY = Math.max(-1200, Math.min(1200, pointY));
+            pointX = Math.max(-15000, Math.min(15000, pointX));
+            pointY = Math.max(-15000, Math.min(15000, pointY));
 
             autoRefresh3D(); 
         }
@@ -2266,7 +2273,8 @@ if(fsContent) {
             ); 
             if(lastDist && lastDist > 0) {
                 let factor = d / lastDist;
-                scale = Math.max(0.5, Math.min(15, scale * factor)); 
+                // குறைந்தபட்ச scale 0.08 ஆக உள்ளதால் முழு 1.5 repeat துணியையும் திரைக்குள் அடக்க முடியும்
+                scale = Math.max(0.08, Math.min(20, scale * factor)); 
             }
             lastDist = d; 
             autoRefresh3D(); 
@@ -2291,7 +2299,7 @@ if(fsContent) {
     fsContent.addEventListener("wheel", e => {
         e.preventDefault();
         let zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-        scale = Math.max(0.5, Math.min(15, scale * zoomFactor));
+        scale = Math.max(0.08, Math.min(20, scale * zoomFactor));
         autoRefresh3D();
     }, {passive:false});
 }
@@ -2905,44 +2913,78 @@ function print3DOnly() {
         const srcCanvas = document.getElementById("weaveCanvas");
         if (!srcCanvas) return alert("3D Canvas காணப்படவில்லை.");
 
-        const cropCanvas = document.createElement("canvas");
-        const cpCtx = cropCanvas.getContext("2d");
-        
         const sCtx = srcCanvas.getContext("2d");
         const imgData = sCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
         const d = imgData.data;
         const w = srcCanvas.width;
         const h = srcCanvas.height;
 
-        let topY = 0;
-        let found = false;
+        // வெளிப்படையான வெற்று இடைவெளிகளை மட்டும் நீக்கி, உருவத்தை மட்டும் மிகச்சரியாகக் கட் செய்தல் (Bounding Box Crop)
+        let minX = w, minY = h, maxX = 0, maxY = 0;
+        let hasPixels = false;
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
-                let idx = (y * w + x) * 4;
-                if (d[idx + 3] > 10) {
-                    topY = Math.max(0, y - 4);
-                    found = true;
-                    break;
+                const idx = (y * w + x) * 4;
+                if (d[idx + 3] > 15) {
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                    hasPixels = true;
                 }
             }
-            if (found) break;
         }
 
-        const cropHeight = h - topY;
-        cropCanvas.width = w;
-        cropCanvas.height = cropHeight;
+        if (!hasPixels) {
+            minX = 0; minY = 0; maxX = w; maxY = h;
+        }
+
+        const cropW = Math.max(1, (maxX - minX) + 1);
+        const cropH = Math.max(1, (maxY - minY) + 1);
+
+        const cropCanvas = document.createElement("canvas");
+        cropCanvas.width = cropW;
+        cropCanvas.height = cropH;
+        const cpCtx = cropCanvas.getContext("2d");
 
         cpCtx.fillStyle = "#ffffff";
-        cpCtx.fillRect(0, 0, w, cropHeight);
-        cpCtx.drawImage(srcCanvas, 0, topY, w, cropHeight, 0, 0, w, cropHeight);
+        cpCtx.fillRect(0, 0, cropW, cropH);
+        cpCtx.drawImage(srcCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
 
         const dataURL = cropCanvas.toDataURL("image/jpeg", 0.95);
-        const printWin = window.open("", "_blank");
+        const isPortrait = cropH >= cropW;
+
+        const printWin = window.open("", "_blank", "width=950,height=1100");
         if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
 
         printWin.document.open();
-        
+        printWin.document.write("<!DOCTYPE html>");
+        printWin.document.write('<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>3D Weave CAD Print</title>');
+        printWin.document.write('<style>');
+        printWin.document.write('@page { size: ' + (isPortrait ? 'A4 portrait' : 'A4 landscape') + '; margin: 5mm; }');
+        printWin.document.write('* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }');
+        printWin.document.write('html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #ffffff; overflow: hidden; }');
+        printWin.document.write('body { display: flex; align-items: center; justify-content: center; }');
+        // A4 பக்கத்தில் 100% நிறைவாகப் பொருந்தும் அளவு (Full Page Auto-Fit)
+        printWin.document.write('img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block; margin: auto; }');
+        printWin.document.write('</style></head><body>');
+        printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave CAD">');
+        printWin.document.write('</body></html>');
         printWin.document.close();
+
+        const doPrint = function() {
+            printWin.focus();
+            printWin.print();
+        };
+
+        const img = printWin.document.getElementById("print3DImage");
+        if (img) {
+            img.onload = function() {
+                setTimeout(doPrint, 250);
+            };
+        } else {
+            setTimeout(doPrint, 500);
+        }
     } catch(e) {
         alert("Print Error: " + e.message);
     }

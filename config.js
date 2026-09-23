@@ -42,18 +42,27 @@ window.StorageDB = {
                     } else {
                         this.migrateFromLocalStorage();
                         this.isReady = true;
+                        if (typeof window.populateDropdowns === "function") {
+                            window.populateDropdowns();
+                        }
                         resolve();
                     }
                 };
                 cursorReq.onerror = () => {
                     this.migrateFromLocalStorage();
                     this.isReady = true;
+                    if (typeof window.populateDropdowns === "function") {
+                        window.populateDropdowns();
+                    }
                     resolve();
                 };
             };
             req.onerror = () => {
                 this.migrateFromLocalStorage();
                 this.isReady = true;
+                if (typeof window.populateDropdowns === "function") {
+                    window.populateDropdowns();
+                }
                 resolve();
             };
         });
@@ -206,6 +215,13 @@ window.localSave = function (key, data) {
             window.StorageDB.setItem(key, strData);
         } else {
             localStorage.setItem(key, strData);
+        }
+        if (key === "design_masters_data" || key === "design_specs" || key === "pre_design_numbers") {
+            setTimeout(function () {
+                if (typeof window.populateDropdowns === "function") {
+                    window.populateDropdowns();
+                }
+            }, 50);
         }
         return true;
     } catch (error) {
@@ -721,6 +737,9 @@ async function syncAllCloudData() {
     }
 
     console.log("☁️ Cloud → Local synced:", synced);
+    if (synced > 0 && typeof window.populateDropdowns === "function") {
+        window.populateDropdowns();
+    }
     return true;
 }
 
@@ -892,15 +911,73 @@ window.getCrossPageData = function (designNo, recordKey) {
 
 window.populateDropdowns = function () {
     try {
-        const designSpecs = window.localLoad("design_specs", {});
+        let designSpecs = window.localLoad("design_specs", {});
+        if (!designSpecs || typeof designSpecs !== "object") {
+            designSpecs = {};
+        }
+
+        const designMasters = window.localLoad("design_masters_data", []);
         let preDesignList = window.localLoad("pre_design_numbers", null) || window.localLoad("tex_master_designs", []);
         if (!Array.isArray(preDesignList)) { preDesignList = []; }
 
-        const cleaned = preDesignList
-            .map(function (d) { return (typeof d === "object" && d !== null) ? (d.designNo || d.designNumber || "") : d; })
-            .filter(Boolean);
+        const masterNames = [];
+        if (Array.isArray(designMasters)) {
+            designMasters.forEach(function (d) {
+                if (!d) return;
+                const name = (typeof d === "object") ? (d.designNumber || d.designNo || d.design || d.name || "") : d;
+                if (name) masterNames.push(String(name).trim());
+            });
+        } else if (designMasters && typeof designMasters === "object") {
+            Object.values(designMasters).forEach(function (d) {
+                if (!d) return;
+                const name = (typeof d === "object") ? (d.designNumber || d.designNo || d.design || d.name || "") : d;
+                if (name) masterNames.push(String(name).trim());
+            });
+        }
 
-        cleaned.forEach(function (name) {
+        const preNames = preDesignList
+            .map(function (d) { return (typeof d === "object" && d !== null) ? (d.designNo || d.designNumber || d.design || d.name || "") : d; })
+            .filter(Boolean)
+            .map(function (s) { return String(s).trim(); });
+
+        const specNames = [];
+        if (Array.isArray(designSpecs)) {
+            designSpecs.forEach(function (d) {
+                const name = (typeof d === "object" && d !== null) ? (d.designNumber || d.designNo || d.design || d.name || "") : d;
+                if (name) specNames.push(String(name).trim());
+            });
+            const obj = {};
+            designSpecs.forEach(function (d) {
+                const name = (typeof d === "object" && d !== null) ? (d.designNumber || d.designNo || "") : d;
+                if (name) obj[name] = d;
+            });
+            designSpecs = obj;
+        } else {
+            Object.keys(designSpecs).forEach(function (k) {
+                if (isNaN(k)) {
+                    specNames.push(String(k).trim());
+                } else if (designSpecs[k]) {
+                    const d = designSpecs[k];
+                    const name = (typeof d === "object" && d !== null) ? (d.designNumber || d.designNo || "") : d;
+                    if (name) specNames.push(String(name).trim());
+                }
+            });
+        }
+
+        const allNames = [...masterNames, ...preNames, ...specNames];
+        const combined = [];
+        const seenClean = new Set();
+
+        allNames.forEach(function (name) {
+            if (!name) return;
+            const clean = String(name).replace("#", "").trim().toLowerCase();
+            if (!seenClean.has(clean)) {
+                seenClean.add(clean);
+                combined.push(name);
+            }
+        });
+
+        combined.forEach(function (name) {
             const clean = String(name).replace("#", "").trim().toLowerCase();
             const exists = Object.keys(designSpecs).some(function (k) {
                 return (String(k).replace("#", "").trim().toLowerCase() === clean);
@@ -909,8 +986,6 @@ window.populateDropdowns = function () {
                 designSpecs[name] = { designNumber: name, status: "running" };
             }
         });
-
-        const combined = Array.from(new Set([...cleaned, ...Object.keys(designSpecs)]));
 
         if (window.StorageDB) {
             window.StorageDB.setItem("design_specs", JSON.stringify(designSpecs));
@@ -921,8 +996,13 @@ window.populateDropdowns = function () {
         }
 
         document.querySelectorAll("select").forEach(function (select) {
-            const id = (String(select.id || "") + " " + String(select.className || "")).toLowerCase();
-            if (id.includes("design") || select.id === "designNumber" || select.id === "designSelect" || select.classList.contains("item-design")) {
+            const id = (String(select.id || "") + " " + String(select.className || "") + " " + String(select.name || "")).toLowerCase();
+            if (
+                id.includes("design") || 
+                select.id === "designNumber" || 
+                select.id === "designSelect" || 
+                select.classList.contains("item-design")
+            ) {
                 const current = select.value;
                 select.innerHTML = '<option value="">Select Design No</option>';
                 combined.forEach(function (name) {
@@ -932,6 +1012,15 @@ window.populateDropdowns = function () {
                     select.appendChild(opt);
                 });
                 if (current) { select.value = current; }
+
+                if (!select.dataset.designRefreshBound) {
+                    select.dataset.designRefreshBound = "1";
+                    ["focus", "mousedown", "click"].forEach(function (evt) {
+                        select.addEventListener(evt, function () {
+                            window.populateDropdowns();
+                        });
+                    });
+                }
             }
         });
     } catch (error) {
@@ -997,6 +1086,26 @@ window.addEventListener("DOMContentLoaded", function () {
 
     // Supabase initialization
     setTimeout(function () { initializeSupabase(); }, 300);
+
+    // Late-rendered elements fallback
+    setTimeout(function () {
+        if (typeof window.populateDropdowns === "function") {
+            window.populateDropdowns();
+        }
+    }, 400);
+
+    // Keep retrying until StorageDB (IndexedDB) has actually finished loading,
+    // since on slow devices it can resolve later than the 400ms fallback above.
+    let designRetryCount = 0;
+    const designRetryTimer = setInterval(function () {
+        designRetryCount++;
+        if (typeof window.populateDropdowns === "function") {
+            window.populateDropdowns();
+        }
+        if ((window.StorageDB && window.StorageDB.isReady) || designRetryCount >= 10) {
+            clearInterval(designRetryTimer);
+        }
+    }, 500);
 });
 
 // ============================================================
