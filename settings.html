@@ -675,12 +675,25 @@ General Profile
 </div>
 
 
-<!-- NEWLY ADDED: DATABASE CONNECTION (SUPABASE) -->
+<!-- DATABASE CONNECTION (SUPABASE) + CLOUD AUTO-SYNC TOGGLE -->
 
 <div class="form-section" style="border-left:4px solid #F59E0B">
 
 <div class="section-badge amber">
-☁️ Database Connection
+☁️ Database Connection & Sync
+</div>
+
+<!-- 🟢 NEW: CLOUD SYNC TOGGLE SWITCH 🟢 -->
+<div class="form-group" style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; background:#EAF0EA; padding:12px 14px; border-radius:10px; border:1px solid #4A7C59; margin-bottom:12px;">
+    <div>
+        <label style="color:#2F4F38; font-size:12px; font-weight:800; cursor:pointer;" for="cloudSyncToggle">
+            ☁️ Cloud Auto-Sync (Supabase)
+        </label>
+        <p style="font-size:10px; color:#4A554A; margin-top:2px;">
+            ON = Cloud Sync ஆன் | OFF = 📴 Full Offline (Local data மட்டும் பாதுகாப்பாக இருக்கும்)
+        </p>
+    </div>
+    <input type="checkbox" id="cloudSyncToggle" style="width:24px; height:24px; cursor:pointer; accent-color:#10B981; margin:0;" onchange="saveCloudToggleState()">
 </div>
 
 <div class="form-group">
@@ -969,9 +982,6 @@ let saveAllRunning = false;
 
 const LOGO_MAX_WIDTH = 512;
 const LOGO_MAX_HEIGHT = 512;
-// Reject original photo files above this size before attempting to decode them
-// at all. Modern phone camera/gallery photos (20-50MB+) can crash low-memory
-// mobile browser tabs during decode, before any compression code even runs.
 const RAW_FILE_SIZE_LIMIT = 8 * 1024 * 1024; // 8 MB
 
 const DESIGN_MAX_WIDTH = 800;
@@ -1146,7 +1156,6 @@ function safeSave(key,value){
             key,
             typeof value === "string" ? value : JSON.stringify(value)
         );
-        // Sync to IndexedDB for PWA persistence
         idbSet(key, value);
         return true;
     }catch(e){
@@ -1267,7 +1276,7 @@ function getDataUrlBytes(dataUrl){
 
 
 /* ============================================================
-   IMAGE COMPRESSION (FIXED FOR MOBILE OOM CRASH)
+   IMAGE COMPRESSION
 ============================================================ */
 
 function compressImageSafe(file, maxW, maxH, callback) {
@@ -1281,8 +1290,6 @@ function compressImageSafe(file, maxW, maxH, callback) {
         return;
     }
 
-    // Core render step: takes an already-decoded, already-small bitmap/image
-    // and draws it to canvas at the target size, then encodes it.
     function renderToDataUrl(source, w, h) {
         try {
             const canvas = document.createElement("canvas");
@@ -1355,27 +1362,14 @@ function compressImageSafe(file, maxW, maxH, callback) {
         }
     }
 
-    // PREFERRED PATH: createImageBitmap with resize options.
-    // This decodes the image ALREADY DOWNSCALED, so a 12-48MP camera photo
-    // never gets fully decoded into memory at full resolution. This is what
-    // prevents the "Aw, Snap!" mobile tab crash on large photos.
     if (typeof createImageBitmap === "function") {
-
-        // We don't know natural dimensions yet, so first decode small to
-        // read size cheaply isn't possible without a full decode; instead
-        // request resize to fit within maxW x maxH directly (browser handles
-        // aspect-fit scaling for us when only one of resizeWidth/resizeHeight
-        // constraints is what's needed, so we compute both directions safely
-        // using a first lightweight bitmap decode capped at a safe ceiling).
-
-        const SAFE_DECODE_CEILING = 1024; // never decode larger than this on first pass
+        const SAFE_DECODE_CEILING = 1024;
 
         createImageBitmap(file, {
             resizeWidth: SAFE_DECODE_CEILING,
             resizeHeight: SAFE_DECODE_CEILING,
             resizeQuality: "medium"
         }).then(function(bitmap) {
-
             let w = bitmap.width;
             let h = bitmap.height;
 
@@ -1384,9 +1378,7 @@ function compressImageSafe(file, maxW, maxH, callback) {
             const targetH = Math.max(1, Math.round(h * scale));
 
             renderToDataUrl(bitmap, targetW, targetH);
-
         }).catch(function(err) {
-            console.error("createImageBitmap failed, falling back:", err);
             fallbackViaImageElement();
         });
 
@@ -1395,14 +1387,12 @@ function compressImageSafe(file, maxW, maxH, callback) {
 
     fallbackViaImageElement();
 
-    // FALLBACK PATH for browsers without createImageBitmap support.
     function fallbackViaImageElement() {
         const img = new Image();
         const objectUrl = URL.createObjectURL(file);
 
         img.onload = function() {
             URL.revokeObjectURL(objectUrl);
-
             let w = img.naturalWidth || img.width;
             let h = img.naturalHeight || img.height;
 
@@ -1504,7 +1494,6 @@ function toast(
 
 /* ============================================================
    EXIT TO DASHBOARD
-   DIRECT - NO SAVE - NO WAIT
 ============================================================ */
 
 function exitToDashboard(){
@@ -1516,11 +1505,6 @@ function exitToDashboard(){
         );
 
     }catch(e){
-
-        console.error(
-            "Exit error:",
-            e
-        );
 
         location.href =
             "dashboard.html";
@@ -2301,14 +2285,10 @@ async function updateUserPermissions(){
             );
     });
 
-    /* LOCAL FIRST */
-
     safeSave(
         "user_permissions",
         permissions
     );
-
-    /* CLOUD */
 
     await pageCloudSave(
         "user_permissions",
@@ -2493,14 +2473,10 @@ async function addNewUserAccount(){
         role:role
     });
 
-    /* LOCAL FIRST */
-
     safeSave(
         "erp_system_users",
         users
     );
-
-    /* CLOUD */
 
     await pageCloudSave(
         "erp_system_users",
@@ -2599,8 +2575,6 @@ async function saveCompanyLogoSafely(){
         "Saving company logo..."
     );
 
-    /* LOCAL FIRST */
-
     safeSave(
         "company_logo",
         logo
@@ -2615,8 +2589,6 @@ async function saveCompanyLogoSafely(){
         "logo",
         logo
     );
-
-    /* CLOUD */
 
     const cloudResult =
         await pageCloudSave(
@@ -2640,8 +2612,21 @@ async function saveCompanyLogoSafely(){
 
 
 /* ============================================================
-   SAVE SUPABASE CONFIG (NEW)
+   SAVE SUPABASE CONFIG & CLOUD TOGGLE (GUARDED)
 ============================================================ */
+
+function saveCloudToggleState() {
+    const toggle = $("cloudSyncToggle");
+    if (!toggle) return;
+    const isChecked = toggle.checked;
+    localStorage.setItem("erp_cloud_sync_enabled", isChecked ? "true" : "false");
+    
+    if (isChecked) {
+        toast("☁️ Cloud Auto-Sync: ENABLED (Online Mode)");
+    } else {
+        toast("📴 Cloud Auto-Sync: DISABLED (Full Offline Mode)");
+    }
+}
 
 function saveSupabaseConfig() {
     const url = $("supabaseUrlInput").value.trim();
@@ -2655,7 +2640,9 @@ function saveSupabaseConfig() {
     safeSave("custom_supabase_url", url);
     safeSave("custom_supabase_key", key);
 
-    toast("Database Connection Updated!", true, function(){
+    saveCloudToggleState();
+
+    toast("Database Connection & Sync Updated!", true, function(){
         window.location.reload();
     });
 }
@@ -2663,7 +2650,6 @@ function saveSupabaseConfig() {
 
 /* ============================================================
    SAVE ALL SETTINGS
-   LOCAL FIRST + BACKGROUND CLOUD
 ============================================================ */
 
 async function executeSaveAll(){
@@ -2694,10 +2680,7 @@ async function executeSaveAll(){
             "Saving settings..."
         );
 
-
-        /* ====================================================
-           GENERAL SETTINGS
-        ==================================================== */
+        saveCloudToggleState();
 
         const heading =
             cleanInputText(
@@ -2727,11 +2710,6 @@ async function executeSaveAll(){
                 addr
             );
         }
-
-
-        /* ====================================================
-           LOGO
-        ==================================================== */
 
         if(tempLogoData){
 
@@ -2772,11 +2750,6 @@ async function executeSaveAll(){
                 logo
             );
         }
-
-
-        /* ====================================================
-           DESIGN BITMAP
-        ==================================================== */
 
         const select =
             $("settingDesignSelect");
@@ -2831,11 +2804,6 @@ async function executeSaveAll(){
             );
         }
 
-
-        /* ====================================================
-           LOCAL SAVE COMPLETE
-        ==================================================== */
-
         status(
             "✅ Settings saved locally"
         );
@@ -2844,92 +2812,35 @@ async function executeSaveAll(){
             "✅ Saved. Opening Dashboard..."
         );
 
+        // CLOUD SYNC ONLY IF ENABLED
+        if (typeof window.isCloudSyncActive === "function" && window.isCloudSyncActive()) {
+            const cloudJobs = [];
 
-        /* ====================================================
-           BACKGROUND CLOUD SYNC
-           DO NOT WAIT
-        ==================================================== */
+            if(heading){
+                cloudJobs.push(pageCloudSave("app_heading_name", heading));
+            }
 
-        const cloudJobs = [];
+            if(addr){
+                cloudJobs.push(pageCloudSave("company_full_address", addr));
+            }
 
+            if(tempLogoData){
+                cloudJobs.push(pageCloudSave("company_logo", normalizeImageData(tempLogoData)));
+            }
 
-        if(heading){
+            if(select && select.value && tempDesignBitmapData){
+                const specs = safeLoad("design_specs", {}) || {};
+                cloudJobs.push(pageCloudSave("design_specs", specs));
+            }
 
-            cloudJobs.push(
-                pageCloudSave(
-                    "app_heading_name",
-                    heading
-                )
-            );
+            Promise.allSettled(cloudJobs)
+                .then(function(results){
+                    console.log("TEXFRIEND cloud sync completed:", results);
+                })
+                .catch(function(error){
+                    console.warn("Background cloud sync:", error);
+                });
         }
-
-
-        if(addr){
-
-            cloudJobs.push(
-                pageCloudSave(
-                    "company_full_address",
-                    addr
-                )
-            );
-        }
-
-
-        if(tempLogoData){
-
-            cloudJobs.push(
-                pageCloudSave(
-                    "company_logo",
-                    normalizeImageData(
-                        tempLogoData
-                    )
-                )
-            );
-        }
-
-
-        if(
-            select &&
-            select.value &&
-            tempDesignBitmapData
-        ){
-
-            const specs =
-                safeLoad(
-                    "design_specs",
-                    {}
-                ) || {};
-
-            cloudJobs.push(
-                pageCloudSave(
-                    "design_specs",
-                    specs
-                )
-            );
-        }
-
-
-        Promise.allSettled(cloudJobs)
-            .then(function(results){
-
-                console.log(
-                    "TEXFRIEND cloud sync completed:",
-                    results
-                );
-
-            })
-            .catch(function(error){
-
-                console.warn(
-                    "Background cloud sync:",
-                    error
-                );
-            });
-
-
-        /* ====================================================
-           IMMEDIATE DASHBOARD
-        ==================================================== */
 
         window.location.replace(
             "dashboard.html"
@@ -3187,7 +3098,7 @@ async function saveStorageDataFromEditor(){
             await idbSet(key, parsed[key]);
         }
 
-        if(window.supabaseSave){
+        if(window.supabaseSave && window.isCloudSyncActive && window.isCloudSyncActive()){
 
             for(
                 const key of
@@ -3256,7 +3167,6 @@ async function initialiseSettings(){
 
     settingsInitialized = true;
 
-    // Load data from IndexedDB to localStorage on startup if missing
     try {
         const idbData = await idbGetAll();
         for (const key in idbData) {
@@ -3323,7 +3233,15 @@ async function initialiseSettings(){
     );
 
 
-    /* SUPABASE CONFIG (NEW) */
+    /* CLOUD AUTO-SYNC TOGGLE LOAD */
+    const cloudToggle = $("cloudSyncToggle");
+    if (cloudToggle) {
+        const syncState = localStorage.getItem("erp_cloud_sync_enabled");
+        // default-ஆக ஆன் (true), பயனர் ஆப் செய்தால் மட்டுமே false
+        cloudToggle.checked = (syncState !== "false");
+    }
+
+    /* SUPABASE CONFIG */
 
     if($("supabaseUrlInput")){
         $("supabaseUrlInput").value = safeLoad("custom_supabase_url", "");
@@ -3345,7 +3263,7 @@ async function initialiseSettings(){
 
 
     status(
-        "☁️ Settings ready"
+        "⚙️ Settings ready"
     );
 }
 

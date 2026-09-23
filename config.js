@@ -13,9 +13,19 @@
 // ✅ Automatic Online Sync
 // ✅ Existing ERP firebaseSave() compatibility
 // ✅ IndexedDB Unlimited Storage Integration
+// ✅ Settings Cloud Sync Switch (ON / OFF Guard)
 // ============================================================
 
 "use strict";
+
+// ============================================================
+// SETTINGS SWITCH: CLOUD SYNC CONTROLLER (ON / OFF)
+// ============================================================
+window.isCloudSyncActive = function () {
+    const setting = localStorage.getItem("erp_cloud_sync_enabled");
+    // செட்டிங்ஸ் பேஜில் OFF செய்யப்பட்டிருந்தால் false தரும், இல்லையேல் true
+    return setting !== "false";
+};
 
 // ============================================================
 // INDEXED DB STORAGE SYSTEM (GLOBAL UNLIMITED STORAGE)
@@ -162,11 +172,11 @@ window._getDocs = null;
 // ============================================================
 // CLOUD STATUS HELPERS
 // ============================================================
-window.isCloudEnabled = function () { return true; };
+window.isCloudEnabled = function () { return window.isCloudSyncActive(); };
 window.isFirestoreEnabled = function () { return false; };
 window.isAuthEnabled = function () { return false; };
 window.isStorageEnabled = function () { return false; };
-window.isRTDBEnabled = function () { return true; };
+window.isRTDBEnabled = function () { return window.isCloudSyncActive(); };
 
 // ============================================================
 // LOCAL STORAGE HELPERS (Now Powered by StorageDB)
@@ -246,6 +256,7 @@ window.erpCloudKeys = [
     "design_specs",
     "pre_design_numbers",
     "design_masters_data",
+    "weft_entry_data",
     "warping_issue_records",
     "weaving_master_data",
     "weaving_warp_trans",
@@ -416,7 +427,11 @@ function updateNetworkStatus() {
     const bar = document.createElement("div");
     bar.id = "texfriend-network-status";
 
-    if (window.supabaseConnected === true) {
+    if (!window.isCloudSyncActive()) {
+        bar.innerHTML = "📴 OFFLINE MODE — Cloud Sync Disabled in Settings";
+        bar.style.background = "#64748B";
+        bar.style.color = "#FFFFFF";
+    } else if (window.supabaseConnected === true) {
         bar.innerHTML = "🟢 ONLINE — Supabase Cloud Connected";
         bar.style.background = "#10B981";
         bar.style.color = "#FFFFFF";
@@ -444,16 +459,18 @@ function updateNetworkStatus() {
     document.body.appendChild(bar);
 
     setTimeout(function () {
-    try {
-        const el = document.getElementById("texfriend-network-status");
-        if (el) { el.remove(); }
-    } catch(e) {}
-}, 3000);
+        try {
+            const el = document.getElementById("texfriend-network-status");
+            if (el) { el.remove(); }
+        } catch(e) {}
+    }, 3000);
 }
 
 window.addEventListener("online", function () {
     updateNetworkStatus();
-    setTimeout(function () { syncOfflineQueue(); }, 800);
+    if (window.isCloudSyncActive()) {
+        setTimeout(function () { syncOfflineQueue(); }, 800);
+    }
 });
 
 window.addEventListener("offline", function () {
@@ -480,10 +497,16 @@ function loadScript(src) {
 }
 
 // ============================================================
-// SUPABASE INITIALIZE
+// SUPABASE INITIALIZE (GUARDED)
 // ============================================================
 
 window.initializeSupabase = async function (doFullSync) {
+    if (!window.isCloudSyncActive()) {
+        console.log("📴 Cloud Sync is OFF in Settings. Offline mode active.");
+        window.supabaseConnected = false;
+        return false;
+    }
+
     if (doFullSync === undefined) { doFullSync = true; }
     if (window.supabaseInitStarted && window.cloudSyncPromise) { return window.cloudSyncPromise; }
 
@@ -530,14 +553,17 @@ window.initializeSupabase = async function (doFullSync) {
     return window.cloudSyncPromise;
 };
 
-// Map old initializeFirebase calls to initializeSupabase to avoid breaking changes
 window.initializeFirebase = window.initializeSupabase;
 
 // ============================================================
-// CLOUD SAVE DIRECT
+// CLOUD SAVE DIRECT (GUARDED)
 // ============================================================
 
 async function cloudSave(key, data) {
+    if (!window.isCloudSyncActive()) {
+        console.log("📴 Cloud Save blocked by user setting (Offline mode)");
+        return false;
+    }
     if (!window.supabaseClient || !navigator.onLine) { return false; }
     try {
         const { error } = await window.supabaseClient
@@ -557,10 +583,13 @@ async function cloudSave(key, data) {
 }
 
 // ============================================================
-// CLOUD LOAD DIRECT
+// CLOUD LOAD DIRECT (GUARDED)
 // ============================================================
 
 async function cloudLoad(key, fallback = null) {
+    if (!window.isCloudSyncActive()) {
+        return fallback;
+    }
     if (!window.supabaseClient) { return fallback; }
     try {
         const { data, error } = await window.supabaseClient
@@ -580,7 +609,6 @@ async function cloudLoad(key, fallback = null) {
 // MAIN SAVE FUNCTION
 // ============================================================
 
-// Original function name preserved for existing HTML compatibility
 window.firebaseSave = async function (key, data) {
     try {
         // ALWAYS SAVE LOCAL FIRST
@@ -588,6 +616,12 @@ window.firebaseSave = async function (key, data) {
         if (!localSaved) {
             window.showNotification("❌ Local Save Failed", "error");
             return false;
+        }
+
+        // IF CLOUD SYNC IS OFF IN SETTINGS, STOP HERE SAFELY
+        if (!window.isCloudSyncActive()) {
+            window.showNotification("💾 Local Save (Cloud Disabled) ✓", "success");
+            return true;
         }
 
         // MARK LOCAL CHANGE
@@ -652,11 +686,15 @@ window.firebaseLoad = function (key, fallback = null) {
 window.supabaseLoad = window.firebaseLoad;
 
 // ============================================================
-// CLOUD LOAD + LOCAL CACHE
+// CLOUD LOAD + LOCAL CACHE (GUARDED)
 // ============================================================
 
 window.firebaseLoadCloud = async function (key, fallback = null) {
     try {
+        if (!window.isCloudSyncActive()) {
+            return window.localLoad(key, fallback);
+        }
+
         if (!window.supabaseClient) {
             await initializeSupabase();
         }
@@ -676,10 +714,11 @@ window.firebaseLoadCloud = async function (key, fallback = null) {
 window.supabaseLoadCloud = window.firebaseLoadCloud;
 
 // ============================================================
-// SYNC ONE LOCAL KEY TO CLOUD
+// SYNC ONE LOCAL KEY TO CLOUD (GUARDED)
 // ============================================================
 
 async function syncOneKey(key) {
+    if (!window.isCloudSyncActive()) { return false; }
     if (!window.supabaseClient || !navigator.onLine) { return false; }
     const data = window.localLoad(key, null);
     if (data === null) { return false; }
@@ -687,10 +726,11 @@ async function syncOneKey(key) {
 }
 
 // ============================================================
-// OFFLINE QUEUE SYNC
+// OFFLINE QUEUE SYNC (GUARDED)
 // ============================================================
 
 window.syncOfflineQueue = async function () {
+    if (!window.isCloudSyncActive()) { return false; }
     if (!navigator.onLine) { return false; }
     if (!window.supabaseClient) { await initializeSupabase(); }
     if (!window.supabaseClient) { return false; }
@@ -717,10 +757,11 @@ window.syncOfflineQueue = async function () {
 };
 
 // ============================================================
-// INITIAL CLOUD → LOCAL SYNC
+// INITIAL CLOUD → LOCAL SYNC (GUARDED)
 // ============================================================
 
 async function syncAllCloudData() {
+    if (!window.isCloudSyncActive()) { return false; }
     if (!window.supabaseClient || !navigator.onLine) { return false; }
 
     let synced = 0;
@@ -744,10 +785,14 @@ async function syncAllCloudData() {
 }
 
 // ============================================================
-// FULL LOCAL → CLOUD SYNC
+// FULL LOCAL → CLOUD SYNC (GUARDED)
 // ============================================================
 
 window.syncERPToCloud = async function () {
+    if (!window.isCloudSyncActive()) {
+        console.log("📴 Cloud sync blocked because mode is OFF.");
+        return false;
+    }
     if (!navigator.onLine) { return false; }
     if (!window.supabaseClient) { await initializeSupabase(); }
     if (!window.supabaseClient) { return false; }
@@ -772,6 +817,7 @@ window.syncERPToCloud = async function () {
 // ============================================================
 
 window.syncERPFromCloud = async function () {
+    if (!window.isCloudSyncActive()) { return false; }
     if (!navigator.onLine) { return false; }
     if (!window.supabaseClient) { await initializeSupabase(); }
     if (!window.supabaseClient) { return false; }
@@ -783,6 +829,7 @@ window.syncERPFromCloud = async function () {
 // ============================================================
 
 window.waitForCloudSync = async function (timeout = 15000) {
+    if (!window.isCloudSyncActive()) { return false; }
     if (window.cloudSyncReady) { return true; }
     if (!navigator.onLine) { return false; }
 
@@ -819,7 +866,7 @@ window.factoryResetCloud = async function () {
     if (!finalConfirm) { return; }
 
     try {
-        if (navigator.onLine) {
+        if (navigator.onLine && window.isCloudSyncActive()) {
             if (!window.supabaseClient) { await initializeSupabase(); }
             if (window.supabaseClient) {
                 for (const key of window.erpCloudKeys) {
@@ -1084,8 +1131,12 @@ window.addEventListener("DOMContentLoaded", function () {
 
     updateNetworkStatus();
 
-    // Supabase initialization
-    setTimeout(function () { initializeSupabase(); }, 300);
+    // Supabase initialization (starts only if mode is ON)
+    setTimeout(function () { 
+        if (navigator.onLine && window.isCloudSyncActive()) {
+            initializeSupabase(); 
+        }
+    }, 300);
 
     // Late-rendered elements fallback
     setTimeout(function () {
@@ -1094,8 +1145,6 @@ window.addEventListener("DOMContentLoaded", function () {
         }
     }, 400);
 
-    // Keep retrying until StorageDB (IndexedDB) has actually finished loading,
-    // since on slow devices it can resolve later than the 400ms fallback above.
     let designRetryCount = 0;
     const designRetryTimer = setInterval(function () {
         designRetryCount++;
@@ -1350,11 +1399,11 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ============================================================
-// START SUPABASE
+// START SUPABASE (GUARDED)
 // ============================================================
 
 setTimeout(function () {
-    if (navigator.onLine) {
+    if (navigator.onLine && window.isCloudSyncActive()) {
         initializeSupabase();
     }
 }, 500);
@@ -1366,7 +1415,7 @@ setTimeout(function () {
 console.log("================================================");
 console.log("✅ TEXFRIEND config.js loaded");
 console.log("☁️ MODE: LOCAL-FIRST + SUPABASE");
-console.log("☁️ Supabase: ENABLED");
+console.log("☁️ Supabase: " + (window.isCloudSyncActive() ? "ENABLED" : "DISABLED (OFFLINE)"));
 console.log("💾 LocalStorage: ENABLED (Backed by IndexedDB)");
 console.log("📴 Offline Queue: ENABLED");
 console.log("================================================");
