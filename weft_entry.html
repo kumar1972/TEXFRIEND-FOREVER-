@@ -874,7 +874,6 @@
             <label>Select Design Number</label>
 
             <div class="input-group-btn">
-                <!-- 🟢 Standard Select Dropdown 🟢 -->
                 <select id="designNo" onchange="loadWeftDesignData()">
                     <option value="">Select Design No</option>
                 </select>
@@ -929,7 +928,6 @@
 
             <div class="form-group">
                 <label>Weave</label>
-                <!-- 🟢 Editable Input with Datalist 🟢 -->
                 <input type="text" id="infoWeave" list="fabricTypeList" value="Plain" placeholder="Select or Type">
                 <datalist id="fabricTypeList">
                     <option value="Plain"></option>
@@ -1049,7 +1047,7 @@
 
         <button
             class="btn-main btn-save"
-            onclick="saveWeftDesign(); update3DPreviewData()"
+            onclick="saveWeftDesign()"
             id="saveBtnTxt">
             💾 Save
         </button>
@@ -1198,9 +1196,10 @@ function safeParseJSON(value, fallback) {
 
 
 function cleanDesignName(str) {
-    return str
+    return str !== undefined && str !== null
         ? str.toString()
-            .replace('#', '')
+            .replace(/[#_]/g, '')
+            .replace(/\s+/g, '')
             .trim()
             .toLowerCase()
         : '';
@@ -1709,6 +1708,12 @@ function loadWeftDesignData() {
             ) || {}
             : {};
 
+    // PRIORITY 1: Check weft_entry_data directly
+    let weftEntryList = safeParseJSON(localStorage.getItem('weft_entry_data'), []);
+    let foundWeftEntry = Array.isArray(weftEntryList) 
+        ? weftEntryList.find(w => cleanDesignName(w.name || w.designNo) === cleanDNo) 
+        : null;
+
     let partyOrders = safeParseJSON(
         localStorage.getItem('party_orders_data'),
         []
@@ -1745,7 +1750,6 @@ function loadWeftDesignData() {
         }
     }
 
-    // Fetch Onloom Width and Pick from saved sources
     let onloomWidth = parseFloat(
         sp.onloomWidth ||
         foundMaster.onloomWidth ||
@@ -1764,13 +1768,9 @@ function loadWeftDesignData() {
         0
     ) || 0;
 
-    // Weft Width = Onloom Width + 3
     let autoWeftWidth = onloomWidth > 0 ? (onloomWidth + 3).toFixed(2) : '';
-    
-    // Pick = Onloom Pick
     let autoPick = onloomPick > 0 ? onloomPick : '';
 
-    // Fetch Weft 1 and Weft 2
     let resolvedWeft1 =
         sp.weftCount ||
         sp.weft ||
@@ -1784,7 +1784,6 @@ function loadWeftDesignData() {
         foundMaster.weft2 ||
         matchedOrder.weft2 ||
         '';
-
 
     let savedYarnOrderMtr =
         parseFloat(
@@ -1823,60 +1822,32 @@ function loadWeftDesignData() {
         foundMaster.weave ||
         'Plain';
 
+    let effectiveLines = (foundWeftEntry && Array.isArray(foundWeftEntry.weftLines) && foundWeftEntry.weftLines.length > 0)
+        ? foundWeftEntry.weftLines
+        : (Array.isArray(foundMaster.weftLines) ? foundMaster.weftLines : []);
 
-    /* ============================================
-       EXISTING WEFT PATTERN
-    ============================================ */
+    let effectiveRanges = (foundWeftEntry && Array.isArray(foundWeftEntry.weftRanges))
+        ? foundWeftEntry.weftRanges
+        : (Array.isArray(foundMaster.weftRanges) ? foundMaster.weftRanges : []);
 
-    if (
-        Array.isArray(foundMaster.weftLines) &&
-        foundMaster.weftLines.length > 0
-    ) {
+    if (effectiveLines.length > 0) {
 
-        saveBtn.innerText =
-            "✏️ Update";
+        saveBtn.innerText = "✏️ Update";
 
         let finalWeftWidth =
+            (foundWeftEntry && foundWeftEntry.weftWidth) ||
             foundMaster.weftWidth ||
             autoWeftWidth ||
             '';
 
-        document.getElementById(
-            'infoWeftWidth'
-        ).value = finalWeftWidth;
+        document.getElementById('infoWeftWidth').value = finalWeftWidth;
+        document.getElementById('infoWeft1').value = foundMaster.weftCount || resolvedWeft1;
+        document.getElementById('infoWeft2').value = foundMaster.weft2 || resolvedWeft2;
+        document.getElementById('infoPick').value = foundMaster.weftPick || autoPick;
+        document.getElementById('infoWeftMtrs').value = foundMaster.weftMtrs || sp.weftMtrs || calculatedWeftMtrs;
+        document.getElementById('infoWeave').value = foundMaster.weaveType || resolvedWeave;
 
-        document.getElementById(
-            'infoWeft1'
-        ).value =
-            foundMaster.weftCount ||
-            resolvedWeft1;
-
-        document.getElementById(
-            'infoWeft2'
-        ).value =
-            foundMaster.weft2 ||
-            resolvedWeft2;
-
-        document.getElementById(
-            'infoPick'
-        ).value =
-            foundMaster.weftPick ||
-            autoPick;
-
-        document.getElementById(
-            'infoWeftMtrs'
-        ).value =
-            foundMaster.weftMtrs ||
-            sp.weftMtrs ||
-            calculatedWeftMtrs;
-
-        document.getElementById(
-            'infoWeave'
-        ).value =
-            foundMaster.weaveType ||
-            resolvedWeave;
-
-                foundMaster.weftLines.forEach(l => {
+        effectiveLines.forEach(l => {
             addWeftLine(
                 l.count || '',
                 l.color || l.colour || '', 
@@ -1884,59 +1855,24 @@ function loadWeftDesignData() {
             );
         });
 
-
-        if (
-            Array.isArray(
-                foundMaster.weftRanges
-            )
-        ) {
-
-            foundMaster.weftRanges.forEach(r => {
-
-                addWeftRange(
-                    r.start,
-                    r.end,
-                    r.set
-                );
-
-            });
-        }
+        effectiveRanges.forEach(r => {
+            addWeftRange(
+                r.start,
+                r.end,
+                r.set
+            );
+        });
 
     } else {
 
-        saveBtn.innerText =
-            "💾 Save";
+        saveBtn.innerText = "💾 Save";
 
-        document.getElementById(
-            'infoWeftWidth'
-        ).value =
-            autoWeftWidth;
-
-        document.getElementById(
-            'infoWeft1'
-        ).value =
-            resolvedWeft1;
-
-        document.getElementById(
-            'infoWeft2'
-        ).value =
-            resolvedWeft2;
-
-        document.getElementById(
-            'infoPick'
-        ).value =
-            autoPick;
-
-        document.getElementById(
-            'infoWeftMtrs'
-        ).value =
-            sp.weftMtrs ||
-            calculatedWeftMtrs;
-
-        document.getElementById(
-            'infoWeave'
-        ).value =
-            resolvedWeave;
+        document.getElementById('infoWeftWidth').value = autoWeftWidth;
+        document.getElementById('infoWeft1').value = resolvedWeft1;
+        document.getElementById('infoWeft2').value = resolvedWeft2;
+        document.getElementById('infoPick').value = autoPick;
+        document.getElementById('infoWeftMtrs').value = sp.weftMtrs || calculatedWeftMtrs;
+        document.getElementById('infoWeave').value = resolvedWeave;
 
         loadDefaultRow();
     }
@@ -1967,7 +1903,7 @@ function loadDefaultRow() {
 
 
 /* ============================================================
-   COPY DESIGN (UPDATE FOR SELECT ELEMENT)
+   COPY DESIGN
 ============================================================ */
 
 async function copyToNewDesign() {
@@ -2071,11 +2007,6 @@ async function copyToNewDesign() {
         return;
     }
 
-
-    /* ============================================
-       READ CURRENT FORM
-    ============================================ */
-
     let lines = [];
 
     document
@@ -2149,64 +2080,21 @@ async function copyToNewDesign() {
             }
         });
 
-
-    /* ============================================
-       COPY FORM VALUES
-    ============================================ */
-
     let copiedMaster = {
 
         name: newDNo,
-
         designNo: newDNo,
-
-        weftWidth:
-            document.getElementById(
-                'infoWeftWidth'
-            ).value.trim(),
-
-        weftCount:
-            document.getElementById(
-                'infoWeft1'
-            ).value.trim(),
-
-        weft2:
-            document.getElementById(
-                'infoWeft2'
-            ).value.trim(),
-
-        weftPick:
-            document.getElementById(
-                'infoPick'
-            ).value.trim(),
-
-        weftMtrs:
-            document.getElementById(
-                'infoWeftMtrs'
-            ).value.trim(),
-
-        weaveType:
-            document.getElementById(
-                'infoWeave'
-            ).value.trim(),
-
-        weftLines:
-            JSON.parse(
-                JSON.stringify(lines)
-            ),
-
-        weftRanges:
-            JSON.parse(
-                JSON.stringify(ranges)
-            ),
-
-        status: 'running'
+        weftWidth: document.getElementById('infoWeftWidth').value.trim(),
+        weftCount: document.getElementById('infoWeft1').value.trim(),
+        weft2: document.getElementById('infoWeft2').value.trim(),
+        weftPick: document.getElementById('infoPick').value.trim(),
+        weftMtrs: document.getElementById('infoWeftMtrs').value.trim(),
+        weaveType: document.getElementById('infoWeave').value.trim(),
+        weftLines: JSON.parse(JSON.stringify(lines)),
+        weftRanges: JSON.parse(JSON.stringify(ranges)),
+        status: 'running',
+        timestamp: new Date().toISOString()
     };
-
-
-    /* ============================================
-       SAVE NEW DESIGN LOCALLY
-    ============================================ */
 
     masters.push(copiedMaster);
 
@@ -2216,124 +2104,46 @@ async function copyToNewDesign() {
 
     preDesignList.push(newDNo);
 
-    localStorage.setItem(
-        'pre_design_numbers',
-        JSON.stringify(preDesignList)
-    );
+    localStorage.setItem('pre_design_numbers', JSON.stringify(preDesignList));
+    localStorage.setItem('design_masters_data', JSON.stringify(masters));
 
-    localStorage.setItem(
-        'design_masters_data',
-        JSON.stringify(masters)
-    );
+    let weftEntryList = safeParseJSON(localStorage.getItem('weft_entry_data'), []);
+    if (!Array.isArray(weftEntryList)) weftEntryList = [];
+    weftEntryList = weftEntryList.filter(x => cleanDesignName(x.name || x.designNo) !== cleanNew);
+    weftEntryList.push(copiedMaster);
+    localStorage.setItem('weft_entry_data', JSON.stringify(weftEntryList));
 
-
-    /* ============================================
-       COPY DESIGN SPEC
-    ============================================ */
-
-    let cleanCurrent =
-        cleanDesignName(currentDNo);
-
-    let currentSpecKey =
-        Object.keys(specs).find(
-            k =>
-                cleanDesignName(k) ===
-                cleanCurrent
-        );
-
+    let cleanCurrent = cleanDesignName(currentDNo);
+    let currentSpecKey = Object.keys(specs).find(k => cleanDesignName(k) === cleanCurrent);
     let copiedSpec = {};
 
-    if (
-        currentSpecKey &&
-        specs[currentSpecKey]
-    ) {
-
-        copiedSpec =
-            JSON.parse(
-                JSON.stringify(
-                    specs[currentSpecKey]
-                )
-            );
+    if (currentSpecKey && specs[currentSpecKey]) {
+        copiedSpec = JSON.parse(JSON.stringify(specs[currentSpecKey]));
     }
 
     copiedSpec.status = 'running';
-
-    copiedSpec.weftMtrs =
-        document.getElementById(
-            'infoWeftMtrs'
-        ).value.trim();
-
-    copiedSpec.weft =
-        document.getElementById(
-            'infoWeft1'
-        ).value.trim();
-
-    copiedSpec.weftCount =
-        document.getElementById(
-            'infoWeft1'
-        ).value.trim();
-
-    copiedSpec.weft2 =
-        document.getElementById(
-            'infoWeft2'
-        ).value.trim();
+    copiedSpec.weftMtrs = document.getElementById('infoWeftMtrs').value.trim();
+    copiedSpec.weft = document.getElementById('infoWeft1').value.trim();
+    copiedSpec.weftCount = document.getElementById('infoWeft1').value.trim();
+    copiedSpec.weft2 = document.getElementById('infoWeft2').value.trim();
 
     specs[newDNo] = copiedSpec;
-
-    localStorage.setItem(
-        'design_specs',
-        JSON.stringify(specs)
-    );
-
-
-    /* ============================================
-       supabase SYNC
-    ============================================ */
+    localStorage.setItem('design_specs', JSON.stringify(specs));
 
     try {
-
         if (window.supabaseSave) {
-
-            await window.supabaseSave(
-                'pre_design_numbers',
-                preDesignList
-            );
-
-            await window.supabaseSave(
-                'design_masters_data',
-                masters
-            );
-
-            await window.supabaseSave(
-                'design_specs',
-                specs
-            );
+            await window.supabaseSave('pre_design_numbers', preDesignList);
+            await window.supabaseSave('design_masters_data', masters);
+            await window.supabaseSave('weft_entry_data', weftEntryList);
+            await window.supabaseSave('design_specs', specs);
         }
 
         if (window.supabaseSaveIndividual) {
-
-            await window.supabaseSaveIndividual(
-                newDNo,
-                specs[newDNo]
-            );
+            await window.supabaseSaveIndividual(newDNo, specs[newDNo]);
         }
-
     } catch (error) {
-
-        console.error(
-            "Copy Design supabase Error:",
-            error
-        );
-
-        alert(
-            "Design local-ஆக copy செய்யப்பட்டது. ஆனால் Cloud sync fail ஆனது. Internet/supabase connection check pannunga."
-        );
+        console.error("Copy Design supabase Error:", error);
     }
-
-
-    /* ============================================
-       UPDATE UI
-    ============================================ */
 
     const designElement = document.getElementById('designNo');
     if (designElement) {
@@ -2344,15 +2154,11 @@ async function copyToNewDesign() {
         designElement.value = newDNo;
     }
 
-    localStorage.setItem(
-        'selected_design_number',
-        newDNo
-    );
-
+    localStorage.setItem('selected_design_number', newDNo);
     loadWeftDesignData();
 
     alert(
-        `✅ '${currentDNo}' → '${newDNo}'\n\nWeft Pattern முழுவதும் copy செய்யப்பட்டது.\n\nதேவைப்பட்டால் Colour / Picks / Set மாற்றி Save செய்யலாம்.`
+        `✅ '${currentDNo}' → '${newDNo}'\n\nWeft Pattern முழுவதும் copy செய்யப்பட்டது.`
     );
 }
 
@@ -2479,7 +2285,6 @@ function addWeftLine(
     picks = '',
     insertAfterElem = null
 ) {
-    // 🟢 NEW: Auto-fill the count from General Specs by default, but it remains editable! 🟢
     if (!count) {
         const w1 = document.getElementById('infoWeft1');
         if (w1 && w1.value) {
@@ -2539,22 +2344,12 @@ function addWeftLine(
         </div>
     `;
 
-
-    /* ============================================
-       COLOR BLUR
-    ============================================ */
-
     row.querySelector(
         '.inp-color'
     ).addEventListener(
         'blur',
         refreshBulkColorDropdown
     );
-
-
-    /* ============================================
-       PICK ENTER
-    ============================================ */
 
     row.querySelector(
         '.inp-picks'
@@ -2596,22 +2391,12 @@ function addWeftLine(
         }
     );
 
-
-    /* ============================================
-       PICK CALCULATION
-    ============================================ */
-
     row.querySelector(
         '.inp-picks'
     ).addEventListener(
         'input',
         calculateWeftValues
     );
-
-
-    /* ============================================
-       INSERT
-    ============================================ */
 
     row.querySelector(
         '.btn-insert-small'
@@ -2627,11 +2412,6 @@ function addWeftLine(
             );
         }
     );
-
-
-    /* ============================================
-       DELETE
-    ============================================ */
 
     row.querySelector(
         '.btn-del-small'
@@ -2669,11 +2449,6 @@ function addWeftLine(
         }
     );
 
-
-    /* ============================================
-       INSERT INTO DOM
-    ============================================ */
-
     if (
         insertAfterElem &&
         insertAfterElem.nextSibling
@@ -2688,7 +2463,6 @@ function addWeftLine(
 
         container.appendChild(row);
     }
-
 
     updateLineNumbers();
     calculateWeftValues();
@@ -2754,7 +2528,6 @@ function addWeftRange(
         );
     });
 
-
     row.querySelector(
         '.inp-set'
     ).addEventListener(
@@ -2792,7 +2565,6 @@ function addWeftRange(
         }
     );
 
-
     row.querySelector(
         '.btn-del-small'
     ).addEventListener(
@@ -2804,7 +2576,6 @@ function addWeftRange(
             calculateWeftValues();
         }
     );
-
 
     container.appendChild(row);
 
@@ -2941,10 +2712,8 @@ function calculateWeftValues() {
             );
         });
 
-
     let ranges =
         getValidRanges();
-
 
     let totalPatternPicks = 0;
 
@@ -2997,7 +2766,6 @@ function calculateWeftValues() {
             i++;
         }
     }
-
 
     document.getElementById(
         'displayTotalPicks'
@@ -3255,27 +3023,17 @@ async function quickCompleteToggle() {
         masters.push({
 
             name: dNo,
-
             designNo: dNo,
-
-            status:
-                statusText,
-
-            weftLines:
-                collectWeftLines(),
-
-            weftRanges:
-                collectWeftRanges()
-
+            status: statusText,
+            weftLines: collectWeftLines(),
+            weftRanges: collectWeftRanges()
         });
     }
-
 
     localStorage.setItem(
         'design_masters_data',
         JSON.stringify(masters)
     );
-
 
     let designSpecs =
         safeParseJSON(
@@ -3307,7 +3065,6 @@ async function quickCompleteToggle() {
             designSpecs
         )
     );
-
 
     try {
 
@@ -3357,321 +3114,161 @@ async function quickCompleteToggle() {
 
 
 /* ============================================================
-   SAVE WEFT DESIGN
+   SAVE WEFT DESIGN (ROBUST MULTI-STORE & CLOUD SYNC)
 ============================================================ */
 
 async function saveWeftDesign() {
 
     if (!checkUserPermission()) {
-
         authorizationAlert();
-
         return;
     }
 
-    let dNo =
-        document.getElementById(
-            'designNo'
-        ).value;
+    let dNo = document.getElementById('designNo').value;
 
     if (!dNo) {
-
-        alert(
-            "Please select a Design Number!"
-        );
-
+        alert("Please select a Design Number!");
         return;
     }
 
-
-    let lines =
-        collectWeftLines();
+    let lines = collectWeftLines();
 
     if (lines.length === 0) {
-
-        alert(
-            "Please add at least one Weft Pattern line."
-        );
-
+        alert("Please add at least one Weft Pattern line.");
         return;
     }
 
+    let ranges = collectWeftRanges();
 
-    let ranges =
-        collectWeftRanges();
-
-
-    if (
-        !validateRanges(
-            ranges,
-            lines.length
-        )
-    ) {
+    if (!validateRanges(ranges, lines.length)) {
         return;
     }
 
+    let cleanDNo = cleanDesignName(dNo);
 
-    let cleanDNo =
-        cleanDesignName(dNo);
+    let saveBtn = document.getElementById('saveBtnTxt');
+    let originalText = saveBtn.innerText;
+    saveBtn.innerText = "⏳ Saving...";
 
-    let masters =
-        safeParseJSON(
-            localStorage.getItem(
-                'design_masters_data'
-            ),
-            []
-        );
+    let weftMtrsVal = document.getElementById('infoWeftMtrs').value.trim();
+    let completedCheckbox = document.getElementById('top_completed_status');
+    let isCompleted = completedCheckbox ? completedCheckbox.checked : false;
+    let status = isCompleted ? 'completed' : 'running';
 
-    let saveBtn =
-        document.getElementById(
-            'saveBtnTxt'
-        );
-
-    let originalText =
-        saveBtn.innerText;
-
-    saveBtn.innerText =
-        "⏳ Saving...";
-
-
-    let weftMtrsVal =
-        document.getElementById(
-            'infoWeftMtrs'
-        ).value.trim();
-
-    let completedCheckbox =
-        document.getElementById(
-            'top_completed_status'
-        );
-
-    let isCompleted =
-        completedCheckbox
-            ? completedCheckbox.checked
-            : false;
-
-    let status =
-        isCompleted
-            ? 'completed'
-            : 'running';
-
-
-    let idx =
-        masters.findIndex(
-            m =>
-                cleanDesignName(
-                    m.name ||
-                    m.designNo
-                ) === cleanDNo
-        );
-
+    let nowISO = new Date().toISOString();
 
     let masterData = {
-
         name: dNo,
-
         designNo: dNo,
-
-        weftWidth:
-            document.getElementById(
-                'infoWeftWidth'
-            ).value.trim(),
-
-        weftCount:
-            document.getElementById(
-                'infoWeft1'
-            ).value.trim(),
-
-        weft2:
-            document.getElementById(
-                'infoWeft2'
-            ).value.trim(),
-
-        weftPick:
-            document.getElementById(
-                'infoPick'
-            ).value.trim(),
-
-        weftMtrs:
-            weftMtrsVal,
-
-        weaveType:
-            document.getElementById(
-                'infoWeave'
-            ).value.trim(),
-
-        weftLines:
-            lines,
-
-        weftRanges:
-            ranges,
-
-        status:
-            status
+        weftWidth: document.getElementById('infoWeftWidth').value.trim(),
+        weftCount: document.getElementById('infoWeft1').value.trim(),
+        weft2: document.getElementById('infoWeft2').value.trim(),
+        weftPick: document.getElementById('infoPick').value.trim(),
+        weftMtrs: weftMtrsVal,
+        weaveType: document.getElementById('infoWeave').value.trim(),
+        weftLines: lines,
+        weftRanges: ranges,
+        status: status,
+        updated_at: nowISO,
+        timestamp: nowISO
     };
 
-
+    // 1. UPDATE DESIGN MASTERS
+    let masters = safeParseJSON(localStorage.getItem('design_masters_data'), []);
+    if (!Array.isArray(masters)) masters = [];
+    let idx = masters.findIndex(m => cleanDesignName(m.name || m.designNo) === cleanDNo);
     if (idx === -1) {
-
-        masters.push(
-            masterData
-        );
-
+        masters.push(masterData);
     } else {
-
-        /*
-         * Preserve existing fields that may be used
-         * by other modules.
-         */
-
-        masters[idx] = {
-            ...masters[idx],
-            ...masterData
-        };
+        masters[idx] = { ...masters[idx], ...masterData };
     }
+    localStorage.setItem('design_masters_data', JSON.stringify(masters));
 
+    // 2. 🟢 CRUCIAL FIX: SAVE INTO weft_entry_data WITH EXACT DESIGN NO 🟢
+    let weftEntryList = safeParseJSON(localStorage.getItem('weft_entry_data'), []);
+    if (!Array.isArray(weftEntryList)) weftEntryList = [];
+    weftEntryList = weftEntryList.filter(w => cleanDesignName(w.name || w.designNo) !== cleanDNo);
+    weftEntryList.push(masterData);
+    localStorage.setItem('weft_entry_data', JSON.stringify(weftEntryList));
 
-    /* ============================================
-       DESIGN SPECS
-    ============================================ */
-
-    let designSpecs =
-        safeParseJSON(
-            localStorage.getItem(
-                'design_specs'
-            ),
-            {}
-        );
-
-    let specKey =
-        Object.keys(
-            designSpecs
-        ).find(
-            k =>
-                cleanDesignName(k) ===
-                cleanDNo
-        ) || dNo;
-
-    if (!designSpecs[specKey]) {
-        designSpecs[specKey] = {};
-    }
-
-
-    designSpecs[specKey].status =
-        status;
-
-    designSpecs[specKey].weftMtrs =
-        weftMtrsVal;
-
-    designSpecs[specKey].weft =
-        document.getElementById(
-            'infoWeft1'
-        ).value.trim();
-
-    designSpecs[specKey].weftCount =
-        document.getElementById(
-            'infoWeft1'
-        ).value.trim();
-
-    designSpecs[specKey].weft2 =
-        document.getElementById(
-            'infoWeft2'
-        ).value.trim();
-
-    designSpecs[specKey].weftWidth =
-        document.getElementById(
-            'infoWeftWidth'
-        ).value.trim();
-
-    designSpecs[specKey].weftPick =
-        document.getElementById(
-            'infoPick'
-        ).value.trim();
-
-    designSpecs[specKey].weaveType =
-        document.getElementById(
-            'infoWeave'
-        ).value.trim();
-
-
-    /* ============================================
-       LOCAL SAVE FIRST
-    ============================================ */
-
-    localStorage.setItem(
-        'design_specs',
-        JSON.stringify(
-            designSpecs
-        )
-    );
-
-    localStorage.setItem(
-        'design_masters_data',
-        JSON.stringify(
-            masters
-        )
-    );
-
-
-    /* ============================================
-       supabase
-    ============================================ */
-
-    let cloudSuccess = true;
+    // 3. 🟢 CRUCIAL FIX: PURGE STALE CACHES IN LOCAL STORAGE 🟢
+    try {
+        let editsCache = safeParseJSON(localStorage.getItem('local_edits_cache'), {});
+        if (editsCache && typeof editsCache === 'object') {
+            let editKey = Object.keys(editsCache).find(k => cleanDesignName(k) === cleanDNo);
+            if (editKey) {
+                editsCache[editKey].weftLines = lines;
+                editsCache[editKey].weftRanges = ranges;
+                localStorage.setItem('local_edits_cache', JSON.stringify(editsCache));
+            }
+        }
+    } catch(e) {}
 
     try {
+        let weaveDesigns = safeParseJSON(localStorage.getItem('weave_designs'), []);
+        if (Array.isArray(weaveDesigns)) {
+            let wIdx = weaveDesigns.findIndex(w => cleanDesignName(w.name || w.designNo) === cleanDNo);
+            if (wIdx > -1) {
+                weaveDesigns[wIdx].weftLines = lines;
+                weaveDesigns[wIdx].weftRanges = ranges;
+                localStorage.setItem('weave_designs', JSON.stringify(weaveDesigns));
+            }
+        }
+    } catch(e) {}
 
+    try {
+        let weaveCache = safeParseJSON(localStorage.getItem('weave_designs_cache'), []);
+        if (Array.isArray(weaveCache)) {
+            let cIdx = weaveCache.findIndex(w => cleanDesignName(w.name || w.designNo) === cleanDNo);
+            if (cIdx > -1) {
+                weaveCache[cIdx].weftLines = lines;
+                weaveCache[cIdx].weftRanges = ranges;
+                localStorage.setItem('weave_designs_cache', JSON.stringify(weaveCache));
+            }
+        }
+    } catch(e) {}
+
+    // 4. DESIGN SPECS
+    let designSpecs = safeParseJSON(localStorage.getItem('design_specs'), {});
+    let specKey = Object.keys(designSpecs).find(k => cleanDesignName(k) === cleanDNo) || dNo;
+    if (!designSpecs[specKey]) designSpecs[specKey] = {};
+    designSpecs[specKey].status = status;
+    designSpecs[specKey].weftMtrs = weftMtrsVal;
+    designSpecs[specKey].weft = document.getElementById('infoWeft1').value.trim();
+    designSpecs[specKey].weftCount = document.getElementById('infoWeft1').value.trim();
+    designSpecs[specKey].weft2 = document.getElementById('infoWeft2').value.trim();
+    designSpecs[specKey].weftWidth = document.getElementById('infoWeftWidth').value.trim();
+    designSpecs[specKey].weftPick = document.getElementById('infoPick').value.trim();
+    designSpecs[specKey].weaveType = document.getElementById('infoWeave').value.trim();
+    localStorage.setItem('design_specs', JSON.stringify(designSpecs));
+
+    localStorage.setItem('last_edit_timestamp', Date.now().toString());
+
+    // 5. CLOUD / SUPABASE OVERWRITE (GUARANTEED SYNC)
+    let cloudSuccess = true;
+    try {
         if (window.supabaseSave) {
-
-            await window.supabaseSave(
-                'design_masters_data',
-                masters
-            );
-
-            await window.supabaseSave(
-                'design_specs',
-                designSpecs
-            );
+            await window.supabaseSave('design_masters_data', masters);
+            await window.supabaseSave('weft_entry_data', weftEntryList);
+            await window.supabaseSave('design_specs', designSpecs);
+            await window.supabaseSave('design_' + cleanDNo, masterData);
         }
 
-        if (
-            window.supabaseSaveIndividual
-        ) {
-
-            await window.supabaseSaveIndividual(
-                specKey,
-                designSpecs[specKey]
-            );
+        if (window.supabaseSaveIndividual) {
+            await window.supabaseSaveIndividual(specKey, designSpecs[specKey]);
         }
-
     } catch (error) {
-
         cloudSuccess = false;
-
-        console.error(
-            "supabase save error:",
-            error
-        );
+        console.error("supabase save error:", error);
     }
 
-
-    saveBtn.innerText =
-        originalText;
-
-
+    saveBtn.innerText = originalText;
     renderSavedList();
 
-
     if (cloudSuccess) {
-
-        alert(
-            "Weft Pattern Saved Successfully! ✅☁️"
-        );
-
+        alert("Weft Pattern Saved Successfully! ✅☁️");
     } else {
-
-        alert(
-            "Weft Pattern local-ஆக save செய்யப்பட்டது ✅\n\nஆனால் Cloud/supabase sync failed ❌\n\nInternet மற்றும் supabase connection check pannunga."
-        );
+        alert("Weft Pattern local-ஆக save செய்யப்பட்டது ✅\n\nஆனால் Cloud sync fail ஆனது. Network கிடைத்ததும் auto-sync ஆகும்.");
     }
 }
 
@@ -3736,7 +3333,6 @@ async function toggleStatus(
         )
     );
 
-
     let designSpecs =
         safeParseJSON(
             localStorage.getItem(
@@ -3754,7 +3350,6 @@ async function toggleStatus(
                 cleanDNo
         ) || dNo;
 
-
     if (!designSpecs[specKey]) {
         designSpecs[specKey] = {};
     }
@@ -3768,7 +3363,6 @@ async function toggleStatus(
             designSpecs
         )
     );
-
 
     try {
 
@@ -3852,7 +3446,6 @@ function renderSavedList() {
 
     let hasData = false;
 
-
     masters.forEach(m => {
 
         if (
@@ -3879,7 +3472,6 @@ function renderSavedList() {
             let statusBtn = m.status === 'running'
                 ? `<button class="action-complete" onclick="toggleStatus('${safeDesign}', 'completed')">Complete</button>`
                 : `<button class="action-running" onclick="toggleStatus('${safeDesign}', 'running')">Running</button>`;
-
 
             tbody.innerHTML += `
 
@@ -3931,7 +3523,6 @@ function renderSavedList() {
             `;
         }
     });
-
 
     if (!hasData) {
 
@@ -4009,13 +3600,11 @@ function previewWeftPattern() {
             'designNo'
         ).value;
 
-
     let weftLines =
         collectWeftLines();
 
     let ranges =
         collectWeftRanges();
-
 
     if (
         weftLines.length === 0
@@ -4028,7 +3617,6 @@ function previewWeftPattern() {
         return;
     }
 
-
     if (
         !validateRanges(
             ranges,
@@ -4037,7 +3625,6 @@ function previewWeftPattern() {
     ) {
         return;
     }
-
 
     let wWidth =
         document.getElementById(
@@ -4074,7 +3661,6 @@ function previewWeftPattern() {
             'infoWeave'
         ).value ||
         '-';
-
 
     let headerHtml = `
 
@@ -4129,7 +3715,6 @@ function previewWeftPattern() {
         </div>
     `;
 
-
     let col1Html = '';
     let col2Html = '';
 
@@ -4141,7 +3726,6 @@ function previewWeftPattern() {
 
     let i = 0;
 
-
     let tdStyle =
         "padding:4px 6px;border-bottom:1px dashed #A0AFA0;text-align:center;color:#1E2B23;font-size:11px;";
 
@@ -4150,7 +3734,6 @@ function previewWeftPattern() {
 
     let tdStyleLast =
         "padding:4px 6px;border-bottom:1px dashed #A0AFA0;vertical-align:middle;color:#1E2B23;text-align:left;padding-left:10px;font-size:16px;";
-
 
     while (
         i < weftLines.length
@@ -4170,7 +3753,6 @@ function previewWeftPattern() {
 
         let blockLineCount = 0;
 
-
         if (
             range &&
             range.end >=
@@ -4189,7 +3771,6 @@ function previewWeftPattern() {
             let blockLines = [];
 
             let blockPicks = 0;
-
 
             for (
                 let j =
@@ -4222,13 +3803,11 @@ function previewWeftPattern() {
                 }
             }
 
-
             let total =
                 blockPicks * set;
 
             totalPicksPattern +=
                 total;
-
 
             blockLines.forEach(
                 (item, index) => {
@@ -4242,7 +3821,6 @@ function previewWeftPattern() {
                             )
 
                             : item.color;
-
 
                     blockHtml += `
 
@@ -4272,7 +3850,6 @@ function previewWeftPattern() {
                                 ${item.picks}
                             </td>
                     `;
-
 
                     if (
                         index === 0
@@ -4347,7 +3924,6 @@ function previewWeftPattern() {
                     item.picks
                 ) || 0;
 
-
             let colorTamil =
                 typeof translateColorToTamil ===
                 'function'
@@ -4357,7 +3933,6 @@ function previewWeftPattern() {
                     )
 
                     : item.color;
-
 
             blockHtml = `
 
@@ -4397,7 +3972,6 @@ function previewWeftPattern() {
             blockLineCount = 1;
         }
 
-
         if (
             currentLinesInCol1 +
             blockLineCount <=
@@ -4417,10 +3991,8 @@ function previewWeftPattern() {
         }
     }
 
-
     let html =
         headerHtml;
-
 
     let tableHeader = `
 
@@ -4495,7 +4067,6 @@ function previewWeftPattern() {
         </tr>
     `;
 
-
     html += `
 
         <div
@@ -4563,7 +4134,6 @@ function previewWeftPattern() {
         </div>
     `;
 
-
     html += `
 
         <div
@@ -4614,13 +4184,11 @@ function previewWeftPattern() {
                 </tr>
     `;
 
-
     let pickNum =
         parseFloat(pick) || 0;
 
     let wWidthNum =
         parseFloat(wWidth) || 0;
-
 
     if (
         pickNum > 0 &&
@@ -4675,10 +4243,8 @@ function previewWeftPattern() {
         `;
     }
 
-
     html +=
         '</table></div>';
-
 
     document.getElementById(
         'previewContent'
@@ -4699,44 +4265,6 @@ function authorizationAlert() {
     alert(
         "Access Denied! You do not have permission to access this page. ❌"
     );
-}
-
-
-/* ============================================================
-   3D PREVIEW DATA LINK
-============================================================ */
-function update3DPreviewData() {
-    try {
-        let lines = [];
-        document.querySelectorAll('.line-item').forEach(row => {
-            let color = row.querySelector('.inp-color').value.trim();
-            let picks = row.querySelector('.inp-picks').value.trim();
-            if (color || picks) {
-                lines.push({ color: color, picks: parseFloat(picks) || 0 });
-            }
-        });
-
-        let weave = document.getElementById('infoWeave').value;
-
-        let existingStr = localStorage.getItem('warp_entry_data');
-        let previewData = [];
-        if (existingStr) {
-            previewData = JSON.parse(existingStr);
-        }
-
-        if (previewData.length === 0) {
-            previewData.push({ designNo: "🔴 Live Entry Preview" });
-        }
-
-        previewData[0].designNo = "🔴 Live Entry Preview";
-        previewData[0].weftLines = lines;
-        if (weave) previewData[0].type = weave;
-
-        localStorage.setItem('warp_entry_data', JSON.stringify(previewData));
-
-    } catch(e) {
-        console.error("3D Preview Data Link Error:", e);
-    }
 }
 
 </script>
