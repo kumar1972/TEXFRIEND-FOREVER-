@@ -618,7 +618,8 @@ input, select {
                     <option value="portrait">A4 Portrait</option>
                     <option value="landscape">A4 Landscape</option>
                 </select>
-                <select id="printGraphScale" aria-label="Graph size">
+                <!-- BUG FIX: added onchange event to dynamically resize weave graph -->
+                <select id="printGraphScale" aria-label="Graph size" onchange="updatePrintGraphScale()">
                     <option value="small">Graph Small</option>
                     <option value="medium" selected>Graph Medium</option>
                     <option value="large">Graph Large</option>
@@ -945,7 +946,6 @@ function sanitizeDesignObj(d) {
     return d;
 }
 
-// BUG FIX: extractLinesFromEntry
 function extractLinesFromEntry(entry, keyName) {
     if (!entry) return null;
     let alt = keyName === "warpLines" ? "warp" : "weft";
@@ -955,7 +955,6 @@ function extractLinesFromEntry(entry, keyName) {
     return null;
 }
 
-// BUG FIX: pickRicherArray
 function pickRicherArray(arr1, arr2) {
     if (!Array.isArray(arr1) || arr1.length === 0) return Array.isArray(arr2) ? arr2 : [];
     if (!Array.isArray(arr2) || arr2.length === 0) return arr1;
@@ -1009,34 +1008,7 @@ function mergeDesigns(items) {
         }
     });
 
-    let rawEdits = {};
-    try { rawEdits = JSON.parse(localStorage.getItem("local_edits_cache") || "{}"); } catch(e) {}
-
-    let finalArray = [...map.values()].map(d => {
-        try {
-            let name = cleanDesignName(designName(d));
-            let editKey = Object.keys(rawEdits).find(k => cleanDesignName(k) === name);
-            if (editKey && rawEdits[editKey]) {
-                let edits = rawEdits[editKey];
-                let mat = (edits.customMatrix && edits.customMatrix.length) ? edits.customMatrix : ((edits.matrix && edits.matrix.length) ? edits.matrix : ((edits.weaveGraph && edits.weaveGraph.length) ? edits.weaveGraph : d.customMatrix));
-                d = {
-                    ...d,
-                    ...edits,
-                    warpLines: (d.warpLines && d.warpLines.length) ? d.warpLines : (edits.warpLines || []),
-                    weftLines: (d.weftLines && d.weftLines.length) ? d.weftLines : (edits.weftLines || []),
-                    drawingPatternFormula: edits.drawingPatternFormula || edits.drawingPattern || edits.drawingOrder || edits.drawing_order || edits.draft || d.drawingPatternFormula,
-                    drawingPattern: edits.drawingPattern || edits.drawingPatternFormula || edits.drawingOrder || edits.drawing_order || edits.draft || d.drawingPattern,
-                    dentingPatternFormula: edits.dentingPatternFormula || edits.dentingPattern || d.dentingPatternFormula,
-                    dentingPattern: edits.dentingPattern || edits.dentingPatternFormula || edits.dentingPattern,
-                    customMatrix: mat,
-                    type: (mat && mat.length) ? "custom" : (edits.type || d.type || "custom")
-                };
-            }
-        } catch(e) {}
-        return d;
-    });
-
-    return finalArray;
+    return [...map.values()];
 }
 
 /* ================= YARN SETTINGS & UI ================= */
@@ -1243,12 +1215,12 @@ async function importFromFirebase(manual = false) {
         
         const local = [];
         const localKeys = [
+            "warp_entry_data", 
+            "weft_entry_data", 
             "design_masters_data", 
             "weave_designs", 
             "weave_designs_cache", 
-            "denting_drawing_data", 
-            "warp_entry_data", 
-            "weft_entry_data"
+            "denting_drawing_data"
         ];
         
         localKeys.forEach(key => {
@@ -1294,7 +1266,7 @@ async function importFromFirebase(manual = false) {
     }
 }
 
-/* ================= LOAD SELECTED DESIGN (BUG FIXED) ================= */
+/* ================= LOAD SELECTED DESIGN ================= */
 function loadSelectedDesign(){
     try {
         let s = document.getElementById("designSelect");
@@ -1313,13 +1285,16 @@ function loadSelectedDesign(){
         let rawWarp = [];
         let rawWeft = [];
 
-        // 1. Direct Weft/Warp Entry டேட்டாவிற்கு முதல் முன்னுரிமை (Highest Priority)
+        // 1. Direct Weft/Warp Entry டேட்டாவிற்கு முதல் முன்னுரிமை
         try {
             let warpEntryData = safeJSON("warp_entry_data", null);
             if(warpEntryData){
                 let matchW = Array.isArray(warpEntryData) ? warpEntryData.find(w => cleanDesignName(designName(w)) === cleanName) : (warpEntryData[cleanName] || Object.values(warpEntryData).find(w => cleanDesignName(designName(w)) === cleanName));
                 let lines = extractLinesFromEntry(matchW, "warpLines");
-                if(lines) { rawWarp = clone(lines); if (matchW.warpRanges) activeDesignObj.warpRanges = matchW.warpRanges; }
+                if(lines && lines.length > 0) { 
+                    rawWarp = clone(lines); 
+                    if (matchW.warpRanges) activeDesignObj.warpRanges = matchW.warpRanges; 
+                }
             }
         } catch(e) {}
         
@@ -1328,16 +1303,14 @@ function loadSelectedDesign(){
             if(weftEntryData){
                 let matchF = Array.isArray(weftEntryData) ? weftEntryData.find(f => cleanDesignName(designName(f)) === cleanName) : (weftEntryData[cleanName] || Object.values(weftEntryData).find(f => cleanDesignName(designName(f)) === cleanName));
                 let lines = extractLinesFromEntry(matchF, "weftLines");
-                if(lines) { rawWeft = clone(lines); if (matchF.weftRanges || matchF.ranges) activeDesignObj.weftRanges = matchF.weftRanges || matchF.ranges || []; }
+                if(lines && lines.length > 0) { 
+                    rawWeft = clone(lines); 
+                    activeDesignObj.weftRanges = matchF.weftRanges || matchF.ranges || []; 
+                }
             }
         } catch(e) {}
 
-        // 2. Local Edits Cache முன்னுரிமை
-        let foundEdits = safeJSON("local_edits_cache", {})[cleanName];
-        if(!rawWarp.length && foundEdits && foundEdits.warpLines && foundEdits.warpLines.length > 0) rawWarp = clone(foundEdits.warpLines);
-        if(!rawWeft.length && foundEdits && foundEdits.weftLines && foundEdits.weftLines.length > 0) rawWeft = clone(foundEdits.weftLines);
-
-        // 3. ஏதும் இல்லையென்றால் பழைய Design object-ஐ பயன்படுத்தவும்
+        // 2. Active Design Object Fallback
         if(!rawWarp.length) rawWarp = activeDesignObj.warpLines || [];
         if(!rawWeft.length) rawWeft = activeDesignObj.weftLines || [];
 
@@ -1346,12 +1319,12 @@ function loadSelectedDesign(){
         currentWarpCount = rawWarp.length;
         currentWeftCount = rawWeft.length;
         
-        // UI-ஐ புதிய வரிகளைக் கொண்டு Update செய்தல்
+        // UI Update
         if(typeof renderUIWithData === "function") renderUIWithData(rawWarp, rawWeft);
 
         let dentDrawMatch = safeJSON("denting_drawing_data", []).find(d => cleanDesignName(designName(d)) === cleanName) || {};
         let masterMatch = safeJSON("design_masters_data", []).find(m => cleanDesignName(designName(m)) === cleanName) || {};
-        let sourceObj = { ...activeDesignObj, ...masterMatch, ...dentDrawMatch, ...(foundEdits || {}) };
+        let sourceObj = { ...activeDesignObj, ...masterMatch, ...dentDrawMatch };
 
         let matrixToUse = sourceObj.customMatrix || sourceObj.matrix || sourceObj.weaveGraph || sourceObj.graphGrid;
         if(matrixToUse && matrixToUse.length > 0) {
@@ -1453,14 +1426,6 @@ async function saveCurrentDesign() {
         data.name = name; 
         data.timestamp = new Date().toISOString();
         let cleanName = cleanDesignName(name);
-
-        try {
-            let edits = JSON.parse(localStorage.getItem("local_edits_cache") || "{}");
-            edits[cleanName] = { ...(edits[cleanName] || {}), ...data };
-            localStorage.setItem("local_edits_cache", JSON.stringify(edits));
-            localStorage.setItem("last_edit_timestamp", Date.now().toString());
-            window._lastEditStamp = localStorage.getItem("last_edit_timestamp");
-        } catch(e) {}
 
         let local = safeJSON("design_masters_data", []); 
         if(!Array.isArray(local)) local = [];
@@ -1802,7 +1767,6 @@ function draw3DWeave(){
         const singleWarp = baseWarp.slice(); 
         const singleWeft = baseWeft.slice();
         
-        // டிசைன் தோற்றத்தை நேர்த்தியாகக் காண 1.5 Repeat சேர்க்கப்பட்டுள்ளது
         const halfWarpCount = Math.floor(singleWarp.length * 0.5);
         const warp = [...singleWarp, ...singleWarp.slice(0, halfWarpCount)]; 
         const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, halfWarpCount)]; 
@@ -1838,7 +1802,6 @@ function draw3DWeave(){
         
         const RULER = 32; 
         
-        // Steel Ruler 5.0 cm வைத்தால் திரையிலும் துல்லியமாக 5.0 cm பொருந்தும் அளவு
         const isMobileScreen = (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) || (window.innerWidth <= 768);
         let px_per_mm = isMobileScreen ? (window.innerWidth / 65.38) : (96 / 25.4);
         if(!isFinite(px_per_mm) || px_per_mm <= 0) px_per_mm = 5.99;
@@ -1851,7 +1814,6 @@ function draw3DWeave(){
         const totalBlockW = drawW + RULER;
         const totalBlockH = drawH + RULER;
         
-        // (0, 0) cm இடது கீழ் மூலையிலிருந்து ஸ்க்ரோல் செய்யும்படி தொடக்க அமைப்பு
         const originX = (totalBlockW <= W) ? Math.floor((W - totalBlockW) / 2) : 10;
         const originY = (totalBlockH <= H) ? Math.floor((H - totalBlockH) / 2) : Math.floor(H - totalBlockH - 12);
 
@@ -2124,7 +2086,6 @@ function draw3DWeave(){
         ctx.font = "bold 10px Arial, sans-serif";
         ctx.fillText("cm", left - RULER / 2, bottom + RULER / 2);
 
-        // பிளாக் பாக்ஸ்: 100% சரியான 1 Repeat அளவு மட்டுமே கணக்கிட்டுக் காட்டுகிறது
         const singleWarpVal = singleWarp.length;
         const singleWeftVal = singleWeft.length;
         const singleW_mm = (singleWarpVal / reed) * 25.4;
@@ -2580,6 +2541,7 @@ function printDesign() {
         container.innerHTML = buildDesignPrintContent();
         modal.style.display = "flex";
         document.body.style.overflow = "hidden";
+        updatePrintGraphScale();
     } catch(err) {
         console.error("Print Design Error:", err);
         alert("Print error: " + err.message);
@@ -2613,6 +2575,30 @@ function updatePrintOrientation() {
         document.head.appendChild(styleEl);
     }
     styleEl.innerHTML = `@page { size: A4 ${orientation}; margin: 6mm; }`;
+}
+
+// BUG FIX: Function to dynamically change Graph grid cell size
+function updatePrintGraphScale() {
+    const scale = $("printGraphScale")?.value || "medium";
+    let sz = "8mm";
+    let fz = "13px";
+    if(scale === "small") { sz = "5mm"; fz = "9px"; }
+    else if(scale === "large") { sz = "12mm"; fz = "18px"; }
+    
+    let styleEl = $("dynamicPrintGraphScaleStyle");
+    if(!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "dynamicPrintGraphScaleStyle";
+        document.head.appendChild(styleEl);
+    }
+    styleEl.innerHTML = `
+        .print-graph-table td {
+            width: ${sz} !important;
+            height: ${sz} !important;
+            min-width: ${sz} !important;
+            font-size: ${fz} !important;
+        }
+    `;
 }
 
 function getPrintBracketMap(str, isCol=false) {
@@ -2883,7 +2869,6 @@ function print3DOnly() {
         const w = srcCanvas.width;
         const h = srcCanvas.height;
 
-        // வெளிப்படையான வெற்று இடைவெளிகளை மட்டும் நீக்கி, உருவத்தை மட்டும் மிகச்சரியாகக் கட் செய்தல் (Bounding Box Crop)
         let minX = w, minY = h, maxX = 0, maxY = 0;
         let hasPixels = false;
         for (let y = 0; y < h; y++) {
@@ -2929,7 +2914,6 @@ function print3DOnly() {
         printWin.document.write('* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }');
         printWin.document.write('html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #ffffff; overflow: hidden; }');
         printWin.document.write('body { display: flex; align-items: center; justify-content: center; }');
-        // A4 பக்கத்தில் 100% நிறைவாகப் பொருந்தும் அளவு (Full Page Auto-Fit)
         printWin.document.write('img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block; margin: auto; }');
         printWin.document.write('</style></head><body>');
         printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave CAD">');
