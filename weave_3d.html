@@ -1018,6 +1018,8 @@ function mergeDesigns(items) {
                 d = {
                     ...d,
                     ...edits,
+                    warpLines: pickRicherArray(d.warpLines, edits.warpLines),
+                    weftLines: pickRicherArray(d.weftLines, edits.weftLines),
                     drawingPatternFormula: edits.drawingPatternFormula || edits.drawingPattern || edits.drawingOrder || edits.drawing_order || edits.draft || d.drawingPatternFormula,
                     drawingPattern: edits.drawingPattern || edits.drawingPatternFormula || edits.drawingOrder || edits.drawing_order || edits.draft || d.drawingPattern,
                     dentingPatternFormula: edits.dentingPatternFormula || edits.dentingPattern || d.dentingPatternFormula,
@@ -1113,6 +1115,7 @@ function renderUIWithData(w=[], f=[]) {
         if($("warpInputsContainer")) $("warpInputsContainer").innerHTML = wh; 
         if($("weftInputsContainer")) $("weftInputsContainer").innerHTML = fh;
         updateYarnSummary("warp");
+        updateYarnSummary("weft");
     } catch(err) { console.error("UI Render Error:", err); }
 }
 
@@ -1235,7 +1238,7 @@ async function importFromFirebase(manual = false) {
         setStatus(manual ? "🔄 Local + Cloud refresh..." : "⚡ Loading local designs...");
         
         const local = [];
-        const localKeys = ["design_masters_data", "weave_designs", "weave_designs_cache", "warp_entry_data", "weft_entry_data", "local_edits_cache", "denting_drawing_data"];
+        const localKeys = ["warp_entry_data", "weft_entry_data", "design_masters_data", "weave_designs", "weave_designs_cache", "local_edits_cache", "denting_drawing_data"];
         
         localKeys.forEach(key => {
             let val = safeJSON(key, null);
@@ -1325,46 +1328,46 @@ function loadSelectedDesign(){
         let rawWarp = [];
         let rawWeft = [];
         
-        if(foundEdits && Array.isArray(foundEdits.warpLines) && foundEdits.warpLines.length > 0) {
+        // Priority 1: Direct Entry Tables
+        try {
+            let warpEntryData = localStorage.getItem("warp_entry_data");
+            if(warpEntryData){
+                let parsedW = JSON.parse(warpEntryData);
+                if(Array.isArray(parsedW)){
+                    let matchW = parsedW.find(w => cleanDesignName(designName(w)) === cleanName || cleanDesignName(w.designNo || w.name || "") === cleanName);
+                    if(matchW && matchW.warpLines && matchW.warpLines.length > 0) rawWarp = matchW.warpLines;
+                }
+            }
+        } catch(e) {}
+        
+        try {
+            let weftEntryData = localStorage.getItem("weft_entry_data");
+            if(weftEntryData){
+                let parsedF = JSON.parse(weftEntryData);
+                if(Array.isArray(parsedF)){
+                    let matchF = parsedF.find(f => cleanDesignName(designName(f)) === cleanName || cleanDesignName(f.designNo || f.name || "") === cleanName);
+                    if(matchF && matchF.weftLines && matchF.weftLines.length > 0) rawWeft = matchF.weftLines;
+                }
+            }
+        } catch(e) {}
+
+        // Priority 2: Cache & Edits
+        if(!rawWarp.length && foundEdits && Array.isArray(foundEdits.warpLines) && foundEdits.warpLines.length > 0) {
             rawWarp = foundEdits.warpLines;
         }
-        if(foundEdits && Array.isArray(foundEdits.weftLines) && foundEdits.weftLines.length > 0) {
+        if(!rawWeft.length && foundEdits && Array.isArray(foundEdits.weftLines) && foundEdits.weftLines.length > 0) {
             rawWeft = foundEdits.weftLines;
         }
 
+        // Priority 3: Masters
         if(!rawWarp.length || !rawWeft.length) {
             if(masterMatch) {
                 if(!rawWarp.length && masterMatch.warpLines) rawWarp = masterMatch.warpLines;
                 if(!rawWeft.length && masterMatch.weftLines) rawWeft = masterMatch.weftLines;
             }
         }
-        
-        if(!rawWarp.length) {
-            try {
-                let warpEntryData = localStorage.getItem("warp_entry_data");
-                if(warpEntryData){
-                    let parsedW = JSON.parse(warpEntryData);
-                    if(Array.isArray(parsedW)){
-                        let matchW = parsedW.find(w => cleanDesignName(designName(w)) === cleanName || cleanDesignName(w.designNo || w.name || "") === cleanName);
-                        if(matchW && matchW.warpLines && matchW.warpLines.length > 0) rawWarp = matchW.warpLines;
-                    }
-                }
-            } catch(e) {}
-        }
-        
-        if(!rawWeft.length) {
-            try {
-                let weftEntryData = localStorage.getItem("weft_entry_data");
-                if(weftEntryData){
-                    let parsedF = JSON.parse(weftEntryData);
-                    if(Array.isArray(parsedF)){
-                        let matchF = parsedF.find(f => cleanDesignName(designName(f)) === cleanName || cleanDesignName(f.designNo || f.name || "") === cleanName);
-                        if(matchF && matchF.weftLines && matchF.weftLines.length > 0) rawWeft = matchF.weftLines;
-                    }
-                }
-            } catch(e) {}
-        }
-        
+
+        // Priority 4: Active Design Object Fallback
         if(!rawWarp.length) rawWarp = activeDesignObj.warpLines || activeDesignObj.warp || [];
         if(!rawWeft.length) rawWeft = activeDesignObj.weftLines || activeDesignObj.weft || [];
         
@@ -2314,6 +2317,10 @@ window.addEventListener("focus", () => {
     }
 });
 
+window.addEventListener("pageshow", () => {
+    importFromFirebase(false);
+});
+
 /* ================= SMART COLOR STUDIO ================= */
 const TEXFRIEND_COLOUR_KEY = "texfriend_colour_master_v30";
 
@@ -2995,8 +3002,8 @@ function print3DOnly() {
     try {
         let combinedDesigns = [];
         let keysToTry = [
-            "design_masters_data", "weave_designs", "weave_designs_cache", 
-            "denting_drawing_data", "graph_editor_data", "warp_entry_data", "weft_entry_data"
+            "warp_entry_data", "weft_entry_data", "design_masters_data", "weave_designs", "weave_designs_cache", 
+            "denting_drawing_data", "graph_editor_data"
         ];
 
         keysToTry.forEach(key => {
