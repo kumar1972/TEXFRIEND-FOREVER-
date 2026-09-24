@@ -1018,6 +1018,16 @@
 
     </div>
 
+    <div style="margin:10px 0;">
+        <button
+            type="button"
+            class="btn-main"
+            style="background:linear-gradient(135deg,#F59E0B,#D97706);box-shadow:0 6px 15px rgba(217,119,6,0.25);"
+            onclick="reverseWeftEntries()">
+            🔄 Weft Reverse
+        </button>
+    </div>
+
     <div class="calc-box">
 
         <span>
@@ -2599,6 +2609,59 @@ function updateLineNumbers() {
                     idx + 1;
             }
         );
+}
+
+
+/* ============================================================
+   WEFT REVERSE (bottom to top)
+============================================================ */
+
+function reverseWeftEntries() {
+
+    let container =
+        document.getElementById('weftLinesContainer');
+
+    let rows =
+        Array.from(container.querySelectorAll('.line-item'));
+
+    let total = rows.length;
+
+    if (total < 2) {
+        return;
+    }
+
+    rows.reverse().forEach(row => container.appendChild(row));
+
+    // Mirror set ranges so they stay on the same lines
+    document.querySelectorAll('.range-item').forEach(r => {
+
+        let sEl = r.querySelector('.inp-start');
+        let eEl = r.querySelector('.inp-end');
+
+        let st = parseInt(sEl.value);
+        let en = parseInt(eEl.value);
+
+        if (
+            Number.isFinite(st) &&
+            Number.isFinite(en) &&
+            st > 0 && en >= st && en <= total
+        ) {
+            sEl.value = total - en + 1;
+            eEl.value = total - st + 1;
+        }
+    });
+
+    // Reverse the order of the set rows too (bottom to top)
+    let rangeBox =
+        document.getElementById('weftRangesContainer');
+
+    Array.from(rangeBox.querySelectorAll('.range-item'))
+        .reverse()
+        .forEach(r => rangeBox.appendChild(r));
+
+    updateLineNumbers();
+    calculateWeftValues();
+    refreshBulkColorDropdown();
 }
 
 
