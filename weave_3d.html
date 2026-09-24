@@ -2514,15 +2514,14 @@ function applySelectedColour() {
         if(!inp) return;
         inp.value = newHex;
         
-        let newColorName = selectedColourForPopup.name || "";
+        // ஒரிஜினல் கலர் பெயரை அழிக்காமல் அப்படியே தக்கவைத்தல்
+        let currentOrig = inp.getAttribute("data-orig") || inp.getAttribute("data-name") || "";
         inp.setAttribute("data-tag", shadeTagText);
-        inp.setAttribute("data-orig", newColorName);
-        inp.setAttribute("data-name", newColorName);
 
         if (btn) btn.style.background = newHex;
         if (badge) badge.textContent = shadeTagText;
         if (disp) {
-            let rawOrigName = getLocalizedColorName(newColorName) || newColorName || "Custom";
+            let rawOrigName = getLocalizedColorName(currentOrig) || currentOrig || "Custom";
             let cnt = inp.getAttribute("data-cnt") || "";
             let countPrefix = cnt ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(cnt)}]</span>` : "";
             
