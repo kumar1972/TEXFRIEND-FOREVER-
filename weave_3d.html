@@ -1100,7 +1100,7 @@ function renderUIWithData(w=[], f=[]) {
                 <div class="yarn-name-display" id="weftNameDisp${i+1}" onclick="openColourPickerForEntry('weft', ${i+1})" title="${rawOrigName}">
                     ${countPrefix}<span class="col-name-label">${rawOrigName}</span>
                 </div>
-                <input type="color" id="weftC${i+1}" value="${x.color}" data-orig="${safeOrig}" data-tag="${escapeColourText(x.shadeTag)}" data-cnt="${escapeColourText(countVal)}" style="display:none;">
+                <input type="color" id="weftC${i+1}" value="${x.color}" data-orig="${safeOrig}" data-tag="${escapeColourText(x.shadeTag)}" data-cnt="${escapeColourText(countVal)}" data-name="${escapeColourText(x.origName)}" style="display:none;">
                 <input type="number" id="weftP${i+1}" value="${x.amount||''}" min="0" inputmode="numeric" oninput="updateYarnSummary('weft'); autoRefresh3D();">
                 <div class="set-box" style="display:none;">
                     <input type="number" id="weftSpan${i+1}" value="${spanVal}">
@@ -1234,7 +1234,7 @@ async function importFromFirebase(manual = false) {
         setStatus(manual ? "🔄 Local + Cloud refresh..." : "⚡ Loading local designs...");
         
         const local = [];
-        const localKeys = ["design_masters_data", "weave_designs", "weave_designs_cache", "warp_entry_data", "weft_entry_data", "local_edits_cache", "denting_drawing_data"];
+        const localKeys = ["design_masters_data", "weave_designs", "weave_designs_cache", "local_edits_cache", "warp_entry_data", "weft_entry_data", "denting_drawing_data"];
         
         localKeys.forEach(key => {
             let val = safeJSON(key, null);
@@ -1442,12 +1442,21 @@ function getCurrentData() {
         let c = $("wC"+i); let e = $("wE"+i); let s = $("wSpan"+i); let r = $("wRep"+i);
         if(c && e && (parseInt(e.value)||0)>0) {
             let span = parseInt(s?.value)||1; let rep = parseInt(r?.value)||1;
-            let origName = c.getAttribute('data-orig') || "";
+            let origName = c.getAttribute('data-orig') || c.getAttribute('data-name') || c.value;
             let shadeTag = c.getAttribute('data-tag') || "";
             let cnt = c.getAttribute('data-cnt') || "";
+            let hex = (c.value || "").toLowerCase();
             
-            let savedColorName = origName ? origName : c.value;
-            w.push({ colourName: origName, color: savedColorName, hex: c.value, count: cnt, ends: parseInt(e.value)||0, span: span, repeat: rep, shadeTag: shadeTag });
+            w.push({ 
+                colourName: origName, 
+                color: hex, 
+                hex: hex, 
+                count: cnt, 
+                ends: parseInt(e.value)||0, 
+                span: span, 
+                repeat: rep, 
+                shadeTag: shadeTag 
+            });
             if(span > 1 && rep > 1) { wRanges.push({ start: wCurrentLine, end: wCurrentLine + span - 1, set: rep }); }
             wCurrentLine++;
         }
@@ -1457,12 +1466,21 @@ function getCurrentData() {
         let c = $("weftC"+i); let p = $("weftP"+i); let s = $("weftSpan"+i); let r = $("weftRep"+i);
         if(c && p && (parseInt(p.value)||0)>0) {
             let span = parseInt(s?.value)||1; let rep = parseInt(r?.value)||1;
-            let origName = c.getAttribute('data-orig') || "";
+            let origName = c.getAttribute('data-orig') || c.getAttribute('data-name') || c.value;
             let shadeTag = c.getAttribute('data-tag') || "";
             let cnt = c.getAttribute('data-cnt') || "";
+            let hex = (c.value || "").toLowerCase();
             
-            let savedColorNameF = origName ? origName : c.value;
-            f.push({ colourName: origName, color: savedColorNameF, hex: c.value, count: cnt, picks: parseInt(p.value)||0, span: span, repeat: rep, shadeTag: shadeTag });
+            f.push({ 
+                colourName: origName, 
+                color: hex, 
+                hex: hex, 
+                count: cnt, 
+                picks: parseInt(p.value)||0, 
+                span: span, 
+                repeat: rep, 
+                shadeTag: shadeTag 
+            });
             if(span > 1 && rep > 1) { fRanges.push({ start: fCurrentLine, end: fCurrentLine + span - 1, set: rep }); }
             fCurrentLine++;
         }
@@ -1483,8 +1501,9 @@ function getCurrentData() {
 
 async function saveCurrentDesign() {
     try {
+        let currentInputs = getCurrentData();
         let data = activeDesignObj ? clone(activeDesignObj) : {}; 
-        Object.assign(data, getCurrentData());
+        Object.assign(data, currentInputs);
         
         let name = activeDesignObj ? designName(activeDesignObj) : null;
         if(!name || name === "Unnamed") {
@@ -1493,11 +1512,14 @@ async function saveCurrentDesign() {
         if(!name) return;
         
         if(activeDesignObj?.id) data.id = activeDesignObj.id;
+        data.warpLines = currentInputs.warpLines;
+        data.weftLines = currentInputs.weftLines;
         data.designNo = name; 
         data.name = name; 
         data.timestamp = new Date().toISOString();
         let cleanName = cleanDesignName(name);
 
+        // 1. இந்த பக்கத்தின் பிரத்தியேக local_edits_cache-ல் மட்டும் நிறம்/அளவு மாற்றங்களைச் சேமித்தல்
         try {
             let edits = JSON.parse(localStorage.getItem("local_edits_cache") || "{}");
             edits[cleanName] = { ...(edits[cleanName] || {}), ...data };
@@ -1506,30 +1528,7 @@ async function saveCurrentDesign() {
             window._lastEditStamp = localStorage.getItem("last_edit_timestamp");
         } catch(e) {}
 
-        let local = safeJSON("design_masters_data", []); 
-        if(!Array.isArray(local)) local = [];
-        local = local.filter(x => cleanDesignName(designName(x)) !== cleanName); 
-        local.push(clone(data)); 
-        localStorage.setItem("design_masters_data", JSON.stringify(local));
-
-        ["warp_entry_data", "weft_entry_data", "denting_drawing_data", "graph_editor_data", "weave_designs"].forEach(key => {
-            try {
-                let list = safeJSON(key, []);
-                if (Array.isArray(list)) {
-                    let filtered = list.filter(x => cleanDesignName(designName(x)) !== cleanName);
-                    filtered.push(clone(data));
-                    localStorage.setItem(key, JSON.stringify(filtered));
-                }
-            } catch(e) {}
-        });
-
-        let cloudSuccess = false;
-        if (typeof window.supabaseSave === "function") {
-            await window.supabaseSave("design_" + cleanName, data);
-            await window.supabaseSave("design_masters_data", local);
-            cloudSuccess = (window.supabaseConnected === true || navigator.onLine === true);
-        }
-
+        // 2. இந்த பக்கத்துக்கான பிரத்தியேக cache-ல் பதிவு செய்தல் (வேறு பக்கங்களுக்கு தரவு செல்லாது)
         let cache = Array.isArray(allCloudDesigns) ? allCloudDesigns.filter(x => cleanDesignName(designName(x)) !== cleanName) : []; 
         cache.push(clone(data));
         allCloudDesigns = mergeDesigns(cache); 
@@ -1543,13 +1542,8 @@ async function saveCurrentDesign() {
         
         draw3DWeave(); 
         
-        if (cloudSuccess) {
-            setStatus("✅ Saved Successfully");
-            alert("✅ Design வெற்றிகரமாக Save ஆகிவிட்டது (Local & Cloud)!");
-        } else {
-            setStatus("⚠️ Saved Locally Only");
-            alert("⚠️ Local-ல் Save ஆகிவிட்டது! Network கிடைத்தவுடன் Cloud-ல் Auto-Sync ஆகிவிடும்.");
-        }
+        setStatus("✅ Saved Successfully");
+        alert("✅ Design வெற்றிகரமாக இந்த பக்கத்திற்குள் Save ஆகிவிட்டது!");
     } catch(error) { 
         alert("Error: " + error.message);
     }
@@ -2519,16 +2513,21 @@ function applySelectedColour() {
     function updateRowDisplay(inp, btn, disp, badge) {
         if(!inp) return;
         inp.value = newHex;
+        
+        let newColorName = selectedColourForPopup.name || "";
         inp.setAttribute("data-tag", shadeTagText);
+        inp.setAttribute("data-orig", newColorName);
+        inp.setAttribute("data-name", newColorName);
+
         if (btn) btn.style.background = newHex;
         if (badge) badge.textContent = shadeTagText;
         if (disp) {
-            let orig = inp.getAttribute("data-orig") || "Custom";
-            let rawOrigName = getLocalizedColorName(orig) || orig;
+            let rawOrigName = getLocalizedColorName(newColorName) || newColorName || "Custom";
             let cnt = inp.getAttribute("data-cnt") || "";
             let countPrefix = cnt ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(cnt)}]</span>` : "";
             
             disp.innerHTML = `${countPrefix}<span class="col-name-label">${rawOrigName}</span>`;
+            disp.title = rawOrigName;
         }
     }
 
@@ -2948,7 +2947,6 @@ function print3DOnly() {
 
         const dataURL = cropCanvas.toDataURL("image/jpeg", 0.95);
 
-        // --- Reproduce true physical (original) scale using the on-screen cm ruler scale ---
         const scaleInfo = window.__weaveScale || { pxPerMm: 2, dpr: 1 };
         const pxPerMm = scaleInfo.pxPerMm > 0 ? scaleInfo.pxPerMm : 2;
         const dpr = scaleInfo.dpr > 0 ? scaleInfo.dpr : 1;
@@ -2963,7 +2961,6 @@ function print3DOnly() {
         const usableW_mm = pageW_mm - pageMargin_mm * 2;
         const usableH_mm = pageH_mm - pageMargin_mm * 2;
 
-        // Never enlarge beyond true scale; only shrink if it wouldn't fit one A4 sheet.
         const fitScale = Math.min(1, usableW_mm / imgWidth_mm, usableH_mm / imgHeight_mm);
         const finalW_mm = imgWidth_mm * fitScale;
         const finalH_mm = imgHeight_mm * fitScale;
