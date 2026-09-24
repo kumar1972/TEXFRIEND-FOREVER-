@@ -2810,7 +2810,7 @@ function buildWarpTable(lines, drawArr) {
 
                 h += `<tr>
                     <td>${visualRowIdx++}</td>
-                    <td><div class="color-swatch" style="background:${l.color};"></div></td>
+                    <td><div class="color-swatch" style="background:${colorName(rawCol || l.color)};"></div></td>
                     <td style="text-align:left; font-weight:800; line-height:1.2; color:#111827 !important;">${cleanName}</td>
                     <td style="font-weight:950; font-size:10px;">${amt}</td>
                     ${setTd}
@@ -2835,11 +2835,107 @@ function buildWarpTable(lines, drawArr) {
 
             h += `<tr>
                 <td>${visualRowIdx++}</td>
-                <td><div class="color-swatch" style="background:${l.color};"></div></td>
+                <td><div class="color-swatch" style="background:${colorName(rawCol || l.color)};"></div></td>
                 <td style="text-align:left; font-weight:800; line-height:1.2; color:#111827 !important;">${cleanName}</td>
                 <td style="font-weight:950; font-size:10px;">${amt}</td>
                 <td style="font-size:10px; color:#9caea4; vertical-align:middle;">-</td>
                 <td style="color:#1e3a8a; font-weight:900; font-size:9px; vertical-align:middle; text-align:center; letter-spacing:0.5px; white-space:nowrap;">${frameStr}</td>
+            </tr>`;
+        }
+    });
+
+    h += `</tbody></table>`;
+    return h;
+}
+
+function buildWeftTable(lines) {
+    if(!lines || !lines.length) return "<div style='font-size:8px;text-align:center;padding:5px;border:1px solid #ccc;'>No Yarns</div>";
+    
+    let expandedGroups = [];
+    let ranges = activeDesignObj?.weftRanges || [];
+    let i = 0;
+    
+    while(i < lines.length) {
+        let lineNum = i + 1;
+        let range = ranges.find(r => Number(r.start) === lineNum);
+        if(range && Number(range.end) >= Number(range.start) && Number(range.set) > 1) {
+            let setRows = [];
+            let span = Number(range.end) - Number(range.start) + 1;
+            for(let j = 0; j < span && (i+j) < lines.length; j++) {
+                setRows.push(lines[i+j]);
+            }
+            expandedGroups.push({
+                isSet: true,
+                setStart: range.start,
+                setEnd: range.end,
+                totalRepeats: range.set,
+                rows: setRows
+            });
+            i += span;
+        } else {
+            expandedGroups.push({
+                isSet: false,
+                row: lines[i]
+            });
+            i++;
+        }
+    }
+
+    let h = `<table class="yarn-table">
+        <thead>
+            <tr>
+                <th width="6%">#</th>
+                <th width="8%">Col</th>
+                <th width="50%" style="text-align:left;">Colour Name</th>
+                <th width="18%">Picks</th>
+                <th width="18%">Set</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    let visualRowIdx = 1;
+
+    expandedGroups.forEach((item) => {
+        if(item.isSet) {
+            let totalRep = item.totalRepeats;
+            let spanLen = item.rows.length;
+
+            item.rows.forEach((l, sIdx) => {
+                let rawCol = l.colourName || l.origName || "";
+                let cleanName = getLocalizedColorName(rawCol) || rawCol || "Custom";
+                let amt = parseInt(l.picks) || parseInt(l.amount) || 0;
+                
+                let setTd = "";
+                if (sIdx === 0) {
+                    setTd = `<td rowspan="${spanLen}" style="font-size:10px; font-weight:900; color:#b91c1c; background:#fff5f5; vertical-align:middle; text-align:center; padding:2px;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:4px;">
+                            <div style="font-size:22px; font-weight:300;">}</div>
+                            <div style="font-size:10px;">&times; ${totalRep}</div>
+                        </div>
+                    </td>`;
+                }
+
+                h += `<tr>
+                    <td>${visualRowIdx++}</td>
+                    <td><div class="color-swatch" style="background:${colorName(rawCol || l.color)};"></div></td>
+                    <td style="text-align:left; font-weight:800; line-height:1.2; color:#111827 !important;">${cleanName}</td>
+                    <td style="font-weight:950; font-size:10px;">${amt}</td>
+                    ${setTd}
+                </tr>`;
+            });
+
+        } else {
+            let l = item.row;
+            let rawCol = l.colourName || l.origName || "";
+            let cleanName = getLocalizedColorName(rawCol) || rawCol || "Custom";
+            let amt = parseInt(l.picks) || parseInt(l.amount) || 0;
+
+            h += `<tr>
+                <td>${visualRowIdx++}</td>
+                <td><div class="color-swatch" style="background:${colorName(rawCol || l.color)};"></div></td>
+                <td style="text-align:left; font-weight:800; line-height:1.2; color:#111827 !important;">${cleanName}</td>
+                <td style="font-weight:950; font-size:10px;">${amt}</td>
+                <td style="font-size:10px; color:#9caea4; vertical-align:middle;">-</td>
             </tr>`;
         }
     });
@@ -2868,6 +2964,7 @@ function buildDesignPrintContent() {
     const stamp = now.toLocaleDateString() + " • " + now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
 
     const warpTableHTML = buildWarpTable(data.warpLines, drawArr);
+    const weftTableHTML = buildWeftTable(data.weftLines);
 
     return `
         <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #173d2d; padding-bottom:6px; margin-bottom:10px;">
@@ -2885,6 +2982,9 @@ function buildDesignPrintContent() {
             <div class="print-col">
                 <div class="print-section-title" style="margin-top:0;">🧵 WARPING & DRAWING PLAN <span class="section-code">WARP SEQUENCE</span></div>
                 ${warpTableHTML}
+                
+                <div class="print-section-title" style="margin-top:10px;">🪢 WEFTING PLAN <span class="section-code">WEFT SEQUENCE</span></div>
+                ${weftTableHTML}
             </div>
             
             <div class="print-col">
