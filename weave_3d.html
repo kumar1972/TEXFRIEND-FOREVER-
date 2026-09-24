@@ -453,7 +453,7 @@ input, select {
 .colour-popup { display: none; position: fixed; inset: 0; z-index: 9999999; background: #14251e; flex-direction: column; padding: 10px; overflow: hidden; }
 .colour-popup.active { display: flex !important; }
 .colour-popup-box { width: 100vw !important; max-width: none !important; height: 100vh !important; max-height: none !important; background: #14251e !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.colour-popup-head { display: flex align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
+.colour-popup-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
 .colour-popup-head b { color: #f59e0b; font-size: .95rem; }
 .colour-popup-close { background: #ef4444; border: 0; color: #fff; border-radius: 50%; width: 28px; height: 28px; font-weight: 900; font-size:0.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .search-box { width: calc(100% - 20px); padding: 8px; border-radius: 8px; border: 1px solid #395648; background: #0d1813; color: #fff; font-size: .8rem; margin: 10px; margin-top: 0; flex-shrink: 0; }
@@ -473,21 +473,6 @@ input, select {
 .swatch-name { font-size: 0.72rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .colour-popup-footer { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-top: 1px solid #2c4b3d; flex-shrink: 0; background: #14251e; }
 .colour-use-btn { background: #10b981; border: 0; border-radius: 8px; padding: 12px; color: #fff; font-weight: 900; font-size: .85rem; cursor: pointer; width: 100%; text-align: center; }
-
-/* DENTING MODAL */
-.pm-form-box { background: #172b23; padding: 10px; border-radius: 8px; margin-bottom: 12px; border: 1px dashed #395648; }
-.pm-label { font-size:0.65rem; color:#f59e0b; margin-bottom:4px; display:block; font-weight:bold; }
-.pm-label-w { font-size:0.65rem; color:#9be4a8; margin-bottom:4px; display:block; font-weight:bold; }
-#dentingModal { padding: 0 !important; align-items: stretch !important; justify-content: stretch !important; }
-.denting-tabs { display:flex; gap:6px; margin:4px 0 10px; position:sticky; top:0; z-index:3; background:#14251e; padding-bottom:6px; }
-.denting-tab { flex:1; border:1px solid #39614f; background:#203b30; color:#b8d8bf; border-radius:8px; padding:9px 6px; font-weight:900; font-size:.72rem; }
-.denting-tab.active { background:#2d9148; color:#fff; }
-.denting-pane { display:none; }
-.denting-pane.active { display:block; }
-.preset-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:7px; }
-.preset-grid button { border:1px solid #39614f; background:#244638; color:#aee9ba; border-radius:7px; padding:7px 4px; font-size:.62rem; font-weight:900; }
-.adv-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-.adv-grid button { border:0; border-radius:7px; padding:9px 5px; background:#217eaf; color:#fff; font-weight:900; font-size:.65rem; }
 </style>
 </head>
 <body>
@@ -622,7 +607,6 @@ input, select {
                     <option value="portrait">A4 Portrait</option>
                     <option value="landscape">A4 Landscape</option>
                 </select>
-                <!-- BUG FIX: added onchange event to dynamically resize weave graph -->
                 <select id="printGraphScale" aria-label="Graph size" onchange="updatePrintGraphScale()">
                     <option value="small">Graph Small</option>
                     <option value="medium" selected>Graph Medium</option>
@@ -812,7 +796,6 @@ function colorName(n) {
         }
     }
 
-    // கூடுதல் கலர்கள் & நேரடி மேப்பிங்
     const directHex = {
         'l. turq': '#4dd0e1', 'turq': '#00acc1', 'டர்க்': '#00acc1',
         't. white': '#f8fafc', 't. white (t. சலவை)': '#f8fafc', 't.salavai': '#f8fafc', 't. salavai': '#f8fafc', 'சலவை': '#f8fafc',
@@ -1009,12 +992,7 @@ function extractLinesFromEntry(entry, keyName) {
 function pickRicherArray(arr1, arr2) {
     if (!Array.isArray(arr1) || arr1.length === 0) return Array.isArray(arr2) ? arr2 : [];
     if (!Array.isArray(arr2) || arr2.length === 0) return arr1;
-    
-    let isDummy = (a) => a.length === 2 && (a[0].colourName||a[0].name||a[0].color||"").toLowerCase().includes("navy") && a[0].ends === 27;
-    if (isDummy(arr2) && !isDummy(arr1)) return arr1;
-    if (isDummy(arr1) && !isDummy(arr2)) return arr2;
-    
-    return arr2; 
+    return arr2.length > 0 ? arr2 : arr1; 
 }
 
 function mergeDesigns(items) {
@@ -1250,8 +1228,8 @@ function populateDesignSelect(auto = true) {
             if (found) targetName = designName(found);
         }
 
+        s.value = targetName;
         if (auto) {
-            s.value = targetName;
             loadSelectedDesign();
         }
     } else {
@@ -1266,11 +1244,11 @@ async function importFromFirebase(manual = false) {
         
         const local = [];
         const localKeys = [
-            "warp_entry_data", 
-            "weft_entry_data", 
-            "design_masters_data", 
+            "design_masters_data",
             "weave_designs", 
             "weave_designs_cache", 
+            "warp_entry_data", 
+            "weft_entry_data", 
             "denting_drawing_data"
         ];
         
@@ -1324,13 +1302,18 @@ function loadSelectedDesign(){
         if(!s || !s.value) return;
         
         let selVal = cleanDesignName(s.value);
-        let foundDesign = allCloudDesigns.find(d => cleanDesignName(designName(d)) === selVal) || allCloudDesigns[0];
+        let foundDesign = allCloudDesigns.find(d => cleanDesignName(designName(d)) === selVal);
+        if(!foundDesign) {
+            foundDesign = allCloudDesigns.find(d => cleanDesignName(designName(d)).includes(selVal) || selVal.includes(cleanDesignName(designName(d))));
+        }
         if(!foundDesign) return;
         
         activeDesignObj = typeof sanitizeDesignObj === "function" ? sanitizeDesignObj(clone(foundDesign)) : clone(foundDesign);
         let cleanName = cleanDesignName(designName(activeDesignObj));
         
-        if(document.getElementById("activeDesignText")) document.getElementById("activeDesignText").textContent = "Active Design: " + designName(activeDesignObj);
+        if(document.getElementById("activeDesignText")) {
+            document.getElementById("activeDesignText").textContent = "Active Design: " + designName(activeDesignObj);
+        }
         localStorage.setItem("weave_last_design_name", designName(activeDesignObj));
 
         let rawWarp = [];
@@ -1481,16 +1464,12 @@ async function saveCurrentDesign() {
         local.push(clone(data)); 
         localStorage.setItem("design_masters_data", JSON.stringify(local));
 
-        ["warp_entry_data", "weft_entry_data", "denting_drawing_data", "graph_editor_data", "weave_designs"].forEach(key => {
-            try {
-                let list = safeJSON(key, []);
-                if (Array.isArray(list)) {
-                    let filtered = list.filter(x => cleanDesignName(designName(x)) !== cleanName);
-                    filtered.push(clone(data));
-                    localStorage.setItem(key, JSON.stringify(filtered));
-                }
-            } catch(e) {}
-        });
+        let weaveList = safeJSON("weave_designs", []);
+        if (Array.isArray(weaveList)) {
+            weaveList = weaveList.filter(x => cleanDesignName(designName(x)) !== cleanName);
+            weaveList.push(clone(data));
+            localStorage.setItem("weave_designs", JSON.stringify(weaveList));
+        }
 
         let cloudSuccess = false;
         if (typeof window.supabaseSave === "function") {
@@ -1516,8 +1495,8 @@ async function saveCurrentDesign() {
             setStatus("✅ Saved Successfully");
             alert("✅ Design வெற்றிகரமாக Save ஆகிவிட்டது (Local & Cloud)!");
         } else {
-            setStatus("⚠️ Saved Locally Only");
-            alert("⚠️ Local-ல் Save ஆகிவிட்டது! Network கிடைத்தவுடன் Cloud-ல் Auto-Sync ஆகிவிடும்.");
+            setStatus("💾 Saved Locally");
+            alert("✅ Local-ல் Save ஆகிவிட்டது!");
         }
     } catch(error) { 
         alert("Error: " + error.message);
@@ -2463,32 +2442,6 @@ function closeColourPopup() {
     }
 }
 
-function showDentingPane(pane) {
-    document.querySelectorAll(".denting-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".denting-pane").forEach(p => p.classList.remove("active"));
-    const tabBtn = $(pane + "TabBtn");
-    const paneEl = $(pane + "Pane");
-    if (tabBtn) tabBtn.classList.add("active");
-    if (paneEl) paneEl.classList.add("active");
-}
-
-function openDentingModal() {
-    const modal = $("dentingModal");
-    if (modal) {
-        modal.classList.add("active");
-        modal.style.display = "flex";
-        showDentingPane("dent");
-    }
-}
-
-function closeDentingModal() {
-    const modal = $("dentingModal");
-    if (modal) {
-        modal.classList.remove("active");
-        modal.style.display = "none";
-    }
-}
-
 function applySelectedColour() {
     if(!selectedColourForPopup) { closeColourPopup(); return; }
     const target = colourPopupTarget;
@@ -3090,8 +3043,7 @@ function print3DOnly() {
     try {
         let combinedDesigns = [];
         let keysToTry = [
-            "warp_entry_data", "weft_entry_data", "design_masters_data", "weave_designs", "weave_designs_cache", 
-            "denting_drawing_data", "graph_editor_data"
+            "design_masters_data", "weave_designs", "weave_designs_cache", "warp_entry_data", "weft_entry_data", "denting_drawing_data"
         ];
 
         keysToTry.forEach(key => {
@@ -3109,21 +3061,6 @@ function print3DOnly() {
         });
 
         allCloudDesigns = mergeDesigns(combinedDesigns);
-
-        if (allCloudDesigns.length === 0) {
-            allCloudDesigns = [{
-                designNo: "B 7788",
-                name: "# B 7788",
-                warpLines: [
-                    { color: "#1e3a8a", ends: 27, colourName: "Navy", count: "21 ccc" },
-                    { color: "#64748b", ends: 1, colourName: "D. Grey", count: "21 ccc" }
-                ],
-                weftLines: [
-                    { color: "#1e3a8a", picks: 27, colourName: "Navy", count: "21 ccc" },
-                    { color: "#64748b", picks: 1, colourName: "D. Grey", count: "21 ccc" }
-                ]
-            }];
-        }
     } catch (err) {
         console.error("Preload Error:", err);
     }
