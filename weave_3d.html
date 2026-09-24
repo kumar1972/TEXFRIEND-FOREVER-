@@ -453,7 +453,7 @@ input, select {
 .colour-popup { display: none; position: fixed; inset: 0; z-index: 9999999; background: #14251e; flex-direction: column; padding: 10px; overflow: hidden; }
 .colour-popup.active { display: flex !important; }
 .colour-popup-box { width: 100vw !important; max-width: none !important; height: 100vh !important; max-height: none !important; background: #14251e !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.colour-popup-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
+.colour-popup-head { display: flex align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
 .colour-popup-head b { color: #f59e0b; font-size: .95rem; }
 .colour-popup-close { background: #ef4444; border: 0; color: #fff; border-radius: 50%; width: 28px; height: 28px; font-weight: 900; font-size:0.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .search-box { width: calc(100% - 20px); padding: 8px; border-radius: 8px; border: 1px solid #395648; background: #0d1813; color: #fff; font-size: .8rem; margin: 10px; margin-top: 0; flex-shrink: 0; }
@@ -548,6 +548,10 @@ input, select {
         </div>
         <div id="weftPanel" class="yarn-panel">
             <div id="weftInputsContainer" class="scroll-box"></div>
+            <!-- REVERSE WEFT BUTTON -->
+            <button type="button" class="btn btn-dark" style="width: 100%; margin-top: 6px; border-color: #3b82f6; color: #93c5fd; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="reverseWeftEntries()">
+                🔁 Reverse Weft (கீழ் இருந்து மேலே)
+            </button>
         </div>
     </div>
 
@@ -808,6 +812,17 @@ function colorName(n) {
         }
     }
 
+    // கூடுதல் கலர்கள் & நேரடி மேப்பிங்
+    const directHex = {
+        'l. turq': '#4dd0e1', 'turq': '#00acc1', 'டர்க்': '#00acc1',
+        't. white': '#f8fafc', 't. white (t. சலவை)': '#f8fafc', 't.salavai': '#f8fafc', 't. salavai': '#f8fafc', 'சலவை': '#f8fafc',
+        'p. green': '#22c55e', 'p. green (கிளி பச்சை)': '#22c55e', 'கிளி பச்சை': '#22c55e',
+        'r. blue': '#1d4ed8', 'r. blue (r. ப்ளூ)': '#1d4ed8', 'blue (ப்ளூ)': '#2563eb'
+    };
+    for(let k in directHex) {
+        if(s.includes(k)) return directHex[k];
+    }
+
     if (typeof texfriendColourMaster !== 'undefined') {
         for (let group of texfriendColourMaster) {
             for (let shade of group.shades) {
@@ -841,6 +856,42 @@ function colorName(n) {
         if (s.includes(key)) return baseColors[key];
     }
     return "#94a3b8"; 
+}
+
+/* ================= REVERSE WEFT ENTRIES FUNCTION ================= */
+function reverseWeftEntries() {
+    let rows = [];
+    for (let i = 1; i <= currentWeftCount; i++) {
+        let c = $("weftC" + i);
+        let p = $("weftP" + i);
+        let s = $("weftSpan" + i);
+        let r = $("weftRep" + i);
+        if (c && p) {
+            rows.push({
+                origName: c.getAttribute('data-orig') || '',
+                color: c.value,
+                picks: parseInt(p.value) || 0,
+                amount: parseInt(p.value) || 0,
+                span: parseInt(s?.value) || '',
+                repeat: parseInt(r?.value) || '',
+                count: c.getAttribute('data-cnt') || '',
+                shadeTag: c.getAttribute('data-tag') || ''
+            });
+        }
+    }
+
+    if (rows.length === 0) return;
+
+    rows.reverse();
+
+    if (activeDesignObj) {
+        activeDesignObj.weftLines = rows;
+        activeDesignObj.weftRanges = [];
+    }
+
+    let w = getCurrentData().warpLines;
+    renderUIWithData(w, rows);
+    autoRefresh3D();
 }
 
 /* ================= 2/40 & SEERSUCKER THICKNESS ENGINE ================= */
@@ -1285,7 +1336,6 @@ function loadSelectedDesign(){
         let rawWarp = [];
         let rawWeft = [];
 
-        // 1. Direct Weft/Warp Entry டேட்டாவிற்கு முதல் முன்னுரிமை
         try {
             let warpEntryData = safeJSON("warp_entry_data", null);
             if(warpEntryData){
@@ -1310,7 +1360,6 @@ function loadSelectedDesign(){
             }
         } catch(e) {}
 
-        // 2. Active Design Object Fallback
         if(!rawWarp.length) rawWarp = activeDesignObj.warpLines || [];
         if(!rawWeft.length) rawWeft = activeDesignObj.weftLines || [];
 
@@ -1319,7 +1368,6 @@ function loadSelectedDesign(){
         currentWarpCount = rawWarp.length;
         currentWeftCount = rawWeft.length;
         
-        // UI Update
         if(typeof renderUIWithData === "function") renderUIWithData(rawWarp, rawWeft);
 
         let dentDrawMatch = safeJSON("denting_drawing_data", []).find(d => cleanDesignName(designName(d)) === cleanName) || {};
@@ -1649,7 +1697,7 @@ function hexToRgb(hex) {
 }
 
 function shadeFast(r, g, b, factor) {
-    return `rgb(${Math.min(255, Math.max(0, Math.round(r * factor)))}, ${Math.min(255, Math.max(0, Math.round(g * factor)))}, ${Math.min(255, Math.max(0, Math.round(b * factor)))})`;
+    return `rgb(${Math.min(255, Math.max(0, Math.round(r * factor)))}, ${Math.min(255, Math.max(0, Math.round(b * factor)))}, ${Math.min(255, Math.max(0, Math.round(b * factor)))})`;
 }
 
 let drawFramePending = false;
@@ -2577,7 +2625,6 @@ function updatePrintOrientation() {
     styleEl.innerHTML = `@page { size: A4 ${orientation}; margin: 6mm; }`;
 }
 
-// BUG FIX: Function to dynamically change Graph grid cell size
 function updatePrintGraphScale() {
     const scale = $("printGraphScale")?.value || "medium";
     let sz = "8mm";
@@ -2907,17 +2954,17 @@ function print3DOnly() {
         if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
 
         printWin.document.open();
-        printWin.document.write("<!DOCTYPE html>");
-        printWin.document.write('<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>3D Weave CAD Print</title>');
-        printWin.document.write('<style>');
+        printWin.document.write("<" + "!DOCTYPE html>");
+        printWin.document.write('<' + 'html><' + 'head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>3D Weave CAD Print<' + '/title>');
+        printWin.document.write('<' + 'style>');
         printWin.document.write('@page { size: ' + (isPortrait ? 'A4 portrait' : 'A4 landscape') + '; margin: 5mm; }');
         printWin.document.write('* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }');
         printWin.document.write('html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #ffffff; overflow: hidden; }');
         printWin.document.write('body { display: flex; align-items: center; justify-content: center; }');
         printWin.document.write('img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block; margin: auto; }');
-        printWin.document.write('</style></head><body>');
-        printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave CAD">');
-        printWin.document.write('</body></html>');
+        printWin.document.write('<' + '/style><' + '/head><' + 'body>');
+        printWin.document.write('<' + 'img id="print3DImage" src="' + dataURL + '" alt="3D Weave CAD">');
+        printWin.document.write('<' + '/body><' + '/html>');
         printWin.document.close();
 
         const doPrint = function() {
