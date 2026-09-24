@@ -367,7 +367,7 @@ input, select {
 .print-order-item span { color:#65766d; font-size:6.5px !important; }
 .print-graph-wrap { text-align:center; margin-top:3px; padding:5px 0 2px; page-break-inside:avoid; break-inside:avoid; overflow-x:auto; max-width:100%; }
 .print-graph-table { border-collapse:collapse; margin:auto; color:#000; }
-.print-graph-table td { border:1px solid #3f4d46; width:8mm; height:8mm; min-width:8mm; text-align:center; vertical-align:middle; font-size:13px; font-weight:950; padding:0; background:#fff; }
+.print-graph-table td { border:1px solid #3f4d46; width:var(--gcell,8mm); height:var(--gcell,8mm); min-width:var(--gcell,8mm); text-align:center; vertical-align:middle; font-size:var(--gfont,13px); font-weight:950; padding:0; background:#fff; }
 .print-graph-table .graph-axis { border:0; font-size:7px; color:#394740; width:auto; min-width:11px; height:auto; padding:2px; background:#fff; }
 .print-footer { display:flex; justify-content:space-between; gap:8px; border-top:1px solid #d1dad5; margin-top:7px; padding-top:5px; font-size:6.5px; color:#65736d; }
 
@@ -617,7 +617,7 @@ input, select {
                     <option value="portrait">A4 Portrait</option>
                     <option value="landscape">A4 Landscape</option>
                 </select>
-                <select id="printGraphScale" aria-label="Graph size">
+                <select id="printGraphScale" aria-label="Graph size" onchange="applyPrintGraphScale()">
                     <option value="small">Graph Small</option>
                     <option value="medium" selected>Graph Medium</option>
                     <option value="large">Graph Large</option>
@@ -2607,12 +2607,22 @@ function printDesign() {
             return;
         }
         container.innerHTML = buildDesignPrintContent();
+        applyPrintGraphScale();
         modal.style.display = "flex";
         document.body.style.overflow = "hidden";
     } catch(err) {
         console.error("Print Design Error:", err);
         alert("Print error: " + err.message);
     }
+}
+
+function applyPrintGraphScale() {
+    const box = $("printDesignContent");
+    if (!box) return;
+    const sizes = { small: ["5mm","9px"], medium: ["8mm","13px"], large: ["11mm","18px"] };
+    const v = sizes[$("printGraphScale")?.value] || sizes.medium;
+    box.style.setProperty("--gcell", v[0]);
+    box.style.setProperty("--gfont", v[1]);
 }
 
 function closeGraphPrintPreview() {
@@ -2806,7 +2816,7 @@ function buildWarpTable(lines, drawArr) {
 
                 h += `<tr>
                     <td>${visualRowIdx++}</td>
-                    <td><div class="color-swatch" style="background:${l.color};"></div></td>
+                    <td><div class="color-swatch" style="background:${l.hex || l.color};"></div></td>
                     <td style="text-align:left; font-weight:800; line-height:1.2; color:#111827 !important;">${cleanName}</td>
                     <td style="font-weight:950; font-size:10px;">${amt}</td>
                     ${setTd}
@@ -2831,7 +2841,7 @@ function buildWarpTable(lines, drawArr) {
 
             h += `<tr>
                 <td>${visualRowIdx++}</td>
-                <td><div class="color-swatch" style="background:${l.color};"></div></td>
+                <td><div class="color-swatch" style="background:${l.hex || l.color};"></div></td>
                 <td style="text-align:left; font-weight:800; line-height:1.2; color:#111827 !important;">${cleanName}</td>
                 <td style="font-weight:950; font-size:10px;">${amt}</td>
                 <td style="font-size:10px; color:#9caea4; vertical-align:middle;">-</td>
