@@ -2805,10 +2805,18 @@ function executeRealA4Print() {
         if(!baseWarp.length){ baseWarp = [{r:30,g:58,b:138}, {r:255,g:255,b:255}]; warpSeerMap = [false, false]; baseWarpYarnInfo = [{thicknessMultiplier: 1.0, diameter_mm: 0.14}, {thicknessMultiplier: 1.0, diameter_mm: 0.14}]; }
         if(!baseWeft.length){ baseWeft = [{r:239,g:68,b:68}, {r:30,g:58,b:138}]; baseWeftYarnInfo = [{thicknessMultiplier: 1.0, diameter_mm: 0.14}, {thicknessMultiplier: 1.0, diameter_mm: 0.14}]; }
 
-        const warp = baseWarp.slice();
-        const weft = baseWeft.slice();
-        const seerMap = warpSeerMap.slice();
-        const warpYarnInfos = baseWarpYarnInfo.slice();
+        const singleWarp = baseWarp.slice();
+        const singleWeft = baseWeft.slice();
+
+        // சிமுலேஷன் பக்கத்தில் உள்ளவாறே 1 Repeat + 25% கூடுதல் Repeat (1.25 Repeats)
+        const extraWarpCount = Math.max(1, Math.round(singleWarp.length * 0.25));
+        const warp = [...singleWarp, ...singleWarp.slice(0, extraWarpCount)];
+        const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, extraWarpCount)];
+        const warpYarnInfos = [...baseWarpYarnInfo, ...baseWarpYarnInfo.slice(0, extraWarpCount)];
+
+        const extraWeftCount = Math.max(1, Math.round(singleWeft.length * 0.25));
+        const weft = [...singleWeft, ...singleWeft.slice(0, extraWeftCount)];
+        const weftYarnInfos = [...baseWeftYarnInfo, ...baseWeftYarnInfo.slice(0, extraWeftCount)];
 
         const realWarpLength = warp.length;
         const realWeftLength = weft.length;
@@ -2817,18 +2825,21 @@ function executeRealA4Print() {
         let pick = parseFloat(activeDesignObj?.pick || activeDesignObj?.onloomPick || activeDesignObj?.finishedPick || activeDesignObj?.finishPick || activeDesignObj?.weftPick || activeDesignObj?.pickCount);
         if(!isFinite(reed) || reed <= 0) reed = 80; if(!isFinite(pick) || pick <= 0) pick = 74;
 
+        // 1.25 Repeat-க்கான முழுமையான mm அளவு
         const physW_mm = (realWarpLength / reed) * 25.4;
         const physH_mm = (realWeftLength / pick) * 25.4;
 
-        // உயர் தெளிவுத்திறன் ஸ்கேலிங்
+        // 1 Repeat அசல் அளவு (தலைப்பில் காட்டுவதற்கு)
+        const singleW_cm = ((singleWarp.length / reed) * 25.4) / 10;
+        const singleH_cm = ((singleWeft.length / pick) * 25.4) / 10;
+
+        // உயர் தெளிவுத்திறன் அளவீடு
         const base_steel_ruler_px_per_mm = 6.29;
         const printDpr = 2.0;
         const px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier * printDpr;
 
         const printW = Math.round(physW_mm * px_per_mm);
         const printH = Math.round(physH_mm * px_per_mm);
-
-        // ரூலர் அகலம் (32px * printDpr)
         const RULER_px = Math.round(32 * printDpr);
 
         let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
@@ -2848,7 +2859,6 @@ function executeRealA4Print() {
         const dentWidthPx = printW / Math.max(1, dentsRequired);
         const cellH = printH / Math.max(1, realWeftLength);
 
-        // துணி தொடங்கும் இடம்: RULER_px (இடது ரூலருக்கான இடைவெளி)
         const warpPositions = []; let endIndex = 0; let dentIndex = 0;
         while(endIndex < realWarpLength && dentIndex < dentsRequired){
             const requestedEnds = Math.max(0, parseInt(dentArr[dentIndex % dentArr.length]) || 0);
@@ -2879,18 +2889,16 @@ function executeRealA4Print() {
         const rawSeer = parseInt($("seerIntensity")?.value || 75, 10);
         const puff = rawSeer / 100;
 
-        // ரூலருடன் சேர்த்த மொத்த கேன்வாஸ் அளவு
         const printCanvas = document.createElement("canvas");
         printCanvas.width = printW + RULER_px;
         printCanvas.height = printH + RULER_px;
         const pCtx = printCanvas.getContext("2d");
         pCtx.imageSmoothingEnabled = false;
 
-        // பின்னணி வெண்மை நிறம்
         pCtx.fillStyle = "#ffffff";
         pCtx.fillRect(0, 0, printCanvas.width, printCanvas.height);
 
-        // 1. துணி நெசவு வரைதல் (Fabric drawing)
+        // 1. துணி நெசவு வரைதல் (1.25 Repeat முழுமை)
         for(let r = realWeftLength - 1; r >= 0; r--){
             const y = printH - ((r + 1) * cellH);
             const weftColor = weft[r % weft.length];
@@ -2950,7 +2958,7 @@ function executeRealA4Print() {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
                         pCtx.fillRect(curX, y, edgeH, cellH);
-                        pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
+                        pCtx.fillRect(curX + curW - edgeH, y, edgeW, cellH);
                     }
                     if(curW >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
@@ -3009,7 +3017,7 @@ function executeRealA4Print() {
             } catch(e) {}
         }
 
-        // 3. RULER வரைதல் (கீழ் & இடது செங்குத்து அளவுகோல்)
+        // 3. STEEL RULER வரைதல் (கீழ் & இடது செங்குத்து அளவுகோல்)
         const rulerBgColor = "#ffffff";
         const rulerBorderColor = "#475569";
 
@@ -3094,19 +3102,14 @@ function executeRealA4Print() {
         }
 
         const dataURL = printCanvas.toDataURL("image/jpeg", 0.95);
-        const physW_cm = physW_mm / 10;
-        const physH_cm = physH_mm / 10;
         const ruler_mm = RULER_px / px_per_mm;
         const scaleFactor = selectedCadScalePercent / 100;
 
-        const finalW_cm = (physW_cm * scaleFactor).toFixed(2);
-        const finalH_cm = (physH_cm * scaleFactor).toFixed(2);
-        
-        // ரூலருடன் சேர்த்த மொத்த அளவு
+        // பிரிண்ட் தாளுக்கான துல்லியமான செ.மீ அளவு (ரூலருடன் சேர்த்து)
         const totalPrintW_cm = (((physW_mm + ruler_mm) / 10) * scaleFactor).toFixed(2);
         const totalPrintH_cm = (((physH_mm + ruler_mm) / 10) * scaleFactor).toFixed(2);
 
-        const isPortrait = parseFloat(finalH_cm) >= parseFloat(finalW_cm);
+        const isPortrait = parseFloat(totalPrintH_cm) >= parseFloat(totalPrintW_cm);
 
         const printWin = window.open("", "_blank", "width=950,height=1100");
         if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
@@ -3125,7 +3128,7 @@ function executeRealA4Print() {
             </style>
         `);
         printWin.document.write('</head><body>');
-        printWin.document.write(`<div class="cad-header">Texfriend CAD Simulation (Scale: ${selectedCadScalePercent}% | ${finalW_cm} × ${finalH_cm} cm)</div>`);
+        printWin.document.write(`<div class="cad-header">Texfriend CAD Simulation (Scale: ${selectedCadScalePercent}% | 1 Repeat: ${singleW_cm.toFixed(2)} × ${singleH_cm.toFixed(2)} cm)</div>`);
         printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
         printWin.document.write('</body></html>');
         printWin.document.close();
