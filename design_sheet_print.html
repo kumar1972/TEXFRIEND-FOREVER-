@@ -364,38 +364,50 @@ th{
     color:#1E2B23 !important;
 }
 
-/* Keep Warp total directly below the ENDS column */
+/* Keep Warp total directly below the ENDS column using exact table grid percentages */
 #warpSummaryBox{
     display:grid;
-    grid-template-columns:10% 17% 35% 18% 20%;
-    column-gap:0;
-    align-items:start;
+    grid-template-columns: 10% 17% 35% 18% 20%;
+    column-gap: 0;
+    align-items: start;
+    width: 100%;
 }
 
 #warpSummaryBox .warp-pattern-total{
-    grid-column:4;
-    width:100%;
-    box-sizing:border-box;
+    grid-column: 4;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center !important;
 }
 
 #warpSummaryBox .warp-ends-total{
-    grid-column:4;
-    width:100%;
-    box-sizing:border-box;
+    grid-column: 1 / span 5;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center !important;
 }
 
-/* Keep Weft total directly below the PICKS column */
+/* Keep Weft total directly below the PICKS column using exact table grid percentages */
 #weftSummaryBox{
     display:grid;
-    grid-template-columns:10% 17% 35% 18% 20%;
-    column-gap:0;
-    align-items:start;
+    grid-template-columns: 10% 17% 35% 18% 20%;
+    column-gap: 0;
+    align-items: start;
+    width: 100%;
 }
 
 #weftSummaryBox .weft-pattern-total{
-    grid-column:4;
-    width:100%;
-    box-sizing:border-box;
+    grid-column: 4;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center !important;
+}
+
+#weftSummaryBox .weft-width-total{
+    grid-column: 1 / span 5;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center !important;
 }
 
 /* =========================================================
@@ -1838,7 +1850,6 @@ function renderSplitPreviewTable(
                         rInfo.start
                     ) + 1;
 
-                // Here X 2 and = 4 split into 2 lines vertically as requested.
                 setHtml = `
                     <td
                         rowspan="${spanRows}"
@@ -2099,10 +2110,9 @@ function renderSplitPreviewTable(
 
         summaryHtml += `
             <div class="summary-subbox weft-pattern-total">
-                Total Pattern Picks:
-                <b>${pureSum}</b>
+                Total Pattern Picks: &nbsp;&nbsp;&nbsp; <b>${pureSum}</b>
             </div>
-            <div class="summary-subbox">
+            <div class="summary-subbox weft-width-total" style="text-align:center;">
                 Weft Width ${storedWidthVal} X Pick ${pickNum} = <b>${finalGrandTotal.toFixed(2)} Total Pick</b>
             </div>
         `;
@@ -2115,7 +2125,7 @@ function renderSplitPreviewTable(
 
         let hasTopBeam = patternTopEnds > 0;
 
-        let totalPatternEndsHtml = `<div class="summary-subbox warp-pattern-total" style="text-align:center; font-size: 11px;">`;
+        let totalPatternEndsHtml = `<div class="summary-subbox warp-pattern-total">`;
 
         if (hasTopBeam) {
             totalPatternEndsHtml += `
@@ -2138,7 +2148,7 @@ function renderSplitPreviewTable(
         let reed = parseFloat(onloomReed) || parseFloat(foundMaster.reed || sp.reed) || 0;
         let width = parseFloat(onloomWidth) || parseFloat(foundMaster.width || sp.width) || 0;
 
-        let reedBoxHtml = `<div class="summary-subbox warp-ends-total" style="text-align:center; font-size: 11px;">`;
+        let reedBoxHtml = `<div class="summary-subbox warp-ends-total">`;
 
         if (reed > 0 && width > 0) {
             let totalEndsInt = Math.round(reed * width);
