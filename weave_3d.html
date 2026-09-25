@@ -299,7 +299,7 @@ input, select {
 .fs-header { height: 48px; min-height: 48px; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; background: #14251e; border-bottom: 1px solid #345947; }
 .fs-title { color: #9be4a8; font-size: .85rem; font-weight: 900; }
 .fs-header-actions { display: flex; gap: 8px; align-items: center; }
-.fs-header button { border: 0; border-radius: 6px; padding: 6px 10px; color: #fff; font-weight: 800; font-size: .7rem; cursor: pointer; }
+.fs-header button { border: 0; border-radius: 6px; padding: 6px 14px; color: #fff; font-weight: 800; font-size: .7rem; cursor: pointer; }
 .fs-content { flex: 1; width: 100vw; height: calc(100vh - 48px - 72px); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #060c09; touch-action: none; position: relative; }
 .fs-content canvas { 
     width: 100%; 
@@ -307,7 +307,7 @@ input, select {
     display: block; 
     touch-action: none;
 }
-.fs-hint { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: rgba(20,37,30,.88); color: #b8d8bf; padding: 3px 10px; border-radius: 20px; font-size: .52rem; pointer-events: none; white-space: nowrap; z-index: 10; }
+.fs-hint { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: rgba(20,37,30,.88); color: #b8d8bf; padding: 3px 10px; border-radius: 20px; font-size: .52rem; pointer-events: none; white-space: nowrap; z-index: 10; display:flex; align-items:center; gap:8px; }
 
 /* EFFECT BAR & SLIDERS */
 .effect-bar {
@@ -345,6 +345,32 @@ input, select {
     cursor: pointer;
     flex-shrink: 0;
 }
+
+/* CAD PRINT MODAL WITH SCALE SLIDER (A4 cm scale) */
+.cad-print-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000001;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+.cad-print-box {
+    background: #14251e;
+    border: 1px solid #39614f;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    color: #edf7ef;
+}
+.cad-print-box h3 { font-size: 1rem; color: #78d18a; margin-bottom: 10px; }
+.cad-info-pill { background: #0d1813; border: 1px solid #28483a; border-radius: 8px; padding: 8px; font-size: 0.75rem; margin-bottom: 12px; }
+.cad-scale-ctrl { margin-bottom: 15px; }
+.cad-scale-ctrl label { font-size: 0.75rem; color: #f59e0b; display: flex; justify-content: space-between; margin-bottom: 6px; }
 
 /* PRINT — PROFESSIONAL DESIGN SHEET */
 .print-modal { display:none; position:fixed; inset:0; background:#ffffff; z-index:1000000; justify-content:center; align-items:center; padding:12px; }
@@ -392,7 +418,7 @@ input, select {
         max-height: 100% !important;
         overflow: hidden !important; 
     }
-    .container, .header, .action-bar, .denting-tabs, .pm-form-box, .print-hide, .fs-modal, #fsModal, .colour-popup, #dentingModal { 
+    .container, .header, .action-bar, .denting-tabs, .pm-form-box, .print-hide, .fs-modal, #fsModal, .colour-popup, #dentingModal, .cad-print-modal { 
         display: none !important; 
         visibility: hidden !important;
         height: 0 !important;
@@ -448,11 +474,11 @@ input, select {
     .print-page-grid { grid-template-columns: 1fr; }
 }
 
-/* SMART COLOR STUDIO POPUP */
+/* ADVANCED SMART COLOR STUDIO POPUP (60 TONES) */
 .colour-popup { display: none; position: fixed; inset: 0; z-index: 9999999; background: #14251e; flex-direction: column; padding: 10px; overflow: hidden; }
 .colour-popup.active { display: flex !important; }
 .colour-popup-box { width: 100vw !important; max-width: none !important; height: 100vh !important; max-height: none !important; background: #14251e !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.colour-popup-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
+.colour-popup-head { display: flex align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
 .colour-popup-head b { color: #f59e0b; font-size: .95rem; }
 .colour-popup-close { background: #ef4444; border: 0; color: #fff; border-radius: 50%; width: 28px; height: 28px; font-weight: 900; font-size:0.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .search-box { width: calc(100% - 20px); padding: 8px; border-radius: 8px; border: 1px solid #395648; background: #0d1813; color: #fff; font-size: .8rem; margin: 10px; margin-top: 0; flex-shrink: 0; }
@@ -465,11 +491,12 @@ input, select {
 .colour-master-tab { flex: 0 0 auto; border: 1px solid #39614f; background: #1b362c; color: #b8d8bf; border-radius: 6px; padding: 8px 14px; font-size: .7rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .colour-master-tab.active { background: #f59e0b; color: #14251e; border-color: #f59e0b; font-weight: 900; }
 .colour-popup-grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 0 10px; align-content: start; }
-.swatch-card { background: #172b23; border: 1px solid #395648; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 4px; }
-.swatch-card.selected { border-color: #f59e0b; box-shadow: 0 0 0 1px #f59e0b; background: #1e382d; }
-.swatch-color { height: 36px; width: 36px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 2px 6px rgba(0,0,0,0.4); flex-shrink: 0; margin-bottom: 6px; }
+.swatch-card { background: #172b23; border: 1px solid #395648; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; }
+.swatch-card.selected { border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; background: #1e382d; }
+.swatch-color { height: 34px; width: 34px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 2px 6px rgba(0,0,0,0.4); flex-shrink: 0; margin-bottom: 4px; }
 .swatch-details { text-align: center; width: 100%; }
-.swatch-name { font-size: 0.72rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.swatch-name { font-size: 0.68rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.swatch-sub { font-size: 0.54rem; color: #9fc5aa; margin-top: 1px; }
 .colour-popup-footer { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-top: 1px solid #2c4b3d; flex-shrink: 0; background: #14251e; }
 .colour-use-btn { background: #10b981; border: 0; border-radius: 8px; padding: 12px; color: #fff; font-weight: 900; font-size: .85rem; cursor: pointer; width: 100%; text-align: center; }
 
@@ -572,18 +599,19 @@ input, select {
     </div>
 </div>
 
-<!-- FULLSCREEN 3D -->
+<!-- FULLSCREEN 3D SIMULATION -->
 <div id="fsModal" class="fs-modal">
     <div class="fs-header">
-        <div class="fs-title">🧊 3D Weave Preview</div>
+        <div class="fs-title">🧊 3D Weave Preview Pro</div>
         <div class="fs-header-actions">
-            <div style="display:flex;align-items:center;gap:4px;background:#14251e;padding:2px 6px;border-radius:6px;border:1px solid #345947;color:#fff;">
-                <span style="font-size:0.65rem;">Scale:</span>
-                <input type="number" id="cadPrintScale" value="100" min="10" max="200" style="width:40px;height:24px;padding:0 4px;font-size:0.75rem;text-align:center;font-weight:bold;color:#000;"> %
+            <div style="display:inline-flex; align-items:center; gap:2px; background:#0d1c16; border:1px solid #345947; border-radius:6px; padding:2px 4px;">
+                <span style="font-size:0.62rem; color:#8fe19d; font-weight:bold; margin-right:2px;">📏 Ruler Cal:</span>
+                <button style="background:#203b30; color:#fff; border:0; padding:2px 6px; font-size:0.75rem; border-radius:3px;" onclick="adjustRulerDpi(-0.05)" title="Scale Down">-</button>
+                <span id="rulerCalDisplay" style="font-size:0.65rem; color:#f59e0b; min-width:28px; text-align:center;">100%</span>
+                <button style="background:#203b30; color:#fff; border:0; padding:2px 6px; font-size:0.75rem; border-radius:3px;" onclick="adjustRulerDpi(0.05)" title="Scale Up">+</button>
             </div>
-            <button style="background:#047857;border:1px solid #065f46;" onclick="setOriginalSize3D()">1:1 Original CM</button>
-            <button style="background:#244638;border:1px solid #39614f;" onclick="refreshFullscreen3D()">Fit Screen</button>
-            <button style="background:#217eaf;font-size:0.75rem;padding:6px 14px;" onclick="print3DOnly()">🖨️ Print CAD</button>
+            <button style="background:#244638;border:1px solid #39614f;" onclick="refreshFullscreen3D()">↺ 1:1 Reset</button>
+            <button style="background:#217eaf;font-size:0.75rem;padding:6px 14px;" onclick="openCadPrintModal()">🖨️ Print CAD (A4)</button>
             <button style="background:#633b3b" onclick="closeFullscreen()">✖ Close</button>
         </div>
     </div>
@@ -592,20 +620,55 @@ input, select {
         <div class="effect-group">
             <input type="checkbox" id="fsSeerCheck" onchange="syncEffects('seer')">
             <span>🌊 3D Seersucker Puff:</span>
-            <input type="range" id="seerIntensity" min="5" max="100" value="75" oninput="debounce3DRender()" title="Seersucker 3D Wave Depth">
+            <input type="range" id="seerIntensity" min="5" max="100" value="50" oninput="debounce3DRender()" title="Seersucker 3D Wave Depth">
             <span id="seerValDisplay" style="color:#f59e0b; min-width:38px;">75%</span>
         </div>
         <div class="effect-group">
             <input type="checkbox" id="fsBrushCheck" onchange="syncEffects('brush')">
             <span>🪶 Micro-Fibre Brush:</span>
-            <input type="range" id="brushIntensity" min="1" max="300" value="282" oninput="debounce3DRender()" title="Micro-Fibre Density">
-            <span id="brushValDisplay" style="color:#78d18a; min-width:38px;">282%</span>
+            <input type="range" id="brushIntensity" min="1" max="200" value="100" oninput="debounce3DRender()" title="Micro-Fibre Density">
+            <span id="brushValDisplay" style="color:#78d18a; min-width:38px;">100%</span>
         </div>
     </div>
 
     <div id="fsContent" class="fs-content">
         <canvas id="weaveCanvas"></canvas>
-        <div class="fs-hint">👆 Drag • 🤏 Pinch Zoom • ↺ 1:1 Reset</div>
+        <div class="fs-hint">
+            <span>👆 Drag All-over Scroll</span> • <span>🤏 Pinch In/Out Zoom</span> • <span>📏 Actual Steel Ruler Size</span>
+        </div>
+    </div>
+</div>
+
+<!-- CAD A4 PRINT DIALOG & SCALE OPTIONS -->
+<div id="cadPrintModal" class="cad-print-modal">
+    <div class="cad-print-box">
+        <h3>🖨️ A4 CAD Print Options</h3>
+        <div class="cad-info-pill">
+            <div><b>டிசைன் ஒரிஜினல் அளவு (100%):</b> <span id="cadOrigSizeDisp" style="color:#78d18a; font-weight:bold;">0 × 0 cm</span></div>
+            <div style="font-size: 0.65rem; color:#9fc5aa; margin-top:2px;">A4 தாளின் உச்சபட்ச அச்சு எல்லை: 19.5 × 27.5 cm</div>
+        </div>
+
+        <div class="cad-scale-ctrl">
+            <label>
+                <span>A4 தாளுக்கு ஏற்ப Scale அளவு:</span>
+                <b id="cadScaleValDisp" style="color:#78d18a;">100%</b>
+            </label>
+            <input type="range" id="cadScaleRange" min="10" max="100" value="100" step="5" oninput="updateCadPrintScale(this.value)">
+            <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:#88a895; margin-top:3px;">
+                <span>10% (சுருக்கப்பட்டது)</span>
+                <span id="cadAutoFitHint" style="color:#f59e0b; cursor:pointer; font-weight:bold;" onclick="autoFitToA4()">[Auto Fit to A4]</span>
+                <span>100% (Original cm)</span>
+            </div>
+        </div>
+
+        <div style="font-size:0.72rem; color:#cfdfd5; margin-bottom:12px;">
+            A4-ல் பிரிண்ட் ஆகும் அளவு: <b id="cadPrintSizeDisp" style="color:#45c765;">0 × 0 cm</b>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <button class="btn btn-green" onclick="executeRealA4Print()">🖨️ Print Now</button>
+            <button class="btn btn-dark" onclick="closeCadPrintModal()">✖ Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -642,17 +705,17 @@ input, select {
     <div class="colour-popup-box">
         <div class="colour-popup-head">
             <div>
-                <b id="colourPopupTitle">🎨 Smart Color Studio (60 Tones)</b>
+                <b id="colourPopupTitle">🎨 Advanced Smart Color Studio (60 Tones)</b>
                 <div id="editingTargetInfo" style="font-size:0.55rem; color:#9fc5aa; margin-top:1px;">Editing Line</div>
             </div>
             <button class="colour-popup-close" onclick="closeColourPopup()">✕</button>
         </div>
-        <input type="text" id="colourSearchInput" class="search-box" placeholder="🔍 Search color name (ex: Red, Blue, #hex)..." oninput="filterColourPopup()">
+        <input type="text" id="colourSearchInput" class="search-box" placeholder="🔍 Search color name (eg: Green, Red, Navy, Turq, Gold, Mint, Pink, Blue)..." oninput="filterColourPopup()">
         
         <div class="tone-filters">
-            <button class="tone-chip active" onclick="setToneFilter('all', this)">All Tones</button>
-            <button class="tone-chip" onclick="setToneFilter('dark', this)">Dark / Deep</button>
-            <button class="tone-chip" onclick="setToneFilter('medium', this)">Medium</button>
+            <button class="tone-chip active" onclick="setToneFilter('all', this)">All Tones (60+)</button>
+            <button class="tone-chip" onclick="setToneFilter('deep', this)">Deep / Dark</button>
+            <button class="tone-chip" onclick="setToneFilter('medium', this)">Medium Tone</button>
             <button class="tone-chip" onclick="setToneFilter('light', this)">Light / Pastel</button>
         </div>
 
@@ -680,6 +743,25 @@ let currentWeftCount = 0;
 let activeDesignObj = null;
 let allCloudDesigns = [];
 let currentToneFilter = 'all';
+let activeColourMasterIndex = 0;
+let selectedColourForPopup = null;
+let colourPopupTarget = { type: null, index: null };
+let liveDesignDimensions = { widthCm: 0, heightCm: 0 };
+let selectedCadScalePercent = 100;
+
+let rulerCalibrationMultiplier = parseFloat(localStorage.getItem("weave_ruler_cal") || "1.0");
+
+function adjustRulerDpi(delta) {
+    rulerCalibrationMultiplier = Math.max(0.7, Math.min(1.5, rulerCalibrationMultiplier + delta));
+    localStorage.setItem("weave_ruler_cal", rulerCalibrationMultiplier.toFixed(2));
+    updateRulerCalDisplay();
+    debounce3DRender();
+}
+
+function updateRulerCalDisplay() {
+    let el = $("rulerCalDisplay");
+    if(el) el.textContent = Math.round(rulerCalibrationMultiplier * 100) + "%";
+}
 
 let weavePatterns = {
     plain: [
@@ -703,56 +785,64 @@ let weavePatterns = {
 };
 
 const COLOR_TRANSLATIONS = {
+    'green': 'பச்சை', 'p. green': 'கிளி பச்சை', 'bottle green': 'பாட்டில் கிரீன்', 'd. green': 'டார்க் கிரீன்', 'l. green': 'லைட் கிரீன்',
     'gold': 'கோல்டு', 'l. olive': 'L. ஆலிவ்', 'd. olive': 'D. ஆலிவ்', 'grey': 'கிரே', 'gray': 'கிரே',
     't.salavai': 'T. சலவை', 't. salavai': 'T. சலவை', 't. white': 'T. சலவை', '1/2 salavai': '1/2 சலவை',
     '1/2 white': '1/2 சலவை', 'white': 'வெள்ளை', 'black': 'கருப்பு', 'blue': 'ப்ளூ', 'yellow': 'மஞ்சள்',
-    'red': 'ரெட்', 'green': 'கிரீன்', 'p. green': 'கிளி பச்சை', 'brown': 'பிரவுன்', 'khaki': 'காக்கி',
+    'red': 'ரெட்', 'brown': 'பிரவுன்', 'khaki': 'காக்கி',
     'l. khaki': 'L. காக்கி', 'd. khaki': 'D. காக்கி', 'rose': 'ரோஸ்', 'orange': 'ஆரஞ்சு', 'violet': 'வைலட்',
     'pink': 'பிங்க்', 'navy': 'நேவி', 'l. navy': 'L. நேவி', 'd. navy': 'D. நேவி', 'maroon': 'மெரூன்',
     'olive': 'ஆலிவ்', 'l. blue': 'L. ப்ளூ', 'r. blue': 'R. ப்ளூ', 'turq': 'டர்க்', 'purple': 'பர்புள்',
     'cream': 'கிரீம்', 'beige': 'பேஜ்', 'biscuit': 'பிஸ்கட்', 'majenda': 'மெஜந்தா', 'silver': 'சில்வர்',
-    'peach': 'பீச்', 'sky blue': 'வான ப்ளூ', 'bottle green': 'பாட்டில் கிரீன்', 'onion': 'ஆனியன்'
+    'peach': 'பீச்', 'sky blue': 'வான ப்ளூ', 'onion': 'ஆனியன்', 'mint': 'மின்ட்', 'teal': 'டீல்', 
+    'coral': 'பவளம்', 'lavender': 'லாவெண்டர்', 'charcoal': 'சார்கோல்', 'rust': 'ரஸ்ட்', 'mustard': 'கடுகு'
 };
+
+function cleanBaseColorName(rawName) {
+    if (!rawName) return "";
+    let clean = String(rawName);
+    if (clean.includes("<")) {
+        let tmp = document.createElement("div");
+        tmp.innerHTML = clean;
+        clean = tmp.textContent || tmp.innerText || "";
+    }
+    clean = clean.replace(/T-\d+/gi, '').replace(/NO\.\s*\d+/gi, '');
+    clean = clean.replace(/\([^)]*\)/g, '');
+    clean = clean.replace(/Select Colour/gi, '').trim();
+    clean = clean.replace(/\s+/g, ' ').trim();
+    return clean || "Custom";
+}
 
 function getLocalizedColorName(engName) {
     if (!engName) return "";
-    let clean = engName.trim();
-    let lower = clean.toLowerCase();
-    let tamil = "";
-    if (typeof texfriendColourMaster !== 'undefined') {
-        for (let cat of texfriendColourMaster) {
-            let found = cat.shades.find(s => s.name.toLowerCase() === lower);
-            if (found) {
-                tamil = COLOR_TRANSLATIONS[found.name.toLowerCase()] || COLOR_TRANSLATIONS[cat.name.toLowerCase()] || "";
+    let base = cleanBaseColorName(engName);
+    let lower = base.toLowerCase();
+    let tamil = COLOR_TRANSLATIONS[lower] || "";
+    if (!tamil) {
+        for (let k in COLOR_TRANSLATIONS) {
+            if (lower === k || lower.startsWith(k + " ") || lower.endsWith(" " + k)) {
+                tamil = COLOR_TRANSLATIONS[k];
                 break;
             }
         }
     }
-    if (!tamil) { tamil = COLOR_TRANSLATIONS[lower] || ""; }
-    if (tamil) { return `${clean} (${tamil})`; }
-    return clean;
+    if (tamil) return `${base} (${tamil})`;
+    return base;
 }
 
 function getShadeName(hex, orig) {
     if (orig && orig.trim() !== "") {
-        let clean = orig;
-        if (orig.includes("<")) {
-            let tmp = document.createElement("div");
-            tmp.innerHTML = orig;
-            clean = tmp.textContent || tmp.innerText || "";
-            clean = clean.replace(/\(Tap to map tone\)/g, "").replace(/Select Colour/g, "Custom").trim();
-        }
-        return getLocalizedColorName(clean) || clean;
+        return getLocalizedColorName(orig);
     }
     let h = String(hex).toLowerCase();
     if (typeof texfriendColourMaster !== 'undefined') {
         for(let m of texfriendColourMaster) {
             for(let s of m.shades) {
-                if(s.hex.toLowerCase() === h) return getLocalizedColorName(s.name) || s.name;
+                if(s.hex.toLowerCase() === h) return getLocalizedColorName(m.name);
             }
         }
     }
-    return orig || "Custom Shade";
+    return orig || "Custom";
 }
 
 function expandPattern(str) {
@@ -795,6 +885,82 @@ function designName(d) { return String(d?.designNo ?? d?.design_no ?? d?.designN
 function setStatus(x) { const el = $("designStatus"); if(el) el.textContent = x; }
 function escapeColourText(value) { return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
+/* ================= COMPREHENSIVE 60 TONE ADVANCED COLOUR MASTER ================= */
+const MASTER_COLOR_SPECS = [
+    { name: "Green", h: 125, sMin: 65, sMax: 96, lMin: 18, lMax: 82 },
+    { name: "P. Green", h: 95, sMin: 70, sMax: 98, lMin: 25, lMax: 84 },
+    { name: "Bottle Green", h: 145, sMin: 70, sMax: 95, lMin: 10, lMax: 40 },
+    { name: "Black", h: 0, sMin: 0, sMax: 0, lMin: 4, lMax: 26, isMono: true },
+    { name: "Blue", h: 215, sMin: 65, sMax: 98, lMin: 20, lMax: 84 },
+    { name: "Navy", h: 228, sMin: 55, sMax: 90, lMin: 10, lMax: 42 },
+    { name: "Turq", h: 178, sMin: 60, sMax: 95, lMin: 20, lMax: 82 },
+    { name: "Rose", h: 342, sMin: 60, sMax: 92, lMin: 26, lMax: 85 },
+    { name: "Red", h: 4, sMin: 68, sMax: 98, lMin: 20, lMax: 80 },
+    { name: "Orange", h: 26, sMin: 75, sMax: 100, lMin: 28, lMax: 84 },
+    { name: "Yellow", h: 50, sMin: 75, sMax: 100, lMin: 28, lMax: 88 },
+    { name: "Gold", h: 43, sMin: 65, sMax: 95, lMin: 24, lMax: 76 },
+    { name: "Majenda", h: 310, sMin: 65, sMax: 98, lMin: 22, lMax: 80 },
+    { name: "Maroon", h: 350, sMin: 65, sMax: 90, lMin: 12, lMax: 38 },
+    { name: "Purple", h: 275, sMin: 60, sMax: 95, lMin: 18, lMax: 78 },
+    { name: "Violet", h: 260, sMin: 60, sMax: 95, lMin: 20, lMax: 78 },
+    { name: "Cream", h: 48, sMin: 25, sMax: 60, lMin: 75, lMax: 96 },
+    { name: "Beige", h: 38, sMin: 20, sMax: 50, lMin: 62, lMax: 88 },
+    { name: "Mint", h: 158, sMin: 40, sMax: 85, lMin: 40, lMax: 90 },
+    { name: "Pink", h: 330, sMin: 60, sMax: 95, lMin: 45, lMax: 92 },
+    { name: "Khaki", h: 42, sMin: 25, sMax: 55, lMin: 28, lMax: 70 },
+    { name: "Olive", h: 74, sMin: 35, sMax: 75, lMin: 18, lMax: 62 },
+    { name: "Grey", h: 210, sMin: 4, sMax: 12, lMin: 15, lMax: 88, isMono: true },
+    { name: "Brown", h: 22, sMin: 45, sMax: 80, lMin: 14, lMax: 55 },
+    { name: "Peach", h: 18, sMin: 60, sMax: 95, lMin: 55, lMax: 90 },
+    { name: "Sky Blue", h: 198, sMin: 70, sMax: 95, lMin: 45, lMax: 90 },
+    { name: "Teal", h: 182, sMin: 65, sMax: 95, lMin: 16, lMax: 48 },
+    { name: "Lavender", h: 250, sMin: 45, sMax: 85, lMin: 60, lMax: 92 },
+    { name: "Mustard", h: 46, sMin: 75, sMax: 98, lMin: 32, lMax: 65 },
+    { name: "Rust", h: 14, sMin: 70, sMax: 92, lMin: 22, lMax: 55 },
+    { name: "White", h: 0, sMin: 0, sMax: 5, lMin: 88, lMax: 99, isMono: true }
+];
+
+function hslToHex(h, s, l) {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+const texfriendColourMaster = MASTER_COLOR_SPECS.map((spec, cIdx) => {
+    let shades = [];
+    for (let i = 0; i < 60; i++) {
+        let t = i / 59; 
+        let light = spec.lMin + (spec.lMax - spec.lMin) * t;
+        let sat = spec.isMono ? spec.sMin : (spec.sMin + (spec.sMax - spec.sMin) * (0.6 + 0.4 * Math.sin(t * Math.PI)));
+        let hue = spec.h;
+        if (!spec.isMono) {
+            hue = (spec.h + Math.sin(t * Math.PI * 2) * 6 + 360) % 360;
+        }
+
+        let toneCategory = "Medium";
+        if (light < 36) toneCategory = "Deep";
+        else if (light > 64) toneCategory = "Light";
+
+        let hex = hslToHex(Math.round(hue), Math.round(sat), Math.round(light));
+        let shadeCode = `T-${(i + 1).toString().padStart(2, '0')}`;
+        shades.push({
+            name: `${spec.name} ${shadeCode}`,
+            shadeTag: shadeCode,
+            baseName: spec.name,
+            pantone: `${1000 + (cIdx * 100) + (i + 1)}`,
+            hex: hex,
+            lightness: light,
+            tone: toneCategory
+        });
+    }
+    return { name: spec.name, shades: shades };
+});
+
 function colorName(n) {
     if(!n) return "#ffffff";
     let s = String(n).toLowerCase().trim();
@@ -813,6 +979,9 @@ function colorName(n) {
 
     if (typeof texfriendColourMaster !== 'undefined') {
         for (let group of texfriendColourMaster) {
+            if (engName.includes(group.name.toLowerCase()) || group.name.toLowerCase().includes(engName)) {
+                return group.shades[30].hex;
+            }
             for (let shade of group.shades) {
                 let sName = shade.name.toLowerCase();
                 if (sName.includes(engName) || engName.includes(sName)) {
@@ -821,6 +990,7 @@ function colorName(n) {
             }
         }
     }
+
     return "#94a3b8"; 
 }
 
@@ -871,6 +1041,9 @@ function normLine(x, warp) {
     let yarnInfo = parseYarnInfo(countVal, name, color);
     let shadeTag = lowerX.shadetag || lowerX.tag || "";
 
+    let matchTag = String(name).match(/T-\d+/i);
+    if (matchTag && !shadeTag) shadeTag = matchTag[0].toUpperCase();
+
     let finalColor = "#ffffff";
     let cTrim = String(color || "").trim();
     let hTrim = String(hexCode || "").trim();
@@ -886,7 +1059,7 @@ function normLine(x, warp) {
     }
 
     return { 
-        origName: name || color || "", 
+        origName: cleanBaseColorName(name || color || ""), 
         color: finalColor, 
         amount: parseInt(amount)||0, 
         span: parseInt(rowSpan)>1 ? parseInt(rowSpan) : "", 
@@ -1048,12 +1221,13 @@ function renderUIWithData(w=[], f=[]) {
                 if(m) countVal = m[0];
             }
             let countPrefix = countVal ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(countVal)}]</span>` : "";
+            let shadeTagBadge = x.shadeTag ? `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;">${escapeColourText(x.shadeTag)}</span>` : "";
 
             wh += `<div>
                 <label>W${i+1}</label>
                 <button type="button" class="yarn-color-btn" id="wBtn${i+1}" style="background:${x.color};" onclick="openColourPickerForEntry('warp', ${i+1})"></button>
                 <div class="yarn-name-display" id="wNameDisp${i+1}" onclick="openColourPickerForEntry('warp', ${i+1})" title="${rawOrigName}">
-                    ${countPrefix}<span class="col-name-label">${rawOrigName}</span>
+                    ${countPrefix}<span class="col-name-label">${rawOrigName}</span>${shadeTagBadge}
                 </div>
                 <input type="color" id="wC${i+1}" value="${x.color}" data-orig="${safeOrig}" data-tag="${escapeColourText(x.shadeTag)}" data-cnt="${escapeColourText(countVal)}" data-name="${escapeColourText(x.origName)}" data-seer="${x.isSeer?'1':'0'}" style="display:none;">
                 <input type="number" id="wE${i+1}" value="${x.amount||''}" min="0" inputmode="numeric" oninput="updateYarnSummary('warp'); autoRefresh3D();">
@@ -1076,12 +1250,13 @@ function renderUIWithData(w=[], f=[]) {
                 if(m) countVal = m[0];
             }
             let countPrefix = countVal ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(countVal)}]</span>` : "";
+            let shadeTagBadge = x.shadeTag ? `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;">${escapeColourText(x.shadeTag)}</span>` : "";
 
             fh += `<div>
                 <label>Wft${i+1}</label>
                 <button type="button" class="yarn-color-btn" id="weftBtn${i+1}" style="background:${x.color};" onclick="openColourPickerForEntry('weft', ${i+1})"></button>
                 <div class="yarn-name-display" id="weftNameDisp${i+1}" onclick="openColourPickerForEntry('weft', ${i+1})" title="${rawOrigName}">
-                    ${countPrefix}<span class="col-name-label">${rawOrigName}</span>
+                    ${countPrefix}<span class="col-name-label">${rawOrigName}</span>${shadeTagBadge}
                 </div>
                 <input type="color" id="weftC${i+1}" value="${x.color}" data-orig="${safeOrig}" data-tag="${escapeColourText(x.shadeTag)}" data-cnt="${escapeColourText(countVal)}" data-name="${escapeColourText(x.origName)}" style="display:none;">
                 <input type="number" id="weftP${i+1}" value="${x.amount||''}" min="0" inputmode="numeric" oninput="updateYarnSummary('weft'); autoRefresh3D();">
@@ -1373,7 +1548,6 @@ function loadSelectedDesign(){
             ...(foundEdits || {})
         };
 
-        // Graph Matrix Priority Sync
         let matrixToUse = foundEdits?.customMatrix || dentDrawMatch?.customMatrix || masterMatch?.customMatrix || sourceObj.customMatrix || sourceObj.matrix || sourceObj.weaveGraph || sourceObj.graphGrid || sourceObj.graphMatrix;
         if(matrixToUse && Array.isArray(matrixToUse) && matrixToUse.length > 0) {
             weavePatterns.custom = JSON.parse(JSON.stringify(matrixToUse));
@@ -1384,7 +1558,6 @@ function loadSelectedDesign(){
 
         let mCols = (weavePatterns.custom && weavePatterns.custom[0]) ? weavePatterns.custom[0].length : 4;
 
-        // Synchronize Drawing order according to denting editor matrix columns
         let drawVal = sourceObj.drawingPatternFormula || sourceObj.drawingPattern || sourceObj.drawingOrder || sourceObj.drawing_order || sourceObj.draft || "";
         if (!drawVal || (drawVal === "1,2,3,4" && mCols > 4)) {
             let autoArr = [];
@@ -1431,7 +1604,7 @@ function getCurrentData() {
             let hex = (c.value || "").toLowerCase();
             
             w.push({ 
-                colourName: origName, 
+                colourName: cleanBaseColorName(origName), 
                 color: hex, 
                 hex: hex, 
                 count: cnt, 
@@ -1455,7 +1628,7 @@ function getCurrentData() {
             let hex = (c.value || "").toLowerCase();
             
             f.push({ 
-                colourName: origName, 
+                colourName: cleanBaseColorName(origName), 
                 color: hex, 
                 hex: hex, 
                 count: cnt, 
@@ -1502,7 +1675,6 @@ async function saveCurrentDesign() {
         data.timestamp = new Date().toISOString();
         let cleanName = cleanDesignName(name);
 
-        // 1. இந்த பக்கத்தின் பிரத்தியேக local_edits_cache-ல் மட்டும் நிறம்/அளவு மாற்றங்களைச் சேமித்தல்
         try {
             let edits = JSON.parse(localStorage.getItem("local_edits_cache") || "{}");
             edits[cleanName] = { ...(edits[cleanName] || {}), ...data };
@@ -1511,7 +1683,6 @@ async function saveCurrentDesign() {
             window._lastEditStamp = localStorage.getItem("last_edit_timestamp");
         } catch(e) {}
 
-        // 2. இந்த பக்கத்துக்கான பிரத்தியேக cache-ல் பதிவு செய்தல் (வேறு பக்கங்களுக்கு தரவு செல்லாது)
         let cache = Array.isArray(allCloudDesigns) ? allCloudDesigns.filter(x => cleanDesignName(designName(x)) !== cleanName) : []; 
         cache.push(clone(data));
         allCloudDesigns = mergeDesigns(cache); 
@@ -1823,14 +1994,14 @@ function draw3DWeave(){
         const singleWarp = baseWarp.slice(); 
         const singleWeft = baseWeft.slice();
         
-        const halfWarpCount = Math.floor(singleWarp.length * 0.5);
-        const warp = [...singleWarp, ...singleWarp.slice(0, halfWarpCount)]; 
-        const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, halfWarpCount)]; 
-        const warpYarnInfos = [...baseWarpYarnInfo, ...baseWarpYarnInfo.slice(0, halfWarpCount)];
+        const extraWarpCount = Math.max(1, Math.round(singleWarp.length * 0.25));
+        const warp = [...singleWarp, ...singleWarp.slice(0, extraWarpCount)]; 
+        const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, extraWarpCount)]; 
+        const warpYarnInfos = [...baseWarpYarnInfo, ...baseWarpYarnInfo.slice(0, extraWarpCount)];
 
-        const halfWeftCount = Math.floor(singleWeft.length * 0.5);
-        const weft = [...singleWeft, ...singleWeft.slice(0, halfWeftCount)];
-        const weftYarnInfos = [...baseWeftYarnInfo, ...baseWeftYarnInfo.slice(0, halfWeftCount)];
+        const extraWeftCount = Math.max(1, Math.round(singleWeft.length * 0.25));
+        const weft = [...singleWeft, ...singleWeft.slice(0, extraWeftCount)];
+        const weftYarnInfos = [...baseWeftYarnInfo, ...baseWeftYarnInfo.slice(0, extraWeftCount)];
         
         const realWarpLength = warp.length; 
         const realWeftLength = weft.length;
@@ -1841,6 +2012,14 @@ function draw3DWeave(){
         
         const physW_mm = (realWarpLength / reed) * 25.4; 
         const physH_mm = (realWeftLength / pick) * 25.4;
+        
+        const singleWarpVal = singleWarp.length;
+        const singleWeftVal = singleWeft.length;
+        const singleW_mm = (singleWarpVal / reed) * 25.4;
+        const singleH_mm = (singleWeftVal / pick) * 25.4;
+        const physW_cm = singleW_mm / 10;
+        const physH_cm = singleH_mm / 10;
+        liveDesignDimensions = { widthCm: physW_cm, heightCm: physH_cm };
         
         let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
         let rawDraw = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
@@ -1857,19 +2036,12 @@ function draw3DWeave(){
         if(dentsRequired <= 0) dentsRequired = realWarpLength;
         
         const RULER = 32; 
-        const availW = Math.max(10, W - RULER - 36); 
-        const availH = Math.max(10, H - RULER - 46);
-        
-        let px_per_mm = Math.min(availW / Math.max(0.01, physW_mm), availH / Math.max(0.01, physH_mm));
-        
-        // 1:1 Original Size Override
-        if (window.forceOriginalSize) {
-            px_per_mm = 3.779527; // Exact 96 DPI CSS scale for 1 mm
-        }
-        
-        if(!isFinite(px_per_mm) || px_per_mm <= 0) px_per_mm = 2;
 
-        window.__weaveScale = { pxPerMm: px_per_mm, dpr: dpr };
+        // ================= EXACT STEEL RULER 1:1 CALIBRATION ENGINE =================
+        const base_steel_ruler_px_per_mm = 6.29; 
+        let px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier;
+
+        window.__weaveScale = { pxPerMm: px_per_mm, dpr: dpr, physW_cm, physH_cm, physW_mm, physH_mm };
         
         const drawW = Math.round(physW_mm * px_per_mm); 
         const drawH = Math.round(physH_mm * px_per_mm);
@@ -1877,17 +2049,8 @@ function draw3DWeave(){
         const totalBlockW = drawW + RULER;
         const totalBlockH = drawH + RULER;
         
-        // Centering logic considering the scale and zoom
-        let originX = Math.max(10, Math.floor((W - totalBlockW) / 2));
-        let originY = Math.max(10, Math.floor((H - totalBlockH) / 2));
-        
-        if (window.forceOriginalSize) {
-            originX = Math.max(10, W / 2 - drawW / 2);
-            originY = Math.max(10, H / 2 - drawH / 2);
-        }
-
-        const left = originX + RULER;
-        const top = originY;
+        const left = -drawW / 2;
+        const top = -drawH / 2;
         const bottom = top + drawH;
         const right = left + drawW;
         
@@ -1935,12 +2098,11 @@ function draw3DWeave(){
         ctx.save();
         ctx.translate(viewCenterX + pointX, viewCenterY + pointY);
         ctx.scale(scale, scale);
-        ctx.translate(-viewCenterX, -viewCenterY);
 
-        const visibleMinX = viewCenterX + (-viewCenterX - pointX) / scale - 40;
-        const visibleMaxX = viewCenterX + (W - viewCenterX - pointX) / scale + 40;
-        const visibleMinY = viewCenterY + (-viewCenterY - pointY) / scale - 40;
-        const visibleMaxY = viewCenterY + (H - viewCenterY - pointY) / scale + 40;
+        const visibleMinX = (-viewCenterX - pointX) / scale - 40;
+        const visibleMaxX = (W - viewCenterX - pointX) / scale + 40;
+        const visibleMinY = (-viewCenterY - pointY) / scale - 40;
+        const visibleMaxY = (H - viewCenterY - pointY) / scale + 40;
 
         ctx.save();
         ctx.beginPath();
@@ -2034,8 +2196,8 @@ function draw3DWeave(){
                 sCtx.drawImage(c, 0, 0);
                 let imgData = sCtx.getImageData(0, 0, snap.width, snap.height);
 
-                const scrX1 = (viewCenterX + pointX + (left - viewCenterX) * scale) * dpr;
-                const scrY1 = (viewCenterY + pointY + (top - viewCenterY) * scale) * dpr;
+                const scrX1 = (viewCenterX + pointX + left * scale) * dpr;
+                const scrY1 = (viewCenterY + pointY + top * scale) * dpr;
                 const scrW = drawW * scale * dpr;
                 const scrH = drawH * scale * dpr;
 
@@ -2155,16 +2317,8 @@ function draw3DWeave(){
         ctx.font = "bold 10px Arial, sans-serif";
         ctx.fillText("cm", left - RULER / 2, bottom + RULER / 2);
 
-        const singleWarpVal = singleWarp.length;
-        const singleWeftVal = singleWeft.length;
-        const singleW_mm = (singleWarpVal / reed) * 25.4;
-        const singleH_mm = (singleWeftVal / pick) * 25.4;
-
-        // DISPLAY IN CM format for easy original view reading
-        const singleW_cm = singleW_mm / 10;
-        const singleH_cm = singleH_mm / 10;
-        const line1 = `W: (${singleWarpVal} ÷ ${reed}) × 2.54 = ${singleW_cm.toFixed(2)} cm`;
-        const line2 = `H: (${singleWeftVal} ÷ ${pick}) × 2.54 = ${singleH_cm.toFixed(2)} cm`;
+        const line1 = `Original Width : ${physW_cm.toFixed(2)} cm (${singleW_mm.toFixed(1)} mm/rep)`;
+        const line2 = `Original Height: ${physH_cm.toFixed(2)} cm (${singleH_mm.toFixed(1)} mm/rep)`;
 
         ctx.save();
         ctx.font = "bold 11px Arial, sans-serif";
@@ -2176,43 +2330,34 @@ function draw3DWeave(){
         const boxLeft = right - boxWidth - 8;
         const boxTop = top + 8;
 
-        ctx.fillStyle = "rgba(10, 24, 18, 0.88)";
+        ctx.fillStyle = "rgba(10, 24, 18, 0.90)";
         ctx.strokeStyle = "#48bb78";
         ctx.lineWidth = 1.5;
         ctx.fillRect(boxLeft, boxTop, boxWidth, boxHeight);
         ctx.strokeRect(boxLeft, boxTop, boxWidth, boxHeight);
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#78d18a";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
         ctx.fillText(line1, boxLeft + boxPadX, boxTop + boxPadY);
-        ctx.fillText(line2, boxLeft + boxPadX, boxTop + boxPadY + 16);
+        ctx.fillText(line2, boxLeft + boxPadX, boxTop + boxPadY + 18);
         ctx.restore();
 
         ctx.restore();
     }); 
 }
 
-/* ================= ULTRA-STABLE PINCH ZOOM & PAN ENGINE ================= */
+/* ================= ALL-OVER FULL SCREEN SCROLLING & PINCH ENGINE ================= */
 function openFullscreen() { 
     const modal = $("fsModal"); if(!modal) return; 
     modal.style.display="flex"; 
     document.body.style.overflow = "hidden";
     scale = 1; pointX = 0; pointY = 0; panning = false; 
-    window.forceOriginalSize = false;
+    updateRulerCalDisplay();
     requestAnimationFrame(()=>{ draw3DWeave(); }); 
 }
 
-function refreshFullscreen3D() { 
-    window.forceOriginalSize = false;
-    scale = 1; pointX = 0; pointY = 0; draw3DWeave(); 
-}
-
-function setOriginalSize3D() {
-    window.forceOriginalSize = true;
-    scale = 1; pointX = 0; pointY = 0;
-    draw3DWeave();
-}
+function refreshFullscreen3D() { scale = 1; pointX = 0; pointY = 0; draw3DWeave(); }
 
 function closeFullscreen() { 
     const modal = $("fsModal"); if(!modal) return; 
@@ -2252,13 +2397,10 @@ if(fsContent) {
         if(e.touches.length === 1 && panning) { 
             const dx = Math.abs(e.touches[0].clientX - touchStartClientX);
             const dy = Math.abs(e.touches[0].clientY - touchStartClientY);
-            if(dx > 6 || dy > 6) touchMoved = true;
+            if(dx > 4 || dy > 4) touchMoved = true;
 
             pointX = e.touches[0].clientX - startX; 
             pointY = e.touches[0].clientY - startY; 
-            
-            pointX = Math.max(-12000, Math.min(12000, pointX));
-            pointY = Math.max(-12000, Math.min(12000, pointY));
 
             autoRefresh3D(); 
         }
@@ -2271,7 +2413,7 @@ if(fsContent) {
             ); 
             if(lastDist && lastDist > 0) {
                 let factor = d / lastDist;
-                scale = Math.max(0.2, Math.min(25, scale * factor)); 
+                scale = Math.max(0.2, Math.min(15, scale * factor)); 
             }
             lastDist = d; 
             autoRefresh3D(); 
@@ -2296,7 +2438,7 @@ if(fsContent) {
     fsContent.addEventListener("wheel", e => {
         e.preventDefault();
         let zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-        scale = Math.max(0.2, Math.min(25, scale * zoomFactor));
+        scale = Math.max(0.2, Math.min(15, scale * zoomFactor));
         autoRefresh3D();
     }, {passive:false});
 }
@@ -2311,65 +2453,7 @@ window.addEventListener("focus", () => {
     }
 });
 
-/* ================= SMART COLOR STUDIO ================= */
-const TEXFRIEND_COLOUR_KEY = "texfriend_colour_master_v30";
-
-let texfriendColourMaster = [
-    { name: "Red", hue: 0, sRate: 85, lRate: 45 },
-    { name: "Blue", hue: 225, sRate: 80, lRate: 45 },
-    { name: "Green", hue: 130, sRate: 80, lRate: 35 },
-    { name: "Yellow", hue: 50, sRate: 90, lRate: 60 },
-    { name: "Orange", hue: 25, sRate: 90, lRate: 55 },
-    { name: "Purple", hue: 275, sRate: 75, lRate: 45 },
-    { name: "Pink", hue: 330, sRate: 75, lRate: 70 },
-    { name: "Brown", hue: 25, sRate: 60, lRate: 30 },
-    { name: "Grey", hue: 0, sRate: 0, lRate: 50 },
-    { name: "Navy", hue: 230, sRate: 70, lRate: 20 },
-    { name: "Olive", hue: 70, sRate: 50, lRate: 35 },
-    { name: "Maroon", hue: 350, sRate: 70, lRate: 25 },
-    { name: "Cyan", hue: 180, sRate: 75, lRate: 50 },
-    { name: "Magenta", hue: 300, sRate: 80, lRate: 45 },
-    { name: "Gold", hue: 45, sRate: 85, lRate: 50 },
-    { name: "Khaki", hue: 35, sRate: 40, lRate: 70 },
-    { name: "Peach", hue: 15, sRate: 60, lRate: 75 },
-    { name: "Violet", hue: 260, sRate: 70, lRate: 55 },
-    { name: "Teal", hue: 190, sRate: 80, lRate: 35 },
-    { name: "Black & White", hue: 0, sRate: 0, lRate: 15 }
-].map((group, i) => {
-    return {
-        name: group.name,
-        shades: Array.from({ length: 60 }, (_, s) => { // 60 TONES EXACTLY
-            let shadeNo = s + 1;
-            let hueVar = (group.name === "Grey" || group.name === "Black & White") ? 0 : (group.hue + (s % 10) - 5 + 360) % 360;
-            let satVar = Math.max(0, Math.min(100, group.sRate + ((s % 15) - 7)));
-            
-            // Lightness mapping (Creates 60 proper gradients per color)
-            let lightVar = Math.max(5, Math.min(95, 95 - (s * (90 / 59)))); 
-            if (group.name === "Black & White") {
-                lightVar = 100 - (s * (100 / 59));
-            }
-            
-            return {
-                name: `${shadeNo < 10 ? '0' + shadeNo : shadeNo}`,
-                pantone: `${1000 + (i*100) + shadeNo}`,
-                hex: `hsl(${Math.round(hueVar)}, ${Math.round(satVar)}%, ${Math.round(lightVar)}%)`
-            };
-        })
-    };
-});
-
-function loadTexfriendColourMaster() {
-    try { 
-        const saved = localStorage.getItem(TEXFRIEND_COLOUR_KEY); 
-        if(saved) { 
-            const parsed = JSON.parse(saved); 
-            if(Array.isArray(parsed) && parsed.length) texfriendColourMaster = parsed; 
-        } else {
-            localStorage.setItem(TEXFRIEND_COLOUR_KEY, JSON.stringify(texfriendColourMaster));
-        }
-    } catch(e) {}
-}
-
+/* ================= SMART COLOR STUDIO LOGIC (60 TONES) ================= */
 function setToneFilter(tone, btn) {
     currentToneFilter = tone;
     document.querySelectorAll('.tone-chip').forEach(el => el.classList.remove('active'));
@@ -2386,28 +2470,25 @@ function filterColourPopup() {
     let matchedShades = [];
 
     texfriendColourMaster.forEach((cat, catIdx) => {
+        const catNameLower = cat.name.toLowerCase();
         cat.shades.forEach(shade => {
             const sName = shade.name.toLowerCase();
+            const sTag = (shade.shadeTag || "").toLowerCase();
             const sPantone = (shade.pantone || "").toLowerCase();
             const sHex = (shade.hex || "").toLowerCase();
-            const catName = cat.name.toLowerCase();
 
             let matchesText = false;
             if(!text) {
                 matchesText = (catIdx === activeColourMasterIndex);
             } else {
-                matchesText = sName.includes(text) || sPantone.includes(text) || sHex.includes(text) || catName.includes(text);
+                matchesText = sName.includes(text) || sTag.includes(text) || sPantone.includes(text) || sHex.includes(text) || catNameLower.includes(text);
             }
 
             let matchesTone = true;
             if (matchesText && currentToneFilter !== 'all') {
-                let hslMatch = shade.hex.match(/hsl\(\s*\d+\s*,\s*\d+%\s*,\s*(\d+)%\s*\)/i);
-                if (hslMatch) {
-                    let lightness = parseInt(hslMatch[1]);
-                    if (currentToneFilter === 'dark' && lightness > 40) matchesTone = false;
-                    if (currentToneFilter === 'medium' && (lightness <= 40 || lightness >= 70)) matchesTone = false;
-                    if (currentToneFilter === 'light' && lightness < 70) matchesTone = false;
-                }
+                if (currentToneFilter === 'deep' && shade.lightness > 36) matchesTone = false;
+                if (currentToneFilter === 'medium' && (shade.lightness <= 36 || shade.lightness >= 64)) matchesTone = false;
+                if (currentToneFilter === 'light' && shade.lightness < 64) matchesTone = false;
             }
 
             if(matchesText && matchesTone) {
@@ -2417,12 +2498,12 @@ function filterColourPopup() {
     });
 
     if(countDisp) {
-        countDisp.textContent = `Found ${matchedShades.length} Tone Shades`;
+        countDisp.textContent = `Showing ${matchedShades.length} Tones (60 Tones Per Color)`;
     }
 
     grid.innerHTML = "";
     if (matchedShades.length === 0) {
-        grid.innerHTML = `<div style="color:#9fc5aa; font-size:0.75rem; padding:20px; grid-column:1/-1; text-align:center;">No matching tones found. Try different keyword!</div>`;
+        grid.innerHTML = `<div style="color:#9fc5aa; font-size:0.75rem; padding:20px; grid-column:1/-1; text-align:center;">No matching tones found. Try another keyword!</div>`;
         return;
     }
 
@@ -2430,12 +2511,11 @@ function filterColourPopup() {
         const card = document.createElement("div");
         card.className = "swatch-card" + (selectedColourForPopup?.hex === shade.hex ? " selected" : "");
         
-        let shortShadeText = "NO. " + shade.name;
-
         card.innerHTML = `
             <div class="swatch-color" style="background:${shade.hex}"></div>
             <div class="swatch-details">
-                <div class="swatch-name" title="${escapeColourText(shade.name)}">${escapeColourText(shortShadeText)}</div>
+                <div class="swatch-name" title="${escapeColourText(shade.name)}">${escapeColourText(shade.name)}</div>
+                <div class="swatch-sub">${shade.tone} • ${shade.hex}</div>
             </div>
         `;
         card.onclick = () => {
@@ -2462,10 +2542,10 @@ function renderPopupTabs() {
 }
 
 function openColourPopup(masterName, shadeIndex, targetType=null, targetIndex=null) {
-    const masterIndex = texfriendColourMaster.findIndex(x=>x.name===masterName); 
+    const masterIndex = texfriendColourMaster.findIndex(x=>x.name.toLowerCase()===masterName.toLowerCase()); 
     if(masterIndex >= 0) activeColourMasterIndex = masterIndex;
     const master = texfriendColourMaster[activeColourMasterIndex]; 
-    selectedColourForPopup = master.shades[0];
+    selectedColourForPopup = master.shades[shadeIndex || 0] || master.shades[0];
     colourPopupTarget = { type:targetType, index:targetIndex };
     
     if($("editingTargetInfo")) {
@@ -2492,55 +2572,31 @@ function closeColourPopup() {
     }
 }
 
-function showDentingPane(pane) {
-    document.querySelectorAll(".denting-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".denting-pane").forEach(p => p.classList.remove("active"));
-    const tabBtn = $(pane + "TabBtn");
-    const paneEl = $(pane + "Pane");
-    if (tabBtn) tabBtn.classList.add("active");
-    if (paneEl) paneEl.classList.add("active");
-}
-
-function openDentingModal() {
-    const modal = $("dentingModal");
-    if (modal) {
-        modal.classList.add("active");
-        modal.style.display = "flex";
-        showDentingPane("dent");
-    }
-}
-
-function closeDentingModal() {
-    const modal = $("dentingModal");
-    if (modal) {
-        modal.classList.remove("active");
-        modal.style.display = "none";
-    }
-}
-
 function applySelectedColour() {
     if(!selectedColourForPopup) { closeColourPopup(); return; }
     const target = colourPopupTarget;
     let newHex = selectedColourForPopup.hex.toLowerCase(); 
-    let shadeTagText = "NO. " + selectedColourForPopup.name;
+    let baseColorName = selectedColourForPopup.baseName || cleanBaseColorName(selectedColourForPopup.name);
+    let shadeTagText = selectedColourForPopup.shadeTag || "T-01";
     let isSync = $("syncColorCheck")?.checked ?? true;
 
     function updateRowDisplay(inp, btn, disp, badge) {
         if(!inp) return;
         inp.value = newHex;
-        
-        let currentOrig = inp.getAttribute("data-orig") || inp.getAttribute("data-name") || "";
+        inp.setAttribute("data-orig", baseColorName);
+        inp.setAttribute("data-name", baseColorName);
         inp.setAttribute("data-tag", shadeTagText);
 
         if (btn) btn.style.background = newHex;
         if (badge) badge.textContent = shadeTagText;
         if (disp) {
-            let rawOrigName = getLocalizedColorName(currentOrig) || currentOrig || "Custom";
+            let localized = getLocalizedColorName(baseColorName);
             let cnt = inp.getAttribute("data-cnt") || "";
             let countPrefix = cnt ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(cnt)}]</span>` : "";
+            let tagBadge = `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;">${shadeTagText}</span>`;
             
-            disp.innerHTML = `${countPrefix}<span class="col-name-label">${rawOrigName}</span>`;
-            disp.title = rawOrigName;
+            disp.innerHTML = `${countPrefix}<span class="col-name-label">${localized}</span>${tagBadge}`;
+            disp.title = `${localized} (${shadeTagText})`;
         }
     }
 
@@ -2551,13 +2607,13 @@ function applySelectedColour() {
             let input = $("wC" + target.index);
             if (input) {
                 oldHex = input.value.toLowerCase();
-                oldName = (input.getAttribute("data-orig") || "").toLowerCase();
+                oldName = cleanBaseColorName(input.getAttribute("data-orig") || "").toLowerCase();
             }
         } else if (target.type === "weft" && target.index) {
             let input = $("weftC" + target.index);
             if (input) {
                 oldHex = input.value.toLowerCase();
-                oldName = (input.getAttribute("data-orig") || "").toLowerCase();
+                oldName = cleanBaseColorName(input.getAttribute("data-orig") || "").toLowerCase();
             }
         }
 
@@ -2568,7 +2624,7 @@ function applySelectedColour() {
             let badge = $("wShadeBadge" + i);
             if (inp) {
                 let curHex = inp.value.toLowerCase();
-                let curName = (inp.getAttribute("data-orig") || "").toLowerCase();
+                let curName = cleanBaseColorName(inp.getAttribute("data-orig") || "").toLowerCase();
                 if ((oldName && curName === oldName) || (!oldName && curHex === oldHex)) {
                     updateRowDisplay(inp, btn, disp, badge);
                 }
@@ -2582,7 +2638,7 @@ function applySelectedColour() {
             let badge = $("weftShadeBadge" + i);
             if (inp) {
                 let curHex = inp.value.toLowerCase();
-                let curName = (inp.getAttribute("data-orig") || "").toLowerCase();
+                let curName = cleanBaseColorName(inp.getAttribute("data-orig") || "").toLowerCase();
                 if ((oldName && curName === oldName) || (!oldName && curHex === oldHex)) {
                     updateRowDisplay(inp, btn, disp, badge);
                 }
@@ -2602,14 +2658,144 @@ function applySelectedColour() {
 }
 
 function openColourPickerForEntry(type, index) {
-    const input = $(type==="warp" ? "wC"+index : "weftC"+index); const hex = input?.value || "#22c55e";
-    let foundMaster = texfriendColourMaster.findIndex(master=>master.shades.some(shade=>shade.hex.toLowerCase()===hex.toLowerCase()));
-    if(foundMaster<0) foundMaster=0; activeColourMasterIndex = foundMaster; const master = texfriendColourMaster[activeColourMasterIndex];
-    let foundShade = master.shades.find(shade=>shade.hex.toLowerCase()===hex.toLowerCase()); if(!foundShade) foundShade=master.shades[0];
-    selectedColourForPopup = foundShade; openColourPopup(master.name, master.shades.indexOf(foundShade), type, index);
+    const input = $(type==="warp" ? "wC"+index : "weftC"+index); 
+    const hex = (input?.value || "#22c55e").toLowerCase();
+    let foundMaster = 0, foundShade = 0;
+    
+    texfriendColourMaster.forEach((cat, cIdx) => {
+        cat.shades.forEach((s, sIdx) => {
+            if(s.hex.toLowerCase() === hex) {
+                foundMaster = cIdx;
+                foundShade = sIdx;
+            }
+        });
+    });
+
+    activeColourMasterIndex = foundMaster; 
+    const master = texfriendColourMaster[activeColourMasterIndex];
+    selectedColourForPopup = master.shades[foundShade] || master.shades[0];
+    openColourPopup(master.name, foundShade, type, index);
 }
 
-/* ================= PRINT MODULE ================= */
+/* ================= PRINT MODULE & CAD PRINT SCALE ENGINE ================= */
+function openCadPrintModal() {
+    const modal = $("cadPrintModal");
+    const { widthCm, heightCm } = liveDesignDimensions;
+    $("cadOrigSizeDisp").textContent = `${widthCm.toFixed(2)} × ${heightCm.toFixed(2)} cm`;
+    selectedCadScalePercent = 100;
+    $("cadScaleRange").value = 100;
+    updateCadPrintScale(100);
+    modal.style.display = "flex";
+}
+
+function closeCadPrintModal() { 
+    const modal = $("cadPrintModal");
+    if(modal) modal.style.display = "none"; 
+}
+
+function updateCadPrintScale(val) {
+    selectedCadScalePercent = parseInt(val) || 100;
+    $("cadScaleValDisp").textContent = selectedCadScalePercent + "%";
+    const { widthCm, heightCm } = liveDesignDimensions;
+    const factor = selectedCadScalePercent / 100;
+    const printW = (widthCm * factor).toFixed(2);
+    const printH = (heightCm * factor).toFixed(2);
+    $("cadPrintSizeDisp").textContent = `${printW} × ${printH} cm`;
+}
+
+function autoFitToA4() {
+    const { widthCm, heightCm } = liveDesignDimensions;
+    const maxW = 19.5, maxH = 27.5;
+    let ratioW = (maxW / Math.max(0.1, widthCm)) * 100;
+    let ratioH = (maxH / Math.max(0.1, heightCm)) * 100;
+    let fitVal = Math.min(100, Math.floor(Math.min(ratioW, ratioH)));
+    fitVal = Math.max(10, fitVal);
+    $("cadScaleRange").value = fitVal;
+    updateCadPrintScale(fitVal);
+}
+
+function executeRealA4Print() {
+    try {
+        const srcCanvas = $("weaveCanvas");
+        if (!srcCanvas) return alert("3D Canvas காணப்படவில்லை.");
+
+        const cropCanvas = document.createElement("canvas");
+        const cpCtx = cropCanvas.getContext("2d");
+        const sCtx = srcCanvas.getContext("2d");
+        const imgData = sCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+        const d = imgData.data;
+        const w = srcCanvas.width;
+        const h = srcCanvas.height;
+
+        let topY = 0;
+        let found = false;
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const idx = (y * w + x) * 4;
+                if (d[idx + 3] > 10) {
+                    topY = Math.max(0, y - 4);
+                    found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+
+        const cropHeight = Math.max(1, h - topY);
+        cropCanvas.width = w;
+        cropCanvas.height = cropHeight;
+
+        cpCtx.fillStyle = "#ffffff";
+        cpCtx.fillRect(0, 0, w, cropHeight);
+        cpCtx.drawImage(srcCanvas, 0, topY, w, cropHeight, 0, 0, w, cropHeight);
+
+        const dataURL = cropCanvas.toDataURL("image/jpeg", 0.95);
+        const { widthCm, heightCm } = liveDesignDimensions;
+        const scaleFactor = selectedCadScalePercent / 100;
+        const finalW_cm = (widthCm * scaleFactor).toFixed(2);
+        const finalH_cm = (heightCm * scaleFactor).toFixed(2);
+
+        const isPortrait = parseFloat(finalH_cm) >= parseFloat(finalW_cm);
+
+        const printWin = window.open("", "_blank", "width=950,height=1100");
+        if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
+
+        printWin.document.open();
+        printWin.document.write("<!DOCTYPE html>");
+        printWin.document.write('<html><head><meta charset="UTF-8"><title>3D Weave A4 Print</title>');
+        printWin.document.write(`
+            <style>
+                @page { size: A4 ${isPortrait ? "portrait" : "landscape"}; margin: 8mm; }
+                * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                html, body { margin: 0; padding: 0; background: #fff; width: 100%; height: 100%; font-family: sans-serif; }
+                body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                .cad-header { font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #111; text-align: center; }
+                img { display: block; width: ${finalW_cm}cm; height: ${finalH_cm}cm; max-width: 100%; max-height: 94vh; object-fit: contain; border: 1px solid #e2e8f0; }
+            </style>
+        `);
+        printWin.document.write('</head><body>');
+        printWin.document.write(`<div class="cad-header">Texfriend CAD Simulation (Scale: ${selectedCadScalePercent}% | ${finalW_cm} × ${finalH_cm} cm)</div>`);
+        printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
+        printWin.document.write('</body></html>');
+        printWin.document.close();
+
+        const doPrint = function() {
+            printWin.focus();
+            printWin.print();
+        };
+
+        const img = printWin.document.getElementById("print3DImage");
+        if (img) {
+            img.onload = function() { setTimeout(doPrint, 250); };
+        } else {
+            setTimeout(doPrint, 500);
+        }
+        closeCadPrintModal();
+    } catch(e) {
+        alert("Print Error: " + e.message);
+    }
+}
+
 function printDesign() {
     try {
         const modal = $("printModalBox");
@@ -2649,9 +2835,7 @@ function triggerRealPrint() {
     const fs = $("fsModal");
     const wasFsOpen = fs && fs.style.display === "flex";
     if (wasFsOpen) fs.style.display = "none";
-    
     window.print();
-    
     if (wasFsOpen) fs.style.display = "flex";
 }
 
@@ -2808,7 +2992,8 @@ function buildWarpTable(lines, drawArr) {
 
             item.rows.forEach((l, sIdx) => {
                 let rawCol = l.colourName || l.origName || "";
-                let cleanName = getLocalizedColorName(rawCol) || rawCol || "Custom";
+                let pureColorName = cleanBaseColorName(rawCol);
+                let cleanName = getLocalizedColorName(pureColorName) || pureColorName || "Custom";
                 let amt = parseInt(l.ends) || 0;
                 
                 let setTd = "";
@@ -2839,7 +3024,8 @@ function buildWarpTable(lines, drawArr) {
         } else {
             let l = item.row;
             let rawCol = l.colourName || l.origName || "";
-            let cleanName = getLocalizedColorName(rawCol) || rawCol || "Custom";
+            let pureColorName = cleanBaseColorName(rawCol);
+            let cleanName = getLocalizedColorName(pureColorName) || pureColorName || "Custom";
             let amt = parseInt(l.ends) || 0;
             
             let frames = [];
@@ -2921,99 +3107,6 @@ function buildDesignPrintContent() {
             <span>Generated: ${stamp}</span>
         </div>
     `;
-}
-
-function print3DOnly() {
-    try {
-        const srcCanvas = document.getElementById("weaveCanvas");
-        if (!srcCanvas) return alert("3D Canvas காணப்படவில்லை.");
-
-        const cropCanvas = document.createElement("canvas");
-        const cpCtx = cropCanvas.getContext("2d");
-        const sCtx = srcCanvas.getContext("2d");
-        const imgData = sCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
-        const d = imgData.data;
-        const w = srcCanvas.width;
-        const h = srcCanvas.height;
-
-        let topY = 0;
-        let found = false;
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                const idx = (y * w + x) * 4;
-                if (d[idx + 3] > 10) {
-                    topY = Math.max(0, y - 4);
-                    found = true;
-                    break;
-                }
-            }
-            if (found) break;
-        }
-
-        const cropHeight = Math.max(1, h - topY);
-        cropCanvas.width = w;
-        cropCanvas.height = cropHeight;
-
-        cpCtx.fillStyle = "#ffffff";
-        cpCtx.fillRect(0, 0, w, cropHeight);
-        cpCtx.drawImage(srcCanvas, 0, topY, w, cropHeight, 0, 0, w, cropHeight);
-
-        const dataURL = cropCanvas.toDataURL("image/jpeg", 0.95);
-
-        const scaleInfo = window.__weaveScale || { pxPerMm: 2, dpr: 1 };
-        const pxPerMm = scaleInfo.pxPerMm > 0 ? scaleInfo.pxPerMm : 2;
-        const dpr = scaleInfo.dpr > 0 ? scaleInfo.dpr : 1;
-        
-        // Print Scale % Check logic
-        const userScaleInput = document.getElementById("cadPrintScale");
-        const userScale = parseFloat(userScaleInput?.value || 100) / 100;
-
-        const imgWidth_mm = ((w / dpr) / pxPerMm) * userScale;
-        const imgHeight_mm = ((cropHeight / dpr) / pxPerMm) * userScale;
-
-        const pageMargin_mm = 8;
-        const isPortraitPage = imgHeight_mm >= imgWidth_mm;
-        const pageW_mm = isPortraitPage ? 210 : 297;
-        const pageH_mm = isPortraitPage ? 297 : 210;
-        const usableW_mm = pageW_mm - pageMargin_mm * 2;
-        const usableH_mm = pageH_mm - pageMargin_mm * 2;
-
-        let finalW_mm = imgWidth_mm;
-        let finalH_mm = imgHeight_mm;
-        
-        // Warning if Print Scale makes the image overflow A4 Paper
-        if (finalW_mm > usableW_mm || finalH_mm > usableH_mm) {
-            alert(`குறிப்பு: பிரிண்ட் அளவு (${Math.round(finalW_mm)}x${Math.round(finalH_mm)}mm) A4 பேப்பரை விடப் பெரிதாக உள்ளது. பேப்பருக்குள் அடங்க Scale அளவை சிறிது குறைக்கவும்.`);
-        }
-
-        const printWin = window.open("", "_blank", "width=950,height=1100");
-        if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
-
-        printWin.document.open();
-        printWin.document.write("<!DOCTYPE html>");
-        printWin.document.write('<html><head><meta charset="UTF-8"><title>3D Weave Print</title>');
-        printWin.document.write(`<style>@page{size:A4 ${isPortraitPage ? "portrait" : "landscape"};margin:${pageMargin_mm}mm;}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}html,body{margin:0;padding:0;background:#fff;width:100%;height:100%;}body{display:flex;align-items:center;justify-content:center; flex-direction:column;}img{display:block;width:${finalW_mm}mm;height:${finalH_mm}mm;margin:0 auto;}</style>`);
-        printWin.document.write('</head><body>');
-        printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
-        printWin.document.write('</body></html>');
-        printWin.document.close();
-
-        const doPrint = function() {
-            printWin.focus();
-            printWin.print();
-        };
-
-        const img = printWin.document.getElementById("print3DImage");
-        if (img) {
-            img.onload = function() {
-                setTimeout(doPrint, 200);
-            };
-        } else {
-            setTimeout(doPrint, 500);
-        }
-    } catch(e) {
-        alert("Print Error: " + e.message);
-    }
 }
 
 // Immediate execution loader
