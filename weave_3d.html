@@ -2808,7 +2808,7 @@ function executeRealA4Print() {
         const singleWarp = baseWarp.slice();
         const singleWeft = baseWeft.slice();
 
-        // சிமுலேஷன் பக்கத்தில் உள்ளவாறே 1 Repeat + 25% கூடுதல் Repeat (1.25 Repeats)
+        // 1 Repeat + 25% கூடுதல் Repeat (1.25 Repeats)
         const extraWarpCount = Math.max(1, Math.round(singleWarp.length * 0.25));
         const warp = [...singleWarp, ...singleWarp.slice(0, extraWarpCount)];
         const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, extraWarpCount)];
@@ -2829,11 +2829,11 @@ function executeRealA4Print() {
         const physW_mm = (realWarpLength / reed) * 25.4;
         const physH_mm = (realWeftLength / pick) * 25.4;
 
-        // 1 Repeat அசல் அளவு (தலைப்பில் காட்டுவதற்கு)
+        // 1 Repeat அசல் அளவு (Display-க்காக)
         const singleW_cm = ((singleWarp.length / reed) * 25.4) / 10;
         const singleH_cm = ((singleWeft.length / pick) * 25.4) / 10;
 
-        // உயர் தெளிவுத்திறன் அளவீடு
+        // உயர் தெளிவுத்திறன் ஸ்கேலிங்
         const base_steel_ruler_px_per_mm = 6.29;
         const printDpr = 2.0;
         const px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier * printDpr;
@@ -2942,7 +2942,7 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, edgeH, cellH);
+                        pCtx.fillRect(curX, y, curW, edgeH);
                         pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                 } else {
@@ -2957,8 +2957,8 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, edgeH, cellH);
-                        pCtx.fillRect(curX + curW - edgeH, y, edgeW, cellH);
+                        pCtx.fillRect(curX, y, curW, edgeH);
+                        pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                     if(curW >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
