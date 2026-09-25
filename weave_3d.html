@@ -298,8 +298,8 @@ input, select {
 .fs-modal { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; flex-direction: column; }
 .fs-header { height: 48px; min-height: 48px; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; background: #14251e; border-bottom: 1px solid #345947; }
 .fs-title { color: #9be4a8; font-size: .85rem; font-weight: 900; }
-.fs-header-actions { display: flex; gap: 8px; }
-.fs-header button { border: 0; border-radius: 6px; padding: 6px 14px; color: #fff; font-weight: 800; font-size: .7rem; cursor: pointer; }
+.fs-header-actions { display: flex; gap: 8px; align-items: center; }
+.fs-header button { border: 0; border-radius: 6px; padding: 6px 10px; color: #fff; font-weight: 800; font-size: .7rem; cursor: pointer; }
 .fs-content { flex: 1; width: 100vw; height: calc(100vh - 48px - 72px); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #060c09; touch-action: none; position: relative; }
 .fs-content canvas { 
     width: 100%; 
@@ -575,9 +575,14 @@ input, select {
 <!-- FULLSCREEN 3D -->
 <div id="fsModal" class="fs-modal">
     <div class="fs-header">
-        <div class="fs-title">🧊 3D Weave Preview Pro</div>
+        <div class="fs-title">🧊 3D Weave Preview</div>
         <div class="fs-header-actions">
-            <button style="background:#244638;border:1px solid #39614f;" onclick="refreshFullscreen3D()">↺ 1:1 Reset</button>
+            <div style="display:flex;align-items:center;gap:4px;background:#14251e;padding:2px 6px;border-radius:6px;border:1px solid #345947;color:#fff;">
+                <span style="font-size:0.65rem;">Scale:</span>
+                <input type="number" id="cadPrintScale" value="100" min="10" max="200" style="width:40px;height:24px;padding:0 4px;font-size:0.75rem;text-align:center;font-weight:bold;color:#000;"> %
+            </div>
+            <button style="background:#047857;border:1px solid #065f46;" onclick="setOriginalSize3D()">1:1 Original CM</button>
+            <button style="background:#244638;border:1px solid #39614f;" onclick="refreshFullscreen3D()">Fit Screen</button>
             <button style="background:#217eaf;font-size:0.75rem;padding:6px 14px;" onclick="print3DOnly()">🖨️ Print CAD</button>
             <button style="background:#633b3b" onclick="closeFullscreen()">✖ Close</button>
         </div>
@@ -637,12 +642,12 @@ input, select {
     <div class="colour-popup-box">
         <div class="colour-popup-head">
             <div>
-                <b id="colourPopupTitle">🎨 Smart Color Studio</b>
+                <b id="colourPopupTitle">🎨 Smart Color Studio (60 Tones)</b>
                 <div id="editingTargetInfo" style="font-size:0.55rem; color:#9fc5aa; margin-top:1px;">Editing Line</div>
             </div>
             <button class="colour-popup-close" onclick="closeColourPopup()">✕</button>
         </div>
-        <input type="text" id="colourSearchInput" class="search-box" placeholder="🔍 Search color name (eg: Navy, Pink, Blue, #hex)..." oninput="filterColourPopup()">
+        <input type="text" id="colourSearchInput" class="search-box" placeholder="🔍 Search color name (ex: Red, Blue, #hex)..." oninput="filterColourPopup()">
         
         <div class="tone-filters">
             <button class="tone-chip active" onclick="setToneFilter('all', this)">All Tones</button>
@@ -815,28 +820,6 @@ function colorName(n) {
                 }
             }
         }
-    }
-
-    let baseColors = {
-        'black': '#111827', 'கருப்பு': '#111827',
-        'white': '#f8fafc', 'வெள்ளை': '#f8fafc', 'சலவை': '#f8fafc', 'salavai': '#f8fafc',
-        'red': '#ef4444', 'சிவப்பு': '#ef4444', 'ரெட்': '#ef4444',
-        'maroon': '#800000', 'மெரூன்': '#800000',
-        'green': '#22c55e', 'பச்சை': '#22c55e', 'கிரீன்': '#22c55e',
-        'blue': '#2563eb', 'நீலம்': '#2563eb', 'ப்ளூ': '#2563eb',
-        'navy': '#0f4c81', 'நேவி': '#0f4c81',
-        'yellow': '#eab308', 'மஞ்சள்': '#eab308',
-        'violet': '#7c3aed', 'வைலட்': '#7c3aed', 'ஊதா': '#7c3aed',
-        'purple': '#8b5cf6', 'பர்புள்': '#8b5cf6',
-        'pink': '#ec4899', 'பிங்க்': '#ec4899',
-        'orange': '#f97316', 'ஆரஞ்சு': '#f97316',
-        'brown': '#92400e', 'பிரவுன்': '#92400e',
-        'grey': '#64748b', 'gray': '#64748b', 'கிரே': '#64748b',
-        'gold': '#ffd700', 'கோல்டு': '#ffd700'
-    };
-
-    for (let key in baseColors) {
-        if (s.includes(key)) return baseColors[key];
     }
     return "#94a3b8"; 
 }
@@ -1876,7 +1859,14 @@ function draw3DWeave(){
         const RULER = 32; 
         const availW = Math.max(10, W - RULER - 36); 
         const availH = Math.max(10, H - RULER - 46);
+        
         let px_per_mm = Math.min(availW / Math.max(0.01, physW_mm), availH / Math.max(0.01, physH_mm));
+        
+        // 1:1 Original Size Override
+        if (window.forceOriginalSize) {
+            px_per_mm = 3.779527; // Exact 96 DPI CSS scale for 1 mm
+        }
+        
         if(!isFinite(px_per_mm) || px_per_mm <= 0) px_per_mm = 2;
 
         window.__weaveScale = { pxPerMm: px_per_mm, dpr: dpr };
@@ -1886,8 +1876,15 @@ function draw3DWeave(){
 
         const totalBlockW = drawW + RULER;
         const totalBlockH = drawH + RULER;
-        const originX = Math.max(10, Math.floor((W - totalBlockW) / 2));
-        const originY = Math.max(10, Math.floor((H - totalBlockH) / 2));
+        
+        // Centering logic considering the scale and zoom
+        let originX = Math.max(10, Math.floor((W - totalBlockW) / 2));
+        let originY = Math.max(10, Math.floor((H - totalBlockH) / 2));
+        
+        if (window.forceOriginalSize) {
+            originX = Math.max(10, W / 2 - drawW / 2);
+            originY = Math.max(10, H / 2 - drawH / 2);
+        }
 
         const left = originX + RULER;
         const top = originY;
@@ -2163,8 +2160,11 @@ function draw3DWeave(){
         const singleW_mm = (singleWarpVal / reed) * 25.4;
         const singleH_mm = (singleWeftVal / pick) * 25.4;
 
-        const line1 = `W: (${singleWarpVal} ÷ ${reed}) × 25.4 = ${singleW_mm.toFixed(2)} mm`;
-        const line2 = `H: (${singleWeftVal} ÷ ${pick}) × 25.4 = ${singleH_mm.toFixed(2)} mm`;
+        // DISPLAY IN CM format for easy original view reading
+        const singleW_cm = singleW_mm / 10;
+        const singleH_cm = singleH_mm / 10;
+        const line1 = `W: (${singleWarpVal} ÷ ${reed}) × 2.54 = ${singleW_cm.toFixed(2)} cm`;
+        const line2 = `H: (${singleWeftVal} ÷ ${pick}) × 2.54 = ${singleH_cm.toFixed(2)} cm`;
 
         ctx.save();
         ctx.font = "bold 11px Arial, sans-serif";
@@ -2199,10 +2199,20 @@ function openFullscreen() {
     modal.style.display="flex"; 
     document.body.style.overflow = "hidden";
     scale = 1; pointX = 0; pointY = 0; panning = false; 
+    window.forceOriginalSize = false;
     requestAnimationFrame(()=>{ draw3DWeave(); }); 
 }
 
-function refreshFullscreen3D() { scale = 1; pointX = 0; pointY = 0; draw3DWeave(); }
+function refreshFullscreen3D() { 
+    window.forceOriginalSize = false;
+    scale = 1; pointX = 0; pointY = 0; draw3DWeave(); 
+}
+
+function setOriginalSize3D() {
+    window.forceOriginalSize = true;
+    scale = 1; pointX = 0; pointY = 0;
+    draw3DWeave();
+}
 
 function closeFullscreen() { 
     const modal = $("fsModal"); if(!modal) return; 
@@ -2247,8 +2257,8 @@ if(fsContent) {
             pointX = e.touches[0].clientX - startX; 
             pointY = e.touches[0].clientY - startY; 
             
-            pointX = Math.max(-1200, Math.min(1200, pointX));
-            pointY = Math.max(-1200, Math.min(1200, pointY));
+            pointX = Math.max(-12000, Math.min(12000, pointX));
+            pointY = Math.max(-12000, Math.min(12000, pointY));
 
             autoRefresh3D(); 
         }
@@ -2261,7 +2271,7 @@ if(fsContent) {
             ); 
             if(lastDist && lastDist > 0) {
                 let factor = d / lastDist;
-                scale = Math.max(0.5, Math.min(15, scale * factor)); 
+                scale = Math.max(0.2, Math.min(25, scale * factor)); 
             }
             lastDist = d; 
             autoRefresh3D(); 
@@ -2286,7 +2296,7 @@ if(fsContent) {
     fsContent.addEventListener("wheel", e => {
         e.preventDefault();
         let zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-        scale = Math.max(0.5, Math.min(15, scale * zoomFactor));
+        scale = Math.max(0.2, Math.min(25, scale * zoomFactor));
         autoRefresh3D();
     }, {passive:false});
 }
@@ -2305,34 +2315,39 @@ window.addEventListener("focus", () => {
 const TEXFRIEND_COLOUR_KEY = "texfriend_colour_master_v30";
 
 let texfriendColourMaster = [
-    { name: "White & Light", hue: 0, sRate: 5, lRate: 90 },
-    { name: "Greys & Silver", hue: 0, sRate: 0, lRate: 50 },
-    { name: "Black & Dark", hue: 0, sRate: 0, lRate: 15 },
-    { name: "Reds", hue: 0, sRate: 85, lRate: 45 },
-    { name: "Pinks", hue: 330, sRate: 75, lRate: 70 },
-    { name: "Oranges", hue: 25, sRate: 90, lRate: 55 },
-    { name: "Yellows", hue: 50, sRate: 90, lRate: 60 },
-    { name: "L. Greens", hue: 90, sRate: 70, lRate: 65 },
-    { name: "D. Greens", hue: 130, sRate: 80, lRate: 30 },
-    { name: "Cyan & Aqua", hue: 180, sRate: 75, lRate: 50 },
-    { name: "Sky Blues", hue: 200, sRate: 85, lRate: 65 },
-    { name: "Royal Blues", hue: 225, sRate: 80, lRate: 45 },
-    { name: "Navy Blues", hue: 230, sRate: 70, lRate: 20 },
-    { name: "Purples", hue: 275, sRate: 75, lRate: 45 },
-    { name: "Magentas", hue: 300, sRate: 80, lRate: 45 },
-    { name: "Beige & Khaki", hue: 35, sRate: 40, lRate: 70 },
-    { name: "Browns", hue: 25, sRate: 60, lRate: 30 },
-    { name: "Olive & Earth", hue: 70, sRate: 50, lRate: 35 },
-    { name: "Mustard & Gold", hue: 45, sRate: 85, lRate: 50 },
-    { name: "Pastels & Soft", hue: 280, sRate: 40, lRate: 85 }
+    { name: "Red", hue: 0, sRate: 85, lRate: 45 },
+    { name: "Blue", hue: 225, sRate: 80, lRate: 45 },
+    { name: "Green", hue: 130, sRate: 80, lRate: 35 },
+    { name: "Yellow", hue: 50, sRate: 90, lRate: 60 },
+    { name: "Orange", hue: 25, sRate: 90, lRate: 55 },
+    { name: "Purple", hue: 275, sRate: 75, lRate: 45 },
+    { name: "Pink", hue: 330, sRate: 75, lRate: 70 },
+    { name: "Brown", hue: 25, sRate: 60, lRate: 30 },
+    { name: "Grey", hue: 0, sRate: 0, lRate: 50 },
+    { name: "Navy", hue: 230, sRate: 70, lRate: 20 },
+    { name: "Olive", hue: 70, sRate: 50, lRate: 35 },
+    { name: "Maroon", hue: 350, sRate: 70, lRate: 25 },
+    { name: "Cyan", hue: 180, sRate: 75, lRate: 50 },
+    { name: "Magenta", hue: 300, sRate: 80, lRate: 45 },
+    { name: "Gold", hue: 45, sRate: 85, lRate: 50 },
+    { name: "Khaki", hue: 35, sRate: 40, lRate: 70 },
+    { name: "Peach", hue: 15, sRate: 60, lRate: 75 },
+    { name: "Violet", hue: 260, sRate: 70, lRate: 55 },
+    { name: "Teal", hue: 190, sRate: 80, lRate: 35 },
+    { name: "Black & White", hue: 0, sRate: 0, lRate: 15 }
 ].map((group, i) => {
     return {
         name: group.name,
-        shades: Array.from({ length: 100 }, (_, s) => {
+        shades: Array.from({ length: 60 }, (_, s) => { // 60 TONES EXACTLY
             let shadeNo = s + 1;
-            let hueVar = group.name.includes("Grey") || group.name.includes("Black") || group.name.includes("White") ? 0 : (group.hue + (s % 15) - 7 + 360) % 360;
-            let satVar = Math.max(0, Math.min(100, group.sRate + ((s % 20) - 10)));
-            let lightVar = Math.max(5, Math.min(95, group.lRate + ((s % 25) * 2 - 25)));
+            let hueVar = (group.name === "Grey" || group.name === "Black & White") ? 0 : (group.hue + (s % 10) - 5 + 360) % 360;
+            let satVar = Math.max(0, Math.min(100, group.sRate + ((s % 15) - 7)));
+            
+            // Lightness mapping (Creates 60 proper gradients per color)
+            let lightVar = Math.max(5, Math.min(95, 95 - (s * (90 / 59)))); 
+            if (group.name === "Black & White") {
+                lightVar = 100 - (s * (100 / 59));
+            }
             
             return {
                 name: `${shadeNo < 10 ? '0' + shadeNo : shadeNo}`,
@@ -2514,7 +2529,6 @@ function applySelectedColour() {
         if(!inp) return;
         inp.value = newHex;
         
-        // ஒரிஜினல் கலர் பெயரை அழிக்காமல் அப்படியே தக்கவைத்தல்
         let currentOrig = inp.getAttribute("data-orig") || inp.getAttribute("data-name") || "";
         inp.setAttribute("data-tag", shadeTagText);
 
@@ -2949,9 +2963,13 @@ function print3DOnly() {
         const scaleInfo = window.__weaveScale || { pxPerMm: 2, dpr: 1 };
         const pxPerMm = scaleInfo.pxPerMm > 0 ? scaleInfo.pxPerMm : 2;
         const dpr = scaleInfo.dpr > 0 ? scaleInfo.dpr : 1;
+        
+        // Print Scale % Check logic
+        const userScaleInput = document.getElementById("cadPrintScale");
+        const userScale = parseFloat(userScaleInput?.value || 100) / 100;
 
-        const imgWidth_mm = (w / dpr) / pxPerMm;
-        const imgHeight_mm = (cropHeight / dpr) / pxPerMm;
+        const imgWidth_mm = ((w / dpr) / pxPerMm) * userScale;
+        const imgHeight_mm = ((cropHeight / dpr) / pxPerMm) * userScale;
 
         const pageMargin_mm = 8;
         const isPortraitPage = imgHeight_mm >= imgWidth_mm;
@@ -2960,9 +2978,13 @@ function print3DOnly() {
         const usableW_mm = pageW_mm - pageMargin_mm * 2;
         const usableH_mm = pageH_mm - pageMargin_mm * 2;
 
-        const fitScale = Math.min(1, usableW_mm / imgWidth_mm, usableH_mm / imgHeight_mm);
-        const finalW_mm = imgWidth_mm * fitScale;
-        const finalH_mm = imgHeight_mm * fitScale;
+        let finalW_mm = imgWidth_mm;
+        let finalH_mm = imgHeight_mm;
+        
+        // Warning if Print Scale makes the image overflow A4 Paper
+        if (finalW_mm > usableW_mm || finalH_mm > usableH_mm) {
+            alert(`குறிப்பு: பிரிண்ட் அளவு (${Math.round(finalW_mm)}x${Math.round(finalH_mm)}mm) A4 பேப்பரை விடப் பெரிதாக உள்ளது. பேப்பருக்குள் அடங்க Scale அளவை சிறிது குறைக்கவும்.`);
+        }
 
         const printWin = window.open("", "_blank", "width=950,height=1100");
         if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
@@ -2970,7 +2992,7 @@ function print3DOnly() {
         printWin.document.open();
         printWin.document.write("<!DOCTYPE html>");
         printWin.document.write('<html><head><meta charset="UTF-8"><title>3D Weave Print</title>');
-        printWin.document.write(`<style>@page{size:A4 ${isPortraitPage ? "portrait" : "landscape"};margin:${pageMargin_mm}mm;}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}html,body{margin:0;padding:0;background:#fff;width:100%;height:100%;}body{display:flex;align-items:center;justify-content:center;}img{display:block;width:${finalW_mm}mm;height:${finalH_mm}mm;margin:0 auto;}</style>`);
+        printWin.document.write(`<style>@page{size:A4 ${isPortraitPage ? "portrait" : "landscape"};margin:${pageMargin_mm}mm;}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}html,body{margin:0;padding:0;background:#fff;width:100%;height:100%;}body{display:flex;align-items:center;justify-content:center; flex-direction:column;}img{display:block;width:${finalW_mm}mm;height:${finalH_mm}mm;margin:0 auto;}</style>`);
         printWin.document.write('</head><body>');
         printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
         printWin.document.write('</body></html>');
