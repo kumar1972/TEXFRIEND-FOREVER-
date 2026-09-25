@@ -364,6 +364,24 @@ th{
     color:#1E2B23 !important;
 }
 
+/* Keep Warp total directly below the ENDS column */
+#warpSummaryBox{
+    display:grid;
+    grid-template-columns:10% 17% 35% 18% 20%;
+    column-gap:0;
+    align-items:start;
+}
+
+#warpSummaryBox .warp-pattern-total{
+    grid-column:1 / -1;
+}
+
+#warpSummaryBox .warp-ends-total{
+    grid-column:4;
+    width:100%;
+    box-sizing:border-box;
+}
+
 /* =========================================================
    PREVIEW MODAL
 ========================================================= */
@@ -2081,7 +2099,7 @@ function renderSplitPreviewTable(
 
         let hasTopBeam = patternTopEnds > 0;
 
-        let totalPatternEndsHtml = `<div class="summary-subbox" style="text-align:center; font-size: 11px;">`;
+        let totalPatternEndsHtml = `<div class="summary-subbox warp-pattern-total" style="text-align:center; font-size: 11px;">`;
 
         if (hasTopBeam) {
             totalPatternEndsHtml += `
@@ -2104,7 +2122,7 @@ function renderSplitPreviewTable(
         let reed = parseFloat(onloomReed) || parseFloat(foundMaster.reed || sp.reed) || 0;
         let width = parseFloat(onloomWidth) || parseFloat(foundMaster.width || sp.width) || 0;
 
-        let reedBoxHtml = `<div class="summary-subbox" style="text-align:center; font-size: 11px;">`;
+        let reedBoxHtml = `<div class="summary-subbox warp-ends-total" style="text-align:center; font-size: 11px;">`;
 
         if (reed > 0 && width > 0) {
             let totalEndsInt = Math.round(reed * width);
