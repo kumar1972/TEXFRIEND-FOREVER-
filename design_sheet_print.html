@@ -373,10 +373,26 @@ th{
 }
 
 #warpSummaryBox .warp-pattern-total{
-    grid-column:1 / -1;
+    grid-column:4;
+    width:100%;
+    box-sizing:border-box;
 }
 
 #warpSummaryBox .warp-ends-total{
+    grid-column:4;
+    width:100%;
+    box-sizing:border-box;
+}
+
+/* Keep Weft total directly below the PICKS column */
+#weftSummaryBox{
+    display:grid;
+    grid-template-columns:10% 17% 35% 18% 20%;
+    column-gap:0;
+    align-items:start;
+}
+
+#weftSummaryBox .weft-pattern-total{
     grid-column:4;
     width:100%;
     box-sizing:border-box;
@@ -2082,7 +2098,7 @@ function renderSplitPreviewTable(
             60;
 
         summaryHtml += `
-            <div class="summary-subbox">
+            <div class="summary-subbox weft-pattern-total">
                 Total Pattern Picks:
                 <b>${pureSum}</b>
             </div>
