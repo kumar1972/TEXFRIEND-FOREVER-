@@ -16,157 +16,54 @@
 
 "use strict";
 
+// ============================================================
+// VERSION (Updated to v9 so Chrome detects changes)
+// ============================================================
+const CACHE_VERSION = "v9"; 
+const CACHE_NAME = "texfriend-erp-" + CACHE_VERSION;
+const APP_SHELL_CACHE = "texfriend-shell-" + CACHE_VERSION;
 
 // ============================================================
-// VERSION
+// ALL ERP FILES
 // ============================================================
-
-const CACHE_VERSION = "v8"; // Updated version to trigger cache refresh
-
-const CACHE_NAME =
-    "texfriend-erp-" + CACHE_VERSION;
-
-const APP_SHELL_CACHE =
-    "texfriend-shell-" + CACHE_VERSION;
-
-
-// ============================================================
-// ALL ERP FILES (INCLUDES ALL DASHBOARD ICONS)
-// ============================================================
-
 const APP_SHELL = [
-
     "./",
     "./index.html",
-
-    // -------------------------
-    // CORE
-    // -------------------------
-
     "./config.js",
     "./translator.js",
     "./manifest.json",
     "./style.css",
 
-    // -------------------------
-    // ICONS (MAIN)
-    // -------------------------
-
+    // ICONS (Root and Subfolder both supported)
+    "./icon-192.png",
+    "./icon-512.png",
     "./icon/icon-192.png",
     "./icon/icon-512.png",
-
-    // -------------------------
-    // DASHBOARD & MENU ICONS
-    // -------------------------
     
-    "./icon/design_master.png",
-    "./icon/Party_Orders.png",
-    "./icon/warp_entry.png",
-    "./icon/weft_entry.png",
-    "./icon/kora_yarn.png",
-    "./icon/dyeing_issue.png",
-    "./icon/dyeing_receive.png",
-    "./icon/warping.png",
-    "./icon/weaving.png",
-    "./icon/weaving_receive.png",
-    "./icon/washing.png",
-    "./icon/Despatch.png",
-    "./icon/report.png",
-    "./icon/yarn_calc.png",
-    "./icon/design_sheet_print.png",
-    "./icon/invoice.png",
-    "./icon/design_list.png",
-    "./icon/process_matrix.png",
-
-    // -------------------------
-    // DASHBOARD HTML
-    // -------------------------
-
+    // மற்ற அனைத்து பக்கங்கள்...
     "./dashboard.html",
-
-    // -------------------------
-    // DESIGN
-    // -------------------------
-
     "./design_list.html",
     "./design_master.html",
     "./design_sheet_print.html",
-
-    // -------------------------
-    // ORDERS
-    // -------------------------
-
     "./Party_Orders.html",
-
-    // -------------------------
-    // KORA / YARN
-    // -------------------------
-
     "./kora_yarn.html",
     "./yarn_calc.html",
-
-    // -------------------------
-    // PROCESS
-    // -------------------------
-
     "./process_matrix.html",
-
-    // -------------------------
-    // WARP / WEFT
-    // -------------------------
-
     "./warp_entry.html",
     "./warping.html",
     "./weft_entry.html",
-
-    // -------------------------
-    // WEAVING
-    // -------------------------
-
     "./weaving.html",
     "./weaving_received.html",
     "./weave_3d.html",
-    "./denting_editor.html", // Added missing file from dashboard
-
-    // -------------------------
-    // DYEING
-    // -------------------------
-
+    "./denting_editor.html",
     "./dyeing_issue.html",
     "./dyeing_receive.html",
-
-    // -------------------------
-    // WASHING
-    // -------------------------
-
     "./washing.html",
-
-    // -------------------------
-    // DESPATCH
-    // -------------------------
-
     "./Despatch.html",
-
-    // -------------------------
-    // INVOICE
-    // -------------------------
-
     "./invoice.html",
-
-    // -------------------------
-    // REPORT
-    // -------------------------
-
     "./report.html",
-
-    // -------------------------
-    // SETTINGS
-    // -------------------------
-
     "./settings.html"
-
 ];
-
 
 // ============================================================
 // INSTALL
