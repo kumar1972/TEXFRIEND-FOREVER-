@@ -52,8 +52,8 @@ const APP_SHELL = [
     // ICONS (MAIN)
     // -------------------------
 
-    "./icon-192.png",
-    "./icon-512.png",
+    "./icon/icon-192.png",
+    "./icon/icon-512.png",
 
     // -------------------------
     // DASHBOARD & MENU ICONS
