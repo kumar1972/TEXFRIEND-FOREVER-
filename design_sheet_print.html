@@ -364,50 +364,40 @@ th{
     color:#1E2B23 !important;
 }
 
-/* Keep Warp total directly below the ENDS column using exact table grid percentages */
-#warpSummaryBox{
-    display:grid;
+/* Single clean unified box container for the entire summary section */
+#warpSummaryBox,
+#weftSummaryBox {
+    background: #F4F7F4 !important;
+    border: 1px dashed #CBD5CB !important;
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Align Total Pattern Ends / Picks exactly under the 4th column (ENDS/PICKS) */
+.warp-pattern-summary-row,
+.weft-pattern-summary-row {
+    display: grid;
     grid-template-columns: 10% 17% 35% 18% 20%;
-    column-gap: 0;
-    align-items: start;
     width: 100%;
 }
 
-#warpSummaryBox .warp-pattern-total{
+.warp-pattern-total,
+.weft-pattern-total {
     grid-column: 4;
-    width: 100%;
-    box-sizing: border-box;
     text-align: center !important;
+    box-sizing: border-box;
 }
 
-#warpSummaryBox .warp-ends-total{
-    grid-column: 1 / span 5;
+.warp-ends-total,
+.weft-width-total {
     width: 100%;
-    box-sizing: border-box;
     text-align: center !important;
-}
-
-/* Keep Weft total directly below the PICKS column using exact table grid percentages */
-#weftSummaryBox{
-    display:grid;
-    grid-template-columns: 10% 17% 35% 18% 20%;
-    column-gap: 0;
-    align-items: start;
-    width: 100%;
-}
-
-#weftSummaryBox .weft-pattern-total{
-    grid-column: 4;
-    width: 100%;
     box-sizing: border-box;
-    text-align: center !important;
-}
-
-#weftSummaryBox .weft-width-total{
-    grid-column: 1 / span 5;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center !important;
 }
 
 /* =========================================================
@@ -2109,10 +2099,12 @@ function renderSplitPreviewTable(
             60;
 
         summaryHtml += `
-            <div class="summary-subbox weft-pattern-total">
-                Total Pattern Picks: &nbsp;&nbsp;&nbsp; <b>${pureSum}</b>
+            <div class="weft-pattern-summary-row">
+                <div class="weft-pattern-total">
+                    Total Pattern Picks: &nbsp;&nbsp;&nbsp; <b>${pureSum}</b>
+                </div>
             </div>
-            <div class="summary-subbox weft-width-total" style="text-align:center;">
+            <div class="weft-width-total" style="text-align:center;">
                 Weft Width ${storedWidthVal} X Pick ${pickNum} = <b>${finalGrandTotal.toFixed(2)} Total Pick</b>
             </div>
         `;
@@ -2125,7 +2117,8 @@ function renderSplitPreviewTable(
 
         let hasTopBeam = patternTopEnds > 0;
 
-        let totalPatternEndsHtml = `<div class="summary-subbox warp-pattern-total">`;
+        let totalPatternEndsHtml = `<div class="warp-pattern-summary-row">`;
+        totalPatternEndsHtml += `<div class="warp-pattern-total">`;
 
         if (hasTopBeam) {
             totalPatternEndsHtml += `
@@ -2141,14 +2134,14 @@ function renderSplitPreviewTable(
             `;
         }
 
-        totalPatternEndsHtml += `</div>`;
+        totalPatternEndsHtml += `</div></div>`;
 
         summaryHtml += totalPatternEndsHtml;
 
         let reed = parseFloat(onloomReed) || parseFloat(foundMaster.reed || sp.reed) || 0;
         let width = parseFloat(onloomWidth) || parseFloat(foundMaster.width || sp.width) || 0;
 
-        let reedBoxHtml = `<div class="summary-subbox warp-ends-total">`;
+        let reedBoxHtml = `<div class="warp-ends-total">`;
 
         if (reed > 0 && width > 0) {
             let totalEndsInt = Math.round(reed * width);
@@ -2187,11 +2180,6 @@ function renderSplitPreviewTable(
 
     summaryBox.style.display =
         "block";
-
-    summaryBox.style.background = "transparent";
-    summaryBox.style.border = "none";
-    summaryBox.style.padding = "0";
-    summaryBox.style.marginBottom = "0";
 
 }
 
