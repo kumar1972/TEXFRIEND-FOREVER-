@@ -1994,6 +1994,7 @@ function draw3DWeave(){
         const singleWarp = baseWarp.slice(); 
         const singleWeft = baseWeft.slice();
         
+        // REPEAT 1.25 DESIGN (1 Repeat + 25% extra)[span_11](start_span)[span_11](end_span)
         const extraWarpCount = Math.max(1, Math.round(singleWarp.length * 0.25));
         const warp = [...singleWarp, ...singleWarp.slice(0, extraWarpCount)]; 
         const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, extraWarpCount)]; 
@@ -2013,6 +2014,7 @@ function draw3DWeave(){
         const physW_mm = (realWarpLength / reed) * 25.4; 
         const physH_mm = (realWeftLength / pick) * 25.4;
         
+        // EXACT 1 REPEAT DIMENSIONS FOR INFO BOX[span_12](start_span)[span_12](end_span)
         const singleWarpVal = singleWarp.length;
         const singleWeftVal = singleWeft.length;
         const singleW_mm = (singleWarpVal / reed) * 25.4;
@@ -2049,6 +2051,7 @@ function draw3DWeave(){
         const totalBlockW = drawW + RULER;
         const totalBlockH = drawH + RULER;
         
+        // துணி திரையின் மையத்தில் அமரவும், ரூலருக்கு இடம் ஒதுக்கவுமான சரியான கணக்கீடு
         const left = -drawW / 2;
         const top = -drawH / 2;
         const bottom = top + drawH;
@@ -2250,16 +2253,19 @@ function draw3DWeave(){
         const rulerBgColor = "#ffffff";
         const rulerBorderColor = "#475569";
 
+        // கீழ் ரூலர்
         ctx.fillStyle = rulerBgColor; 
         ctx.fillRect(left, bottom, drawW, RULER); 
         ctx.strokeStyle = rulerBorderColor; 
         ctx.lineWidth = 1;
         ctx.strokeRect(left, bottom, drawW, RULER);
 
+        // இடது செங்குத்து ரூலர் (Left Vertical Ruler - துணியை ஒட்டியே நிற்கும்)
         ctx.fillStyle = rulerBgColor; 
         ctx.fillRect(left - RULER, top, RULER, drawH);  
         ctx.strokeRect(left - RULER, top, RULER, drawH);
 
+        // மூலை சதுரம்
         ctx.fillStyle = "#f1f5f9";
         ctx.fillRect(left - RULER, bottom, RULER, RULER);         
         ctx.strokeRect(left - RULER, bottom, RULER, RULER);
@@ -2267,6 +2273,7 @@ function draw3DWeave(){
         ctx.fillStyle = "#0f172a"; 
         ctx.font = "bold 9px Arial, sans-serif"; 
 
+        // கிடைமட்ட ரூலர் எண்கள் (Horizontal CM)
         const total_mm_x = Math.round(physW_mm);
         ctx.textAlign = "center"; 
         ctx.textBaseline = "top";
@@ -2289,6 +2296,7 @@ function draw3DWeave(){
             }
         }
 
+        // இடது செங்குத்து ரூலர் எண்கள் (Vertical CM - Left Ruler)
         const total_mm_y = Math.round(physH_mm);
         ctx.textAlign = "right"; 
         ctx.textBaseline = "middle";
@@ -2317,6 +2325,7 @@ function draw3DWeave(){
         ctx.font = "bold 10px Arial, sans-serif";
         ctx.fillText("cm", left - RULER / 2, bottom + RULER / 2);
 
+        // BOX DISPLAY: STRICTLY 1 REPEAT ORIGINAL DIMENSIONS[span_13](start_span)[span_13](end_span)
         const line1 = `Original Width : ${physW_cm.toFixed(2)} cm (${singleW_mm.toFixed(1)} mm/rep)`;
         const line2 = `Original Height: ${physH_cm.toFixed(2)} cm (${singleH_mm.toFixed(1)} mm/rep)`;
 
@@ -2582,15 +2591,15 @@ function applySelectedColour() {
 
     function updateRowDisplay(inp, btn, disp, badge) {
         if(!inp) return;
+        // Keep the original colour name (e.g. "L. Pink") as-is; only the hex/shade tag change.
+        let preservedName = inp.getAttribute("data-orig") || baseColorName;
         inp.value = newHex;
-        inp.setAttribute("data-orig", baseColorName);
-        inp.setAttribute("data-name", baseColorName);
         inp.setAttribute("data-tag", shadeTagText);
 
         if (btn) btn.style.background = newHex;
         if (badge) badge.textContent = shadeTagText;
         if (disp) {
-            let localized = getLocalizedColorName(baseColorName);
+            let localized = getLocalizedColorName(preservedName);
             let cnt = inp.getAttribute("data-cnt") || "";
             let countPrefix = cnt ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(cnt)}]</span>` : "";
             let tagBadge = `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;">${shadeTagText}</span>`;
@@ -2923,6 +2932,7 @@ function buildPrintGraph(m, pickStr) {
     return html;
 }
 
+// PRINT TABLE - STRICTLY SHOWING ORIGINAL COLOR NAME ONLY[span_14](start_span)[span_14](end_span)
 function buildWarpTable(lines, drawArr) {
     if(!lines || !lines.length) return "<div style='font-size:8px;text-align:center;padding:5px;border:1px solid #ccc;'>No Yarns</div>";
     

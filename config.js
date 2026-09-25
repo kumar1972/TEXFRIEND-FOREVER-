@@ -144,9 +144,26 @@ window.TEXFRIEND_CLOUD = {
 // SUPABASE CONFIG
 // ============================================================
 
+function readSupabaseStoredValue(key) {
+    try {
+        const raw = (window.StorageDB && typeof window.StorageDB.getItem === "function")
+            ? window.StorageDB.getItem(key)
+            : localStorage.getItem(key);
+        if (raw === null || raw === undefined) return "";
+        try {
+            const parsed = JSON.parse(raw);
+            return (typeof parsed === "string") ? parsed : (parsed == null ? "" : String(parsed));
+        } catch (e) {
+            return raw; // wasn't JSON-encoded, use as-is (backward compatible)
+        }
+    } catch (e) {
+        return "";
+    }
+}
+
 window.TEXFRIEND_SUPABASE_CONFIG = {
-    url: localStorage.getItem("custom_supabase_url") || "",
-    key: localStorage.getItem("custom_supabase_key") || ""
+    url: readSupabaseStoredValue("custom_supabase_url"),
+    key: readSupabaseStoredValue("custom_supabase_key")
 };
 // ============================================================
 // GLOBAL SUPABASE VARIABLES
@@ -420,8 +437,15 @@ window.showNotification = function (message, type = "success") {
 function updateNetworkStatus() {
     if (!document.body) { return; }
 
-    const old = document.getElementById("texfriend-network-status");
-    if (old) { old.remove(); }
+    if (window._networkStatusTimer) {
+        clearTimeout(window._networkStatusTimer);
+        window._networkStatusTimer = null;
+    }
+
+    try {
+        const old = document.getElementById("texfriend-network-status");
+        if (old && old.parentNode) { old.parentNode.removeChild(old); }
+    } catch (e) {}
 
     const bar = document.createElement("div");
     bar.id = "texfriend-network-status";
@@ -457,11 +481,12 @@ function updateNetworkStatus() {
 
     document.body.appendChild(bar);
 
-    setTimeout(function () {
+    window._networkStatusTimer = setTimeout(function () {
         try {
             const el = document.getElementById("texfriend-network-status");
-            if (el) { el.remove(); }
+            if (el && el.parentNode) { el.parentNode.removeChild(el); }
         } catch(e) {}
+        window._networkStatusTimer = null;
     }, 3000);
 }
 
@@ -514,6 +539,15 @@ window.initializeSupabase = async function (doFullSync) {
 
     window.cloudSyncPromise = (async function () {
         try {
+            if (!window.TEXFRIEND_SUPABASE_CONFIG.url || !window.TEXFRIEND_SUPABASE_CONFIG.key) {
+                console.log("ℹ️ Supabase URL/Key not set yet. Skipping cloud sync (offline/local mode).");
+                window.supabaseConnected = false;
+                window.cloudSyncReady = false;
+                window.supabaseInitializing = false;
+                updateNetworkStatus();
+                return false;
+            }
+
             await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
 
             if (typeof supabase === "undefined") {
