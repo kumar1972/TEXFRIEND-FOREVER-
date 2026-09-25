@@ -145,10 +145,9 @@ window.TEXFRIEND_CLOUD = {
 // ============================================================
 
 window.TEXFRIEND_SUPABASE_CONFIG = {
-    url: "https://tktkpenojgwgdakqsjqs.supabase.co", 
-    key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrdGtwZW5vamd3Z2Rha3FzanFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMDIzNzgsImV4cCI6MjEwNTU3ODM3OH0.0AAP8Lgy9J6PF39Vd_9rN79qpFGhev9LQXEHOmL_d5Q"                   
+    url: localStorage.getItem("custom_supabase_url") || "",
+    key: localStorage.getItem("custom_supabase_key") || ""
 };
-
 // ============================================================
 // GLOBAL SUPABASE VARIABLES
 // ============================================================
