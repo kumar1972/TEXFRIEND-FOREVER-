@@ -2820,13 +2820,16 @@ function executeRealA4Print() {
         const physW_mm = (realWarpLength / reed) * 25.4;
         const physH_mm = (realWeftLength / pick) * 25.4;
 
-        // பிரிண்ட் தரத்திற்காக அதிக தெளிவுத்திறன் (High Resolution)
+        // உயர் தெளிவுத்திறன் ஸ்கேலிங்
         const base_steel_ruler_px_per_mm = 6.29;
         const printDpr = 2.0;
         const px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier * printDpr;
 
         const printW = Math.round(physW_mm * px_per_mm);
         const printH = Math.round(physH_mm * px_per_mm);
+
+        // ரூலர் அகலம் (32px * printDpr)
+        const RULER_px = Math.round(32 * printDpr);
 
         let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
         let rawDraw = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
@@ -2845,10 +2848,11 @@ function executeRealA4Print() {
         const dentWidthPx = printW / Math.max(1, dentsRequired);
         const cellH = printH / Math.max(1, realWeftLength);
 
+        // துணி தொடங்கும் இடம்: RULER_px (இடது ரூலருக்கான இடைவெளி)
         const warpPositions = []; let endIndex = 0; let dentIndex = 0;
         while(endIndex < realWarpLength && dentIndex < dentsRequired){
             const requestedEnds = Math.max(0, parseInt(dentArr[dentIndex % dentArr.length]) || 0);
-            const x = dentIndex * dentWidthPx;
+            const x = RULER_px + (dentIndex * dentWidthPx);
             if(requestedEnds === 0) {
                 warpPositions.push({ colIndex: -1, x, w: dentWidthPx, isEmpty: true });
             } else {
@@ -2875,13 +2879,18 @@ function executeRealA4Print() {
         const rawSeer = parseInt($("seerIntensity")?.value || 75, 10);
         const puff = rawSeer / 100;
 
-        // பிரத்யேக ஆஃப்-ஸ்கிரீன் கேன்வாஸில் முழு துணியையும் வரைதல்
+        // ரூலருடன் சேர்த்த மொத்த கேன்வாஸ் அளவு
         const printCanvas = document.createElement("canvas");
-        printCanvas.width = printW;
-        printCanvas.height = printH;
+        printCanvas.width = printW + RULER_px;
+        printCanvas.height = printH + RULER_px;
         const pCtx = printCanvas.getContext("2d");
         pCtx.imageSmoothingEnabled = false;
 
+        // பின்னணி வெண்மை நிறம்
+        pCtx.fillStyle = "#ffffff";
+        pCtx.fillRect(0, 0, printCanvas.width, printCanvas.height);
+
+        // 1. துணி நெசவு வரைதல் (Fabric drawing)
         for(let r = realWeftLength - 1; r >= 0; r--){
             const y = printH - ((r + 1) * cellH);
             const weftColor = weft[r % weft.length];
@@ -2953,21 +2962,26 @@ function executeRealA4Print() {
             }
         }
 
-        // Micro-Fibre Brush எஃபெக்ட்
+        // 2. Micro-Fibre Brush எஃபெக்ட்
         const isBrushActive = $("fsBrushCheck")?.checked || false;
         const rawBrush = parseInt($("brushIntensity")?.value || 60, 10);
         if(isBrushActive && rawBrush > 0){
             try {
                 let snap = document.createElement('canvas');
-                snap.width = printW; snap.height = printH;
+                snap.width = printCanvas.width; snap.height = printCanvas.height;
                 let sCtx = snap.getContext('2d');
                 sCtx.drawImage(printCanvas, 0, 0);
-                let imgData = sCtx.getImageData(0, 0, printW, printH);
+                let imgData = sCtx.getImageData(0, 0, printCanvas.width, printCanvas.height);
+
+                pCtx.save();
+                pCtx.beginPath();
+                pCtx.rect(RULER_px, 0, printW, printH);
+                pCtx.clip();
 
                 let intensity = rawBrush / 100;
                 let count = Math.floor(45000 * intensity);
                 for(let i = 0; i < count; i++){
-                    let px = Math.random() * printW;
+                    let px = RULER_px + Math.random() * printW;
                     let py = Math.random() * printH;
                     let ix = Math.floor(px); let iy = Math.floor(py);
                     if(ix < 0 || iy < 0 || ix >= snap.width || iy >= snap.height) continue;
@@ -2991,15 +3005,106 @@ function executeRealA4Print() {
                     pCtx.quadraticCurveTo(px + Math.cos(angle)*(len/2), py + Math.sin(angle)*(len/2), px + Math.cos(angle+curve)*len, py + Math.sin(angle+curve)*len);
                     pCtx.stroke();
                 }
+                pCtx.restore();
             } catch(e) {}
+        }
+
+        // 3. RULER வரைதல் (கீழ் & இடது செங்குத்து அளவுகோல்)
+        const rulerBgColor = "#ffffff";
+        const rulerBorderColor = "#475569";
+
+        // கீழ் கிடைமட்ட ரூலர் பாக்ஸ்
+        pCtx.fillStyle = rulerBgColor;
+        pCtx.fillRect(RULER_px, printH, printW, RULER_px);
+        pCtx.strokeStyle = rulerBorderColor;
+        pCtx.lineWidth = 1 * printDpr;
+        pCtx.strokeRect(RULER_px, printH, printW, RULER_px);
+
+        // இடது செங்குத்து ரூலர் பாக்ஸ்
+        pCtx.fillStyle = rulerBgColor;
+        pCtx.fillRect(0, 0, RULER_px, printH);
+        pCtx.strokeStyle = rulerBorderColor;
+        pCtx.lineWidth = 1 * printDpr;
+        pCtx.strokeRect(0, 0, RULER_px, printH);
+
+        // இடது-கீழ் மூலை சதுரம்
+        pCtx.fillStyle = "#f1f5f9";
+        pCtx.fillRect(0, printH, RULER_px, RULER_px);
+        pCtx.strokeStyle = rulerBorderColor;
+        pCtx.lineWidth = 1 * printDpr;
+        pCtx.strokeRect(0, printH, RULER_px, RULER_px);
+
+        // "cm" உரை
+        pCtx.fillStyle = "#334155";
+        pCtx.font = "bold " + Math.round(10 * printDpr) + "px Arial, sans-serif";
+        pCtx.textAlign = "center";
+        pCtx.textBaseline = "middle";
+        pCtx.fillText("cm", RULER_px / 2, printH + RULER_px / 2);
+
+        // கீழ் கிடைமட்ட ரூலர் கோடுகள் & எண்கள் (Horizontal CM)
+        const total_mm_x = Math.round(physW_mm);
+        pCtx.textAlign = "center";
+        pCtx.textBaseline = "top";
+        for(let mm = 0; mm <= total_mm_x; mm++){
+            const x = RULER_px + (mm * px_per_mm);
+            if(x > RULER_px + printW + 0.5) break;
+            const drawX = Math.floor(x) + 0.5;
+            const isCm = (mm % 10 === 0);
+            const isHalf = (mm % 5 === 0 && !isCm);
+            const tickLen = (isCm ? 11 : (isHalf ? 7 : 4)) * printDpr;
+
+            pCtx.beginPath();
+            pCtx.moveTo(drawX, printH);
+            pCtx.lineTo(drawX, printH + tickLen);
+            pCtx.strokeStyle = isCm ? "#0f172a" : "#94a3b8";
+            pCtx.lineWidth = (isCm ? 1.2 : 0.8) * printDpr;
+            pCtx.stroke();
+
+            if(isCm && mm > 0){
+                pCtx.fillStyle = "#0f172a";
+                pCtx.font = "bold " + Math.round(9 * printDpr) + "px Arial, sans-serif";
+                pCtx.fillText(mm / 10, drawX, printH + 13 * printDpr);
+            }
+        }
+
+        // இடது செங்குத்து ரூலர் கோடுகள் & எண்கள் (Vertical CM)
+        const total_mm_y = Math.round(physH_mm);
+        pCtx.textAlign = "right";
+        pCtx.textBaseline = "middle";
+        for(let mm = 0; mm <= total_mm_y; mm++){
+            const y = printH - (mm * px_per_mm);
+            if(y < -0.5) break;
+            const drawY = Math.floor(y) + 0.5;
+            const isCm = (mm % 10 === 0);
+            const isHalf = (mm % 5 === 0 && !isCm);
+            const tickLen = (isCm ? 11 : (isHalf ? 7 : 4)) * printDpr;
+
+            pCtx.beginPath();
+            pCtx.moveTo(RULER_px, drawY);
+            pCtx.lineTo(RULER_px - tickLen, drawY);
+            pCtx.strokeStyle = isCm ? "#0f172a" : "#94a3b8";
+            pCtx.lineWidth = (isCm ? 1.2 : 0.8) * printDpr;
+            pCtx.stroke();
+
+            if(isCm && mm > 0){
+                pCtx.fillStyle = "#0f172a";
+                pCtx.font = "bold " + Math.round(9 * printDpr) + "px Arial, sans-serif";
+                pCtx.fillText(mm / 10, RULER_px - 13 * printDpr, drawY);
+            }
         }
 
         const dataURL = printCanvas.toDataURL("image/jpeg", 0.95);
         const physW_cm = physW_mm / 10;
         const physH_cm = physH_mm / 10;
+        const ruler_mm = RULER_px / px_per_mm;
         const scaleFactor = selectedCadScalePercent / 100;
+
         const finalW_cm = (physW_cm * scaleFactor).toFixed(2);
         const finalH_cm = (physH_cm * scaleFactor).toFixed(2);
+        
+        // ரூலருடன் சேர்த்த மொத்த அளவு
+        const totalPrintW_cm = (((physW_mm + ruler_mm) / 10) * scaleFactor).toFixed(2);
+        const totalPrintH_cm = (((physH_mm + ruler_mm) / 10) * scaleFactor).toFixed(2);
 
         const isPortrait = parseFloat(finalH_cm) >= parseFloat(finalW_cm);
 
@@ -3016,7 +3121,7 @@ function executeRealA4Print() {
                 html, body { margin: 0; padding: 0; background: #fff; width: 100%; height: 100%; font-family: sans-serif; }
                 body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
                 .cad-header { font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #111; text-align: center; }
-                img { display: block; width: ${finalW_cm}cm; height: ${finalH_cm}cm; max-width: 100%; max-height: 94vh; object-fit: contain; border: 1px solid #e2e8f0; }
+                img { display: block; width: ${totalPrintW_cm}cm; height: ${totalPrintH_cm}cm; max-width: 100%; max-height: 94vh; object-fit: contain; border: 1px solid #e2e8f0; }
             </style>
         `);
         printWin.document.write('</head><body>');
