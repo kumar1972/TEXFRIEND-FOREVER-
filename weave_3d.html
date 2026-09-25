@@ -2725,44 +2725,281 @@ function autoFitToA4() {
 
 function executeRealA4Print() {
     try {
-        const srcCanvas = $("weaveCanvas");
-        if (!srcCanvas) return alert("3D Canvas காணப்படவில்லை.");
-
-        const cropCanvas = document.createElement("canvas");
-        const cpCtx = cropCanvas.getContext("2d");
-        const sCtx = srcCanvas.getContext("2d");
-        const imgData = sCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
-        const d = imgData.data;
-        const w = srcCanvas.width;
-        const h = srcCanvas.height;
-
-        let topY = 0;
-        let found = false;
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                const idx = (y * w + x) * 4;
-                if (d[idx + 3] > 10) {
-                    topY = Math.max(0, y - 4);
-                    found = true;
-                    break;
+        // 1. முழு Warp & Weft நூல் விவரங்களை எடுத்தல்
+        let baseWarp = []; let w_idx = 1; let warpSeerMap = []; let baseWarpYarnInfo = [];
+        while(w_idx <= currentWarpCount){
+            const co = $("wC"+w_idx); const e = $("wE"+w_idx); const sInp = $("wSpan"+w_idx); const rInp = $("wRep"+w_idx);
+            if(!co || !e){ w_idx++; continue; }
+            const n = Math.max(0, parseInt(e.value) || 0); const span = Math.max(1, parseInt(sInp?.value) || 1); const repeat = Math.max(1, parseInt(rInp?.value) || 1);
+            const origStr = (co.getAttribute("data-orig") || "").toLowerCase(); const hexVal = (co.value || "").toLowerCase(); const cntStr = (co.getAttribute("data-cnt") || "").toLowerCase();
+            const yInfo = parseYarnInfo(cntStr, origStr, hexVal);
+            const isSeer = yInfo.isSpecialSeer || isSeersuckerThread(hexVal, origStr, cntStr);
+            const rgbColor = hexToRgb(co.value);
+            if(span > 1 && repeat > 1){
+                const setSequence = []; const setSeerSeq = []; const setInfoSeq = [];
+                for(let s = 0; s < span; s++){
+                    const currIdx = w_idx + s; if(currIdx > currentWarpCount) break;
+                    const rCo = $("wC"+currIdx); const rE = $("wE"+currIdx);
+                    if(rCo && rE){
+                        const rN = Math.max(0, parseInt(rE.value) || 0); const rColor = hexToRgb(rCo.value);
+                        const rOrig = (rCo.getAttribute("data-orig") || "").toLowerCase(); const rHex = (rCo.value || "").toLowerCase(); const rCnt = (rCo.getAttribute("data-cnt") || "").toLowerCase();
+                        const rInfo = parseYarnInfo(rCnt, rOrig, rHex);
+                        const rIsSeer = rInfo.isSpecialSeer || isSeersuckerThread(rHex, rOrig, rCnt);
+                        for(let j = 0; j < rN; j++){ setSequence.push(rColor); setSeerSeq.push(rIsSeer); setInfoSeq.push(rInfo); }
+                    }
                 }
+                for(let rep = 0; rep < repeat; rep++){ 
+                    baseWarp.push(...setSequence); 
+                    warpSeerMap.push(...setSeerSeq); 
+                    baseWarpYarnInfo.push(...setInfoSeq);
+                }
+                w_idx += span;
+            } else {
+                if(n > 0){ 
+                    for(let j = 0; j < n; j++){ 
+                        baseWarp.push(rgbColor); 
+                        warpSeerMap.push(isSeer); 
+                        baseWarpYarnInfo.push(yInfo);
+                    } 
+                }
+                w_idx++;
             }
-            if (found) break;
         }
 
-        const cropHeight = Math.max(1, h - topY);
-        cropCanvas.width = w;
-        cropCanvas.height = cropHeight;
+        let baseWeft = []; let f_idx = 1; let baseWeftYarnInfo = [];
+        while(f_idx <= currentWeftCount){
+            const co = $("weftC"+f_idx); const p = $("weftP"+f_idx); const sInp = $("weftSpan"+f_idx); const rInp = $("weftRep"+f_idx);
+            if(!co || !p){ f_idx++; continue; }
+            const n = Math.max(0, parseInt(p.value) || 0); const span = Math.max(1, parseInt(sInp?.value) || 1); const repeat = Math.max(1, parseInt(rInp?.value) || 1);
+            const cntStr = (co.getAttribute("data-cnt") || "").toLowerCase();
+            const yInfo = parseYarnInfo(cntStr, "", "");
+            const rgbColor = hexToRgb(co.value);
+            if(span > 1 && repeat > 1){
+                const setSequence = []; const setInfoSeq = [];
+                for(let s = 0; s < span; s++){
+                    const currIdx = f_idx + s; if(currIdx > currentWeftCount) break;
+                    const rCo = $("weftC"+currIdx); const rP = $("weftP"+currIdx);
+                    if(rCo && rP){
+                        const rN = Math.max(0, parseInt(rP.value) || 0); const rColor = hexToRgb(rCo.value);
+                        const rCnt = (rCo.getAttribute("data-cnt") || "").toLowerCase();
+                        const rInfo = parseYarnInfo(rCnt, "", "");
+                        for(let j = 0; j < rN; j++){ setSequence.push(rColor); setInfoSeq.push(rInfo); }
+                    }
+                }
+                for(let rep = 0; rep < repeat; rep++){ 
+                    baseWeft.push(...setSequence); 
+                    baseWeftYarnInfo.push(...setInfoSeq);
+                }
+                f_idx += span;
+            } else {
+                if(n > 0){ 
+                    for(let j = 0; j < n; j++){ 
+                        baseWeft.push(rgbColor); 
+                        baseWeftYarnInfo.push(yInfo);
+                    } 
+                }
+                f_idx++;
+            }
+        }
 
-        cpCtx.fillStyle = "#ffffff";
-        cpCtx.fillRect(0, 0, w, cropHeight);
-        cpCtx.drawImage(srcCanvas, 0, topY, w, cropHeight, 0, 0, w, cropHeight);
+        if(!baseWarp.length){ baseWarp = [{r:30,g:58,b:138}, {r:255,g:255,b:255}]; warpSeerMap = [false, false]; baseWarpYarnInfo = [{thicknessMultiplier: 1.0, diameter_mm: 0.14}, {thicknessMultiplier: 1.0, diameter_mm: 0.14}]; }
+        if(!baseWeft.length){ baseWeft = [{r:239,g:68,b:68}, {r:30,g:58,b:138}]; baseWeftYarnInfo = [{thicknessMultiplier: 1.0, diameter_mm: 0.14}, {thicknessMultiplier: 1.0, diameter_mm: 0.14}]; }
 
-        const dataURL = cropCanvas.toDataURL("image/jpeg", 0.95);
-        const { widthCm, heightCm } = liveDesignDimensions;
+        const warp = baseWarp.slice();
+        const weft = baseWeft.slice();
+        const seerMap = warpSeerMap.slice();
+        const warpYarnInfos = baseWarpYarnInfo.slice();
+
+        const realWarpLength = warp.length;
+        const realWeftLength = weft.length;
+
+        let reed = parseFloat(activeDesignObj?.finishedReed || activeDesignObj?.reed || activeDesignObj?.reedCount);
+        let pick = parseFloat(activeDesignObj?.pick || activeDesignObj?.onloomPick || activeDesignObj?.finishedPick || activeDesignObj?.finishPick || activeDesignObj?.weftPick || activeDesignObj?.pickCount);
+        if(!isFinite(reed) || reed <= 0) reed = 80; if(!isFinite(pick) || pick <= 0) pick = 74;
+
+        const physW_mm = (realWarpLength / reed) * 25.4;
+        const physH_mm = (realWeftLength / pick) * 25.4;
+
+        // பிரிண்ட் தரத்திற்காக அதிக தெளிவுத்திறன் (High Resolution)
+        const base_steel_ruler_px_per_mm = 6.29;
+        const printDpr = 2.0;
+        const px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier * printDpr;
+
+        const printW = Math.round(physW_mm * px_per_mm);
+        const printH = Math.round(physH_mm * px_per_mm);
+
+        let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
+        let rawDraw = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
+        let dentArr = expandPattern(rawDent); if(!dentArr.length) dentArr = [2];
+        let drawArr = expandPattern(rawDraw); if(!drawArr.length) drawArr = [1,2,3,4];
+
+        let dentsRequired = 0; let endsRemaining = realWarpLength; let dIdx = 0;
+        while(endsRemaining > 0) {
+            const patternValue = Math.max(0, parseInt(dentArr[dIdx % dentArr.length]) || 0);
+            dentsRequired++;
+            if(patternValue > 0) { endsRemaining -= Math.min(patternValue, endsRemaining); }
+            dIdx++; if(dIdx > 50000) break;
+        }
+        if(dentsRequired <= 0) dentsRequired = realWarpLength;
+
+        const dentWidthPx = printW / Math.max(1, dentsRequired);
+        const cellH = printH / Math.max(1, realWeftLength);
+
+        const warpPositions = []; let endIndex = 0; let dentIndex = 0;
+        while(endIndex < realWarpLength && dentIndex < dentsRequired){
+            const requestedEnds = Math.max(0, parseInt(dentArr[dentIndex % dentArr.length]) || 0);
+            const x = dentIndex * dentWidthPx;
+            if(requestedEnds === 0) {
+                warpPositions.push({ colIndex: -1, x, w: dentWidthPx, isEmpty: true });
+            } else {
+                const actualEnds = Math.min(requestedEnds, realWarpLength - endIndex);
+                const baseYarnW = dentWidthPx / Math.max(1, actualEnds);
+                for(let e = 0; e < actualEnds; e++) {
+                    let info = warpYarnInfos[endIndex % warpYarnInfos.length] || { thicknessMultiplier: 1.0 };
+                    let isThickSeer = Boolean(seerMap[endIndex % seerMap.length]);
+                    warpPositions.push({ colIndex: endIndex, x: x + e * baseYarnW, w: baseYarnW, isEmpty: false, isSeer: isThickSeer });
+                    endIndex++;
+                }
+            }
+            dentIndex++;
+        }
+
+        let type = $("weaveType")?.value || "custom";
+        let mRows = 4;
+        if(weavePatterns.custom && weavePatterns.custom.length) mRows = weavePatterns.custom.length;
+        else if(weavePatterns[type]) mRows = weavePatterns[type].length;
+        let storedFormula = activeDesignObj?.pickPattern || "";
+        const pickSeq = getSimulationPicks(mRows, storedFormula);
+
+        const isSeerActive = $("fsSeerCheck")?.checked ?? false;
+        const rawSeer = parseInt($("seerIntensity")?.value || 75, 10);
+        const puff = rawSeer / 100;
+
+        // பிரத்யேக ஆஃப்-ஸ்கிரீன் கேன்வாஸில் முழு துணியையும் வரைதல்
+        const printCanvas = document.createElement("canvas");
+        printCanvas.width = printW;
+        printCanvas.height = printH;
+        const pCtx = printCanvas.getContext("2d");
+        pCtx.imageSmoothingEnabled = false;
+
+        for(let r = realWeftLength - 1; r >= 0; r--){
+            const y = printH - ((r + 1) * cellH);
+            const weftColor = weft[r % weft.length];
+            const flowIndex = realWeftLength - r;
+
+            for(let wpIdx = 0; wpIdx < warpPositions.length; wpIdx++){
+                const wp = warpPositions[wpIdx];
+                if(wp.isEmpty) continue;
+
+                const up = isWarpUp(r, wp.colIndex, type, drawArr, pickSeq);
+                const warpColor = warp[wp.colIndex % warp.length];
+                const isThreadSeer = Boolean(wp.isSeer);
+
+                let curW = wp.w;
+                let curX = wp.x;
+                let puckerShade = 1.0;
+
+                if(isSeerActive && isThreadSeer) {
+                    const pucker = Math.sin(flowIndex * 0.45);
+                    const bulge = 1 + Math.max(0, pucker) * 0.35 * puff;
+                    curW = wp.w * bulge;
+                    curX = wp.x - (curW - wp.w) / 2;
+                    puckerShade = 1.0 + (pucker * 0.35 * puff);
+                }
+
+                if(up) {
+                    pCtx.fillStyle = shadeFast(warpColor.r, warpColor.g, warpColor.b, 0.93 * puckerShade);
+                    pCtx.fillRect(curX, y, curW, cellH);
+
+                    const hlW = Math.max(0.4, curW * 0.40);
+                    const hlX = curX + (curW - hlW) / 2;
+                    pCtx.fillStyle = shadeFast(warpColor.r, warpColor.g, warpColor.b, 1.25 * puckerShade);
+                    pCtx.fillRect(hlX, y, hlW, cellH);
+
+                    if(curW >= 2.0) {
+                        pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
+                        const edgeW = Math.max(0.3, curW * 0.12);
+                        pCtx.fillRect(curX, y, edgeW, cellH);
+                        pCtx.fillRect(curX + curW - edgeW, y, edgeW, cellH);
+                    }
+                    if(cellH >= 2.0) {
+                        pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
+                        const edgeH = Math.max(0.3, cellH * 0.12);
+                        pCtx.fillRect(curX, y, edgeH, cellH);
+                        pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
+                    }
+                } else {
+                    pCtx.fillStyle = shadeFast(weftColor.r, weftColor.g, weftColor.b, 0.93);
+                    pCtx.fillRect(curX, y, curW, cellH);
+
+                    const hlH = Math.max(0.4, cellH * 0.40);
+                    const hlY = y + (cellH - hlH) / 2;
+                    pCtx.fillStyle = shadeFast(weftColor.r, weftColor.g, weftColor.b, 1.25);
+                    pCtx.fillRect(curX, hlY, curW, hlH);
+
+                    if(cellH >= 2.0) {
+                        pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
+                        const edgeH = Math.max(0.3, cellH * 0.12);
+                        pCtx.fillRect(curX, y, edgeH, cellH);
+                        pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
+                    }
+                    if(curW >= 2.0) {
+                        pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
+                        const edgeW = Math.max(0.3, curW * 0.12);
+                        pCtx.fillRect(curX, y, edgeW, cellH);
+                        pCtx.fillRect(curX + curW - edgeW, y, edgeW, cellH);
+                    }
+                }
+            }
+        }
+
+        // Micro-Fibre Brush எஃபெக்ட்
+        const isBrushActive = $("fsBrushCheck")?.checked || false;
+        const rawBrush = parseInt($("brushIntensity")?.value || 60, 10);
+        if(isBrushActive && rawBrush > 0){
+            try {
+                let snap = document.createElement('canvas');
+                snap.width = printW; snap.height = printH;
+                let sCtx = snap.getContext('2d');
+                sCtx.drawImage(printCanvas, 0, 0);
+                let imgData = sCtx.getImageData(0, 0, printW, printH);
+
+                let intensity = rawBrush / 100;
+                let count = Math.floor(45000 * intensity);
+                for(let i = 0; i < count; i++){
+                    let px = Math.random() * printW;
+                    let py = Math.random() * printH;
+                    let ix = Math.floor(px); let iy = Math.floor(py);
+                    if(ix < 0 || iy < 0 || ix >= snap.width || iy >= snap.height) continue;
+                    let idx = (iy * snap.width + ix) * 4;
+                    if(imgData.data[idx + 3] < 10) continue;
+                    let r = imgData.data[idx], g = imgData.data[idx + 1], b = imgData.data[idx + 2];
+                    let brightness = (Math.random() - 0.2) * 35;
+                    let fR = Math.min(255, Math.max(0, r + brightness));
+                    let fG = Math.min(255, Math.max(0, g + brightness));
+                    let fB = Math.min(255, Math.max(0, b + brightness));
+
+                    pCtx.strokeStyle = `rgba(${fR}, ${fG}, ${fB}, ${Math.random() * 0.45 + 0.35})`;
+                    pCtx.lineWidth = (Math.random() * 0.7 + 0.3) * printDpr;
+
+                    let angle = Math.random() * Math.PI * 2;
+                    let len = (Math.random() * 3.5 * intensity + 2) * printDpr;
+                    let curve = (Math.random() - 0.5) * 1.2 * printDpr;
+
+                    pCtx.beginPath();
+                    pCtx.moveTo(px, py);
+                    pCtx.quadraticCurveTo(px + Math.cos(angle)*(len/2), py + Math.sin(angle)*(len/2), px + Math.cos(angle+curve)*len, py + Math.sin(angle+curve)*len);
+                    pCtx.stroke();
+                }
+            } catch(e) {}
+        }
+
+        const dataURL = printCanvas.toDataURL("image/jpeg", 0.95);
+        const physW_cm = physW_mm / 10;
+        const physH_cm = physH_mm / 10;
         const scaleFactor = selectedCadScalePercent / 100;
-        const finalW_cm = (widthCm * scaleFactor).toFixed(2);
-        const finalH_cm = (heightCm * scaleFactor).toFixed(2);
+        const finalW_cm = (physW_cm * scaleFactor).toFixed(2);
+        const finalH_cm = (physH_cm * scaleFactor).toFixed(2);
 
         const isPortrait = parseFloat(finalH_cm) >= parseFloat(finalW_cm);
 
@@ -2804,6 +3041,7 @@ function executeRealA4Print() {
         alert("Print Error: " + e.message);
     }
 }
+
 
 function printDesign() {
     try {
