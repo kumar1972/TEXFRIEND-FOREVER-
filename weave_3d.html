@@ -3128,7 +3128,7 @@ function executeRealA4Print() {
             </style>
         `);
         printWin.document.write('</head><body>');
-        printWin.document.write(`<div class="cad-header">Texfriend CAD Simulation (Scale: ${selectedCadScalePercent}% | 1 Repeat: ${singleW_cm.toFixed(2)} × ${singleH_cm.toFixed(2)} cm)</div>`);
+        printWin.document.write(`<div class="cad-header">Texfriend (Scale: ${selectedCadScalePercent}% = 1 Repeat: ${singleW_cm.toFixed(2)} × ${singleH_cm.toFixed(2)} cm)</div>`);
         printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
         printWin.document.write('</body></html>');
         printWin.document.close();
