@@ -320,7 +320,7 @@ th{
 }
 
 /* =========================================================
-   SUMMARY
+   SUMMARY (SINGLE CLEAN BOX)
 ========================================================= */
 
 .summary-box{
@@ -328,7 +328,7 @@ th{
     border:1px dashed #CBD5CB;
     border-radius:6px;
     padding:6px 8px;
-    text-align:left;
+    text-align:center;
     font-size:10px;
     font-weight:600;
     color:#2F4F38 !important;
@@ -347,57 +347,22 @@ th{
     color:#1E2B23 !important;
 }
 
-.summary-subbox{
-    background:#F4F7F4 !important;
-    border:1px dashed #CBD5CB;
-    border-radius:6px;
-    padding:6px 8px;
-    text-align:left;
-    font-size:10px;
-    font-weight:600;
-    color:#2F4F38 !important;
-    margin-bottom:8px;
-    line-height:1.6;
+/* Table Footer for Exact Column Alignment */
+.total-label-cell {
+    text-align: right;
+    font-weight: 700;
+    padding-right: 8px;
+    border-top: 1px dashed #CBD5CB !important;
 }
 
-.summary-subbox b{
-    color:#1E2B23 !important;
+.total-val-cell {
+    text-align: center;
+    font-weight: 700;
+    border-top: 1px dashed #CBD5CB !important;
 }
 
-/* Single clean unified box container for the entire summary section */
-#warpSummaryBox,
-#weftSummaryBox {
-    background: #F4F7F4 !important;
-    border: 1px dashed #CBD5CB !important;
-    border-radius: 6px;
-    padding: 6px 8px;
-    margin-bottom: 8px;
-    margin-top: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-/* Align Total Pattern Ends / Picks exactly under the 4th column (ENDS/PICKS) */
-.warp-pattern-summary-row,
-.weft-pattern-summary-row {
-    display: grid;
-    grid-template-columns: 10% 17% 35% 18% 20%;
-    width: 100%;
-}
-
-.warp-pattern-total,
-.weft-pattern-total {
-    grid-column: 4;
-    text-align: center !important;
-    box-sizing: border-box;
-}
-
-.warp-ends-total,
-.weft-width-total {
-    width: 100%;
-    text-align: center !important;
-    box-sizing: border-box;
+.empty-footer-cell {
+    border-top: 1px dashed #CBD5CB !important;
 }
 
 /* =========================================================
@@ -684,6 +649,14 @@ th{
         font-size:10px !important;
         padding:4px 6px !important;
         border:1px dashed #888 !important;
+        -webkit-print-color-adjust:exact !important;
+        print-color-adjust:exact !important;
+    }
+
+    .total-label-cell,
+    .total-val-cell,
+    .empty-footer-cell {
+        border-top: 1px dashed #888 !important;
         -webkit-print-color-adjust:exact !important;
         print-color-adjust:exact !important;
     }
@@ -1778,7 +1751,6 @@ function renderSplitPreviewTable(
 
         let rawColor = item.color !== undefined ? item.color : (item.Color || item.colour || item.Colour || item.clr || "");
         
-        // Fixed: Using translateColorName from translator.js
         let clrText = (typeof translateColorName === 'function') ? translateColorName(rawColor) : rawColor;
 
         let isTopBeam = false;
@@ -1943,6 +1915,33 @@ function renderSplitPreviewTable(
 
 
     /* -----------------------------------------------------
+       CALCULATE TOTAL PATTERN VALUE
+    ----------------------------------------------------- */
+
+    let calculatedPatternValue = 0;
+    if(type === "warp"){
+        calculatedPatternValue = totalMultiplierSum + remainderSum;
+        if(calculatedPatternValue === 0){ calculatedPatternValue = pureSum; }
+    } else {
+        calculatedPatternValue = pureSum;
+    }
+
+    let tfootHtml = `
+        <tfoot>
+            <tr>
+                <td colspan="3" class="total-label-cell">
+                    <b>Total Pattern ${unitName}:</b>
+                </td>
+                <td class="total-val-cell">
+                    <b>${calculatedPatternValue}</b>
+                </td>
+                <td class="empty-footer-cell"></td>
+            </tr>
+        </tfoot>
+    `;
+
+
+    /* -----------------------------------------------------
        SPLIT COLUMN LOGIC (Split dynamically every 40 rows)
     ----------------------------------------------------- */
 
@@ -1959,6 +1958,10 @@ function renderSplitPreviewTable(
 
         let secondTable = "";
 
+        let isLastBlock = (i + splitLimit * 2) >= rowsData.length;
+        let col1Foot = (!t2 && isLastBlock) ? tfootHtml : "";
+        let col2Foot = (t2 && isLastBlock) ? tfootHtml : "";
+
         if(t2 !== ""){
             secondTable = `
                 <div class="single-table-col">
@@ -1970,6 +1973,7 @@ function renderSplitPreviewTable(
                             <tbody>
                                 ${t2}
                             </tbody>
+                            ${col2Foot}
                         </table>
                     </div>
                 </div>
@@ -1987,6 +1991,7 @@ function renderSplitPreviewTable(
                             <tbody>
                                 ${t1}
                             </tbody>
+                            ${col1Foot}
                         </table>
                     </div>
                 </div>
@@ -2075,7 +2080,7 @@ function renderSplitPreviewTable(
 
 
     /* -----------------------------------------------------
-       SUMMARY
+       SUMMARY (SINGLE BOX)
     ----------------------------------------------------- */
 
     let summaryHtml = "";
@@ -2099,12 +2104,7 @@ function renderSplitPreviewTable(
             60;
 
         summaryHtml += `
-            <div class="weft-pattern-summary-row">
-                <div class="weft-pattern-total">
-                    Total Pattern Picks: &nbsp;&nbsp;&nbsp; <b>${pureSum}</b>
-                </div>
-            </div>
-            <div class="weft-width-total" style="text-align:center;">
+            <div>
                 Weft Width ${storedWidthVal} X Pick ${pickNum} = <b>${finalGrandTotal.toFixed(2)} Total Pick</b>
             </div>
         `;
@@ -2115,62 +2115,33 @@ function renderSplitPreviewTable(
         let calculatedPatternEnds = totalMultiplierSum + remainderSum;
         if(calculatedPatternEnds === 0){ calculatedPatternEnds = pureSum; }
 
-        let hasTopBeam = patternTopEnds > 0;
-
-        let totalPatternEndsHtml = `<div class="warp-pattern-summary-row">`;
-        totalPatternEndsHtml += `<div class="warp-pattern-total">`;
-
-        if (hasTopBeam) {
-            totalPatternEndsHtml += `
-                <span style="font-weight:700; color:#1E2B23;">
-                    Total Pattern Ends: &nbsp;&nbsp;&nbsp; ${patternGroundEnds} <span style="color:#64748b; font-weight:600;">(Bottom)</span> + <span style="color:#d97706;">${patternTopEnds} (SSKR)</span> = ${calculatedPatternEnds}
-                </span>
-            `;
-        } else {
-            totalPatternEndsHtml += `
-                <span style="font-weight:700; color:#1E2B23;">
-                    Total Pattern Ends: &nbsp;&nbsp;&nbsp; ${calculatedPatternEnds}
-                </span>
-            `;
-        }
-
-        totalPatternEndsHtml += `</div></div>`;
-
-        summaryHtml += totalPatternEndsHtml;
-
         let reed = parseFloat(onloomReed) || parseFloat(foundMaster.reed || sp.reed) || 0;
         let width = parseFloat(onloomWidth) || parseFloat(foundMaster.width || sp.width) || 0;
-
-        let reedBoxHtml = `<div class="warp-ends-total">`;
 
         if (reed > 0 && width > 0) {
             let totalEndsInt = Math.round(reed * width);
             if (calculatedPatternEnds > 0) {
                 let repeats = Math.floor(totalEndsInt / calculatedPatternEnds);
                 let balance = totalEndsInt % calculatedPatternEnds;
-                reedBoxHtml += `
+                summaryHtml += `
                     <div class="line-1">
                         <b style="color:#1E2B23;">${repeats} repeat + ${balance} ends = ${totalEndsInt}</b>
                     </div>
                 `;
             }
 
-            reedBoxHtml += `
+            summaryHtml += `
                 <div>
                     <b style="color:#1E2B23;">Warp Width ${width} X Reed ${reed} = <span style="color:#10B981;">${(reed * width).toFixed(2)}</span> Total Ends</b>
                 </div>
             `;
         } else {
-            reedBoxHtml += `
+            summaryHtml += `
                 <div>
                     <b style="color:#1E2B23;">Total Ends: <span style="color:#10B981;">${finalGrandTotal}</span></b>
                 </div>
             `;
         }
-
-        reedBoxHtml += `</div>`;
-
-        summaryHtml += reedBoxHtml;
 
     }
 
