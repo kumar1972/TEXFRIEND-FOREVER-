@@ -350,6 +350,21 @@
     function designName(d) { 
         return String(d?.designNo ?? d?.design_no ?? d?.designNumber ?? d?.design_number ?? d?.name ?? d?.design ?? d?.id ?? "Unnamed").trim(); 
     }
+
+    // Fallback: if the dropdown's numeric index no longer matches allCloudDesigns
+    // (e.g. list was rebuilt/out of sync), try to resolve by the visible option text instead.
+    function resolveSelectedDesign() {
+        const selEl = document.getElementById("designSelect");
+        const sel = selEl.value;
+        if (sel !== "" && allCloudDesigns[sel]) return allCloudDesigns[sel];
+
+        const optionText = selEl.options[selEl.selectedIndex]?.text || "";
+        const cleanVisible = cleanDesignName(optionText.replace(/^[^\w#]*/, ""));
+        if (!cleanVisible) return null;
+
+        const found = allCloudDesigns.find(d => cleanDesignName(designName(d)) === cleanVisible);
+        return found || null;
+    }
     
     function saveHistory() {
         historyStack.push({
@@ -447,13 +462,30 @@
         }
     }
 
+    function safeJSONParse(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return fallback;
+            const parsed = JSON.parse(raw);
+            return parsed === null || parsed === undefined ? fallback : parsed;
+        } catch (e) {
+            console.error("Corrupt localStorage key '" + key + "', resetting to default.", e);
+            return fallback;
+        }
+    }
+
     function loadDesignList() {
-        let local = JSON.parse(localStorage.getItem("design_masters_data") || "[]");
-        let cache = JSON.parse(localStorage.getItem("weave_designs_cache") || "[]");
-        let localEdits = JSON.parse(localStorage.getItem("local_edits_cache") || "{}");
-        let warpEntry = JSON.parse(localStorage.getItem("warp_entry_data") || "[]");
-        let dentDrawData = JSON.parse(localStorage.getItem("denting_drawing_data") || "[]");
-        
+        let local = safeJSONParse("design_masters_data", []);
+        let cache = safeJSONParse("weave_designs_cache", []);
+        let localEdits = safeJSONParse("local_edits_cache", {});
+        let warpEntry = safeJSONParse("warp_entry_data", []);
+        let dentDrawData = safeJSONParse("denting_drawing_data", []);
+        if (!Array.isArray(local)) local = [];
+        if (!Array.isArray(cache)) cache = [];
+        if (!localEdits || typeof localEdits !== "object") localEdits = {};
+        if (!Array.isArray(warpEntry)) warpEntry = [];
+        if (!Array.isArray(dentDrawData)) dentDrawData = [];
+
         let map = new Map();
         [...cache, ...local, ...warpEntry, ...dentDrawData].forEach(d => {
             if(!d) return;
@@ -705,9 +737,8 @@
             safeLocalStorageSet("saved_denting_pattern", dentStr);
             safeLocalStorageSet("saved_drawing_pattern", drawStr);
 
-            const sel = document.getElementById("designSelect").value;
-            if (sel !== "" && allCloudDesigns[sel]) {
-                const d = allCloudDesigns[sel];
+            const d = resolveSelectedDesign();
+            if (d) {
                 let isCloudSaved = await updateDesignStorage(d);
                 calculateAdvancedDenting();
                 if(isCloudSaved) {
@@ -729,9 +760,8 @@
         try {
             safeLocalStorageSet("saved_pick_pattern", pickStr);
 
-            const sel = document.getElementById("designSelect").value;
-            if (sel !== "" && allCloudDesigns[sel]) {
-                const d = allCloudDesigns[sel];
+            const d = resolveSelectedDesign();
+            if (d) {
                 let isCloudSaved = await updateDesignStorage(d);
                 calculateAdvancedDenting();
                 if(isCloudSaved) {
