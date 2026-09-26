@@ -17,9 +17,9 @@
 "use strict";
 
 // ============================================================
-// VERSION (Updated to v9 so Chrome detects changes)
+// VERSION (Updated to v10 so Chrome detects changes)
 // ============================================================
-const CACHE_VERSION = "v9"; 
+const CACHE_VERSION = "v10"; 
 const CACHE_NAME = "texfriend-erp-" + CACHE_VERSION;
 const APP_SHELL_CACHE = "texfriend-shell-" + CACHE_VERSION;
 
@@ -53,7 +53,7 @@ const APP_SHELL = [
     "./warping.html",
     "./weft_entry.html",
     "./weaving.html",
-    "./weaving_received.html",
+    "./weaving_receive.html",
     "./weave_3d.html",
     "./denting_editor.html",
     "./dyeing_issue.html",
@@ -62,7 +62,28 @@ const APP_SHELL = [
     "./Despatch.html",
     "./invoice.html",
     "./report.html",
-    "./settings.html"
+    "./settings.html",
+    "./pre_stock.js",
+    "./pre_stock_graph.html",
+    "./folder.js",
+  "./icon/design_list.png",
+"./icon/design_master.png",
+"./icon/design_sheet_print.png",
+"./icon/Despatch.png",
+"./icon/dyeing_issue.png",
+"./icon/dyeing_receive.png",
+"./icon/invoice.png",
+"./icon/kora_yarn.png",
+"./icon/Party_Orders.png",
+"./icon/process_matrix.png",
+"./icon/report.png",
+"./icon/warp_entry.png",
+"./icon/warping.png",
+"./icon/washing.png",
+"./icon/weaving.png",
+"./icon/weaving_receive.png",
+"./icon/weft_entry.png",
+"./icon/yarn_calc.png",
 ];
 
 // ============================================================
