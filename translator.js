@@ -18,7 +18,7 @@ function translateColorName(colorName) {
         'olive': 'ஆலிவ்', 'beige': 'பேஜ்', 'silver': 'சில்வர்',
         'peach': 'பீச்', 'mint': 'மிண்ட்', 'gold': 'கோல்டு',
         'golden': 'கோல்டன்', 'mustard': 'மஸ்டர்ட்', 'wine': 'ஒயின்',
-        'turq': 'டர்க்', 'teal': 'டீல்', 'rust': 'ரஸ்ட்',
+        'turquoise': 'டர்க்', 'teal': 'டீல்', 'rust': 'ரஸ்ட்',
         'magenta': 'மெஜந்தா', 'lavender': 'லாவெண்டர்', 'pista': 'பிஸ்தா',
         'onion': 'ஆனியன்',
 
@@ -83,7 +83,7 @@ function translateColorName(colorName) {
         'r blue': 'R. புளு', 'royal blue': 'R. புளு',
         's blue': 'S. புளு', 'sky blue': 'S. புளு', 'skyblue': 'S. புளு',
         'bottle green': 'பாட்டில் கிரீன்', 'b green': 'பாட்டில் கிரீன்',
-        'p green': 'P. கிரீன்',
+        'parrot green': 'பேரட் கிரீன்', 'p green': 'பேரட் கிரீன்',
         'rani pink': 'ராணி பிங்க்', 'rama green': 'ராமா கிரீன்',
         '1/2 salavai': '1/2 சலவை', '1/2 white': '1/2 சலவை',
         't salavai': 'T. சலவை', 't white': 'T. சலவை',

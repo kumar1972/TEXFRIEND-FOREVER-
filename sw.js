@@ -1,5 +1,5 @@
 // ============================================================
-// TEXFRIEND ERP
+// TEXFRIEND FOREVER 
 // sw.js
 // PWA + OFFLINE ALL PAGES + LOCAL-FIRST + CLOUD READY
 // ============================================================
@@ -10,7 +10,7 @@
 // ✅ Online Network First
 // ✅ Offline Cache Fallback
 // ✅ Supabase API NOT cached
-// ✅ Old TEXFRIEND caches cleaned
+// ✅ Old TEXFRIEND FOREVER caches cleaned
 // ✅ Service Worker update support
 // ============================================================
 
@@ -95,7 +95,7 @@ self.addEventListener(
     event => {
 
         console.log(
-            "📦 TEXFRIEND ERP SW installing:",
+            "📦 TEXFRIEND FOREVER SW installing:",
             CACHE_NAME
         );
 
@@ -154,7 +154,7 @@ self.addEventListener(
             .then(
                 () => {
                     console.log(
-                        "✅ TEXFRIEND ERP pages cached"
+                        "✅ TEXFRIEND FOREVER pages cached"
                     );
                     return self.skipWaiting();
                 }
@@ -181,7 +181,7 @@ self.addEventListener(
     event => {
 
         console.log(
-            "⚡ TEXFRIEND ERP SW activated:",
+            "⚡ TEXFRIEND FOREVER SW activated:",
             CACHE_NAME
         );
 
@@ -320,7 +320,7 @@ async function handleNavigation(
 
     // 🔴 Fixed the Syntax Error here (Added closing brace '}' for the function)
     return new Response(
-        "TEXFRIEND ERP: இந்தப் பக்கம் இன்னும் ஆஃப்லைனில் பதிவிறக்கம் செய்யப்படவில்லை. தயவுசெய்து இன்டர்நெட்டை ஆன் செய்து இந்தப் பக்கத்தை ஒருமுறை பார்வையிடவும்.",
+        "TEXFRIEND FOREVER: இந்தப் பக்கம் இன்னும் ஆஃப்லைனில் பதிவிறக்கம் செய்யப்படவில்லை. தயவுசெய்து இன்டர்நெட்டை ஆன் செய்து இந்தப் பக்கத்தை ஒருமுறை பார்வையிடவும்.",
         {
             status: 503,
             headers: {
@@ -379,7 +379,7 @@ async function handleStaticRequest(
         }
 
         return new Response(
-            "TEXFRIEND ERP offline.\n\n" +
+            "TEXFRIEND FOREVER offline.\n\n" +
             "This resource is not cached.",
             {
                 status: 503,
@@ -507,7 +507,7 @@ self.addEventListener(
                 .then(
                     () => {
                         console.log(
-                            "🧹 TEXFRIEND caches cleared"
+                            "🧹 TEXFRIEND FOREVER caches cleared"
                         );
                     }
                 )
@@ -525,7 +525,7 @@ self.addEventListener(
     "error",
     event => {
         console.error(
-            "❌ TEXFRIEND SW Error:",
+            "❌ TEXFRIEND FOREVER SW Error:",
             event.error
         );
     }
@@ -540,7 +540,7 @@ self.addEventListener(
     "unhandledrejection",
     event => {
         console.error(
-            "❌ TEXFRIEND SW Promise Error:",
+            "❌ TEXFRIEND FOREVER SW Promise Error:",
             event.reason
         );
     }
@@ -552,6 +552,6 @@ self.addEventListener(
 // ============================================================
 
 console.log(
-    "🚀 TEXFRIEND ERP Service Worker Ready:",
+    "🚀 TEXFRIEND FOREVER Service Worker Ready:",
     CACHE_NAME
 );

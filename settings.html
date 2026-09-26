@@ -967,7 +967,7 @@ Advanced Config
 
 
 /* ============================================================
-   TEXFRIEND ERP SETTINGS
+   TEXFRIEND FOREVER SETTINGS
 ============================================================ */
 
 let tempLogoData = "";
@@ -2836,7 +2836,7 @@ async function executeSaveAll(){
 
             Promise.allSettled(cloudJobs)
                 .then(function(results){
-                    console.log("TEXFRIEND cloud sync completed:", results);
+                    console.log("TEXFRIEND FOREVER cloud sync completed:", results);
                 })
                 .catch(function(error){
                     console.warn("Background cloud sync:", error);
@@ -2940,7 +2940,7 @@ async function backupAllData(){
         }
 
         const payload = {
-            app: "TEXFRIEND ERP",
+            app: "TEXFRIEND FOREVER",
             version: "Settings Backup with IndexedDB",
             createdAt: new Date().toISOString(),
             data: allData
@@ -3195,7 +3195,7 @@ async function initialiseSettings(){
     const heading =
         safeLoad(
             "app_heading_name",
-            "TEXFRIEND ERP"
+            "TEXFRIEND FOREVER"
         );
 
     if($("set_heading")){
