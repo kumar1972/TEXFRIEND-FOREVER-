@@ -58,7 +58,7 @@ jobs:
 
       - name: Initialize Capacitor
         run: |
-          npx cap init "TEXFRIEN FOREVER" com.kumar.texfriendforever --web-dir=www
+          npx cap init "TEXFRIEND FOREVER" com.kumar.texfriendforever --web-dir=www
 
       - name: Add Android platform
         run: |
