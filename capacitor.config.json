@@ -1,6 +1,6 @@
 {
   "appId": "com.texfriend.forever",
   "appName": "TexFriend Forever",
-  "webDir": ".",
+  "webDir": "www",
   "bundledWebRuntime": false
 }
