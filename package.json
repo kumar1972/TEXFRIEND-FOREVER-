@@ -1,23 +1,20 @@
 {
   "name": "texfriend-forever-app",
   "version": "1.0.0",
+  "description": "TexFriend Forever App",
+  "author": "kumar1972",
   "main": "main.js",
   "scripts": {
-    "build": "electron-builder",
-    "android-build": "npx cap sync android && cd android && ./gradlew assembleRelease"
+    "build": "electron-builder"
   },
   "devDependencies": {
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
   },
-  "dependencies": {
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/cli": "^6.0.0"
-  },
   "build": {
     "appId": "com.texfriend.forever",
     "productName": "TexFriend Forever",
+    "publish": null,
     "win": {
       "target": "nsis"
     },
