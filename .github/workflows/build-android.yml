@@ -51,18 +51,13 @@ jobs:
           cat android/app/build.gradle
           echo "=== variables.gradle content ==="
           cat android/variables.gradle
-
-      - name: Force Java 20 for all Android modules
+      - name: Force Java 17 everywhere
         run: |
-          cat >> android/build.gradle << 'EOF'
-
-          subprojects {
-              afterEvaluate { project ->
-                  if (project.hasProperty("android")) {
-                      project.android {
-                          compileOptions {
-                              sourceCompatibility JavaVersion.VERSION_20
-                              targetCompatibility JavaVersion.VERSION_20
+          find . -name "build.gradle" -not -path "*/node_modules/.bin/*" | xargs grep -l "VERSION_21" 2>/dev/null | while read f; do
+            echo "Patching: $f"
+            sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' "$f"
+          done
+      
                           }
                       }
                   }
