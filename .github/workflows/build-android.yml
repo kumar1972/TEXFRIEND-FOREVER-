@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -64,24 +64,26 @@ jobs:
       - name: Sync Capacitor
         run: |
           npx cap sync android
+
       - name: Configure Java 17
         run: |
           cat >> android/build.gradle <<'EOF'
 
           subprojects {
-               tasks.withType(JavaCompile).configureEach 
-            options.release.set(17)
-                }
-            EOF
+              tasks.withType(JavaCompile).configureEach {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+          }
+          EOF
 
-
-        - name: Build Debug APK
+      - name: Build Debug APK
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
-        - name: Upload APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TEXFRIEND FOREVER-debug-apk
