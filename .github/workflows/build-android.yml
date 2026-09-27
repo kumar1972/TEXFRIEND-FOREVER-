@@ -42,13 +42,14 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Fix Java version in variables.gradle
-        run: |
-          sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' android/variables.gradle
-          cat android/variables.gradle
-
       - name: Sync
         run: npx cap sync android
+
+      - name: Fix Java version everywhere (Android + node_modules)
+        run: |
+          grep -rl "JavaVersion.VERSION_21" android/ node_modules/@capacitor/ 2>/dev/null | xargs sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' || true
+          echo "Patched files:"
+          grep -rl "JavaVersion.VERSION_17" android/ node_modules/@capacitor/ 2>/dev/null || true
 
       - name: Fix kotlin-stdlib duplicate class conflict
         run: |
