@@ -33,8 +33,11 @@ jobs:
           shopt -s extglob
           cp -r !(www|android|node_modules|.git|.github) www/ 2>/dev/null || true
 
+      - name: Remove old capacitor config if exists
+        run: rm -f capacitor.config.json capacitor.config.ts
+
       - name: Init Capacitor
-        run: npx cap init Texfriend Forever com.kumar.texfriendforever --web-dir=www
+        run: npx cap init "Texfriend Forever" com.kumar.texfriendforever --web-dir=www
 
       - name: Add Android platform
         run: npx cap add android
