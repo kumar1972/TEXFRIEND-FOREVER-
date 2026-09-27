@@ -1,8 +1,8 @@
 name: Build Android APK
-on:
-  workflow_dispatch:
-  push:
-    branches: [ apk-build ]
+
+on: [workflow_dispatch, push]
+
+jobs:
 jobs:
   build:
     runs-on: ubuntu-latest
