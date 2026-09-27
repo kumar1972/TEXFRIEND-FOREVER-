@@ -65,15 +65,14 @@ jobs:
         run: |
           npx cap sync android
       - name: Configure Java 17
-  run: |
-    cat >> android/build.gradle <<'EOF'
+        run: |
+          cat >> android/build.gradle <<'EOF'
 
-    subprojects {
-        tasks.withType(JavaCompile).configureEach {
+          subprojects {
+               tasks.withType(JavaCompile).configureEach 
             options.release.set(17)
-        }
-    }
-    EOF
+                }
+            EOF
 
 
         - name: Build Debug APK
