@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
       - name: Install Capacitor
         run: |
@@ -41,6 +41,13 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Force Java 17 compatibility in Android project
+        run: |
+          find android -name "build.gradle" -exec sed -i \
+            -e 's/sourceCompatibility JavaVersion.VERSION_21/sourceCompatibility JavaVersion.VERSION_17/g' \
+            -e 's/targetCompatibility JavaVersion.VERSION_21/targetCompatibility JavaVersion.VERSION_17/g' \
+            {} +
 
       - name: Sync
         run: npx cap sync android
