@@ -24,6 +24,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Prepare web assets folder
+        run: |
+          mkdir -p www
+          cp -r *.html *.css *.js *.json *.png icon www/ 2>/dev/null || true
+          rm -f www/package.json www/capacitor.config.json www/package-lock.json
+
       - name: Add Android platform
         run: npx cap add android
 
