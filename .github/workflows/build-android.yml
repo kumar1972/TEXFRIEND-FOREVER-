@@ -3,9 +3,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches:
-      - apk-build
-
+    branches: [ apk-build ]
 jobs:
   build:
     runs-on: ubuntu-latest
