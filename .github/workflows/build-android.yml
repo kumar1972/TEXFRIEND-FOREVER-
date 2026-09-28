@@ -281,13 +281,13 @@ jobs:
 
           print(p.read_text())
           PY
-      - name: Sync Capacitor
-        run: |
-          npx cap sync android
+          - name: Sync Capacitor
+            run: |
+           npx cap sync android
 
-      - name: Configure Java 21 Compatibility
-        shell: bash
-        run: |
+          - name: Configure Java 21 Compatibility
+            shell: bash
+            run: |
           python3 - <<'PY'
           from pathlib import Path
 
@@ -308,15 +308,15 @@ jobs:
           p.write_text(s)
           PY
 
-      - name: Build APK
-        working-directory: android
-        run: |
+          - name: Build APK
+            working-directory: android
+            run: |
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
+           - name: Upload APK
+            uses: actions/upload-artifact@v4
+            with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
