@@ -1,4 +1,3 @@
-
 name: Build Android APK
 
 on: [workflow_dispatch, push]
@@ -25,24 +24,21 @@ jobs:
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Create www folder and copy web files
+      - name: Clean and Create proper www folder
         run: |
-          echo "=== Listing repository root files ==="
-          ls -la
+          echo "=== Preparing clean www folder ==="
           mkdir -p www
           
-          # Copy all html, js, css, assets, images and other web files safely into www folder
-          cp -r *.html *.js *.css assets images Data config 2>/dev/null || true
-          
-          # Move them inside www if they were copied to root, wait, let's copy directly into www safely:
+          # Copy only specific web files/folders and strictly EXCLUDE node_modules, android, git, etc.
           rm -rf www/*
+          
           for item in *.html *.js *.css assets images Data config; do
-            if [ -e "$item" ]; then
+            if [ -e "$item" ] && [ "$item" != "node_modules" ] && [ "$item" != "android" ]; then
               cp -r "$item" www/
             fi
           done
           
-          echo "=== Listing www folder contents ==="
+          echo "=== Final www folder contents ==="
           ls -la www/
 
       - name: Remove old capacitor config if exists
