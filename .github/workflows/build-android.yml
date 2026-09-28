@@ -1,4 +1,4 @@
-name: Build Android APK
+Name: Build Android APK
 
 on: [workflow_dispatch, push]
 
@@ -42,20 +42,15 @@ jobs:
       - name: Sync
         run: npx cap sync android
 
-      - name: DEBUG - Find Java version references
+      - name: Configure Java 17 Compatibility
         run: |
-          echo "=== app/build.gradle content ==="
-          cat android/app/build.gradle
-          echo "=== variables.gradle content ==="
-          cat android/variables.gradle
+          cat >> android/app/build.gradle <<'EOF'
 
-      - name: Configure Java 17
-        run: |
-          cat >> android/build.gradle <<'EOF'
-          subprojects {
-            tasks.withType(JavaCompile).configureEach {
-              options.release.set(17)
-            }
+          android {
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
           }
           EOF
 
