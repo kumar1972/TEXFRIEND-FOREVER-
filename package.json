@@ -11,7 +11,7 @@
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
   },
-    "build": {
+  "build": {
     "appId": "com.texfriend.forever",
     "productName": "TexFriend Forever",
     "publish": null,
@@ -23,3 +23,4 @@
       "**/*"
     ]
   }
+}
