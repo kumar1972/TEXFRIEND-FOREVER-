@@ -1,4 +1,4 @@
-name: Build Android APK
+Name: Build Android APK
 
 on: [workflow_dispatch, push]
 
@@ -34,7 +34,7 @@ jobs:
         run: rm -f capacitor.config.json capacitor.config.ts
 
       - name: Init Capacitor
-        run: npx cap init "Texfriend Forever" com.kumar.texfriendforever --web-dir=www
+        run: npx cap init "Texforever" com.kumar.texforever --web-dir=www
 
       - name: Add Android platform
         run: npx cap add android
@@ -52,16 +52,15 @@ jobs:
       - name: Configure Java 17
         run: |
           cat >> android/build.gradle <<'EOF'
-
-           subprojects {
-          tasks.withType(JavaCompile).configureEach {
-               options.release.set(17)
-             }
+          subprojects {
+            tasks.withType(JavaCompile).configureEach {
+              options.release.set(17)
+            }
           }
-      EOF
+          EOF
 
-       - name: Build APK
-           run: |
+      - name: Build APK
+        run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
