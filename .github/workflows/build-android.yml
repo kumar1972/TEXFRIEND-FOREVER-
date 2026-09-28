@@ -21,41 +21,27 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Create package.json
+      - name: Install Dependencies & Build Web App (if needed)
         run: |
-          if [ ! -f package.json ]; then
-          npm init -y
+          if [ -f package.json ]; then
+            npm install
+            # Oru vela build script irundhal inge podavum (eg: npm run build)
           fi
 
-      - name: Install Capacitor Assets
-        run: npm install @capacitor/assets --save-dev
-
-      - name: Generate Android Icons
-        run: npx capacitor-assets generate --android
-
-      - name: Install Capacitor
+      - name: Install Capacitor Core & CLI & Android
         run: |
           npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
-      - name: Create www folder
+      - name: Add Android Platform & Sync
         run: |
-          mkdir -p www
-          if [ ! -f www/index.html ]; then
-            echo "<html><body><h1>TEXFOREVER</h1></body></html>" > www/index.html
-          fi
-
-      - name: Add Android Platform
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+          npx cap add android
+          npx cap sync android
 
       - name: Build Debug APK
         run: |
           cd android
           ./gradlew assembleDebug
 
-      # **INGE THAAN UPLOAD ARTIFACT STEP VARAVENDUM:**
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
