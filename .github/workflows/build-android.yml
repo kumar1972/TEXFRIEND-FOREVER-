@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -28,23 +29,40 @@ jobs:
           if [ ! -f package.json ]; then
             npm init -y
           fi
+
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Prepare www
         run: |
           mkdir -p www
+
           rm -rf www/*
 
-          for item in *.html *.js *.css assets images Data config; do
+          # Copy all HTML files
+          find . -maxdepth 1 -type f -name "*.html" -exec cp {} www/ \;
+
+          # Copy all JavaScript files
+          find . -maxdepth 1 -type f -name "*.js" -exec cp {} www/ \;
+
+          # Copy all CSS files
+          find . -maxdepth 1 -type f -name "*.css" -exec cp {} www/ \;
+
+          # Copy folders required by the ERP
+          for item in assets images Data config; do
             if [ -e "$item" ]; then
               cp -r "$item" www/
             fi
           done
 
+          echo "===== WWW CONTENT ====="
+          find www -maxdepth 3 -print
+          echo "========================"
+
       - name: Init Capacitor
         run: |
           rm -f capacitor.config.json
           rm -f capacitor.config.ts
+
           npx cap init "Texforever" com.kumar.texforever --web-dir=www
 
       - name: Add Android
@@ -58,10 +76,12 @@ jobs:
           cat > android/app/src/main/java/com/kumar/texforever/TexforeverStoragePlugin.java <<'EOF'
           package com.kumar.texforever;
 
+          import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
           import android.provider.DocumentsContract;
 
+          import com.getcapacitor.ActivityResult;
           import com.getcapacitor.JSObject;
           import com.getcapacitor.Plugin;
           import com.getcapacitor.PluginCall;
@@ -99,32 +119,31 @@ jobs:
                       PluginCall call,
                       ActivityResult result) {
 
-                  if (result == null ||
-                      result.getData() == null) {
-
-                      call.reject(
-                          "Folder selection cancelled"
-                      );
-
+                  if (
+                      result == null ||
+                      result.getResultCode() != Activity.RESULT_OK
+                  ) {
+                      call.reject("Folder selection cancelled");
                       return;
                   }
 
                   Intent data = result.getData();
 
+                  if (data == null) {
+                      call.reject("Selected folder data is empty");
+                      return;
+                  }
+
                   Uri uri = data.getData();
 
                   if (uri == null) {
-
-                      call.reject(
-                          "Selected folder URI is empty"
-                      );
-
+                      call.reject("Selected folder URI is empty");
                       return;
                   }
 
                   try {
 
-                      int flags =
+                      int takeFlags =
                           data.getFlags() &
                           (
                               Intent.FLAG_GRANT_READ_URI_PERMISSION |
@@ -135,14 +154,13 @@ jobs:
                           .getContentResolver()
                           .takePersistableUriPermission(
                               uri,
-                              flags
+                              takeFlags
                           );
 
                   } catch (Exception ignored) {
                   }
 
-                  JSObject resultData =
-                      new JSObject();
+                  JSObject resultData = new JSObject();
 
                   resultData.put(
                       "uri",
@@ -151,10 +169,36 @@ jobs:
 
                   resultData.put(
                       "name",
-                      "Selected Folder"
+                      getFolderName(uri)
                   );
 
                   call.resolve(resultData);
+              }
+
+              private String getFolderName(Uri uri) {
+
+                  try {
+
+                      String path = uri.getPath();
+
+                      if (path != null) {
+
+                          int index =
+                              path.lastIndexOf(':');
+
+                          if (
+                              index >= 0 &&
+                              index < path.length() - 1
+                          ) {
+
+                              return path.substring(index + 1);
+                          }
+                      }
+
+                  } catch (Exception ignored) {
+                  }
+
+                  return "Selected Folder";
               }
 
               @PluginMethod
@@ -166,13 +210,13 @@ jobs:
                   String base64Data =
                       call.getString("data");
 
-                  String folderUri =
+                  String folderUriString =
                       call.getString("folderUri");
 
                   if (
                       fileName == null ||
                       base64Data == null ||
-                      folderUri == null
+                      folderUriString == null
                   ) {
 
                       call.reject(
@@ -184,11 +228,13 @@ jobs:
 
                   try {
 
+                      Uri treeUri =
+                          Uri.parse(folderUriString);
+
                       Uri fileUri =
                           DocumentsContract.createDocument(
-                              getContext()
-                                  .getContentResolver(),
-                              Uri.parse(folderUri),
+                              getContext().getContentResolver(),
+                              treeUri,
                               "application/json",
                               fileName
                           );
@@ -208,45 +254,45 @@ jobs:
                               android.util.Base64.DEFAULT
                           );
 
-                      OutputStream output =
-                          getContext()
-                              .getContentResolver()
-                              .openOutputStream(
-                                  fileUri
+                      try (
+                          OutputStream output =
+                              getContext()
+                                  .getContentResolver()
+                                  .openOutputStream(fileUri)
+                      ) {
+
+                          if (output == null) {
+
+                              call.reject(
+                                  "Unable to open selected folder"
                               );
 
-                      if (output == null) {
+                              return;
+                          }
 
-                          call.reject(
-                              "Unable to open selected folder"
-                          );
-
-                          return;
+                          output.write(bytes);
+                          output.flush();
                       }
 
-                      output.write(bytes);
-                      output.flush();
-                      output.close();
-
-                      JSObject response =
+                      JSObject resultData =
                           new JSObject();
 
-                      response.put(
+                      resultData.put(
                           "success",
                           true
                       );
 
-                      response.put(
+                      resultData.put(
                           "fileName",
                           fileName
                       );
 
-                      response.put(
+                      resultData.put(
                           "uri",
                           fileUri.toString()
                       );
 
-                      call.resolve(response);
+                      call.resolve(resultData);
 
                   } catch (Exception e) {
 
@@ -254,8 +300,8 @@ jobs:
                           "Backup save failed: " +
                           (
                               e.getMessage() != null
-                                  ? e.getMessage()
-                                  : "Unknown error"
+                              ? e.getMessage()
+                              : "Unknown error"
                           )
                       );
                   }
@@ -300,6 +346,16 @@ jobs:
       - name: Sync Capacitor
         run: |
           npx cap sync android
+
+      - name: Verify www after sync
+        run: |
+          echo "===== FINAL WWW CONTENT ====="
+          find www -maxdepth 3 -print
+          echo "=============================="
+
+          echo "===== ANDROID ASSETS ====="
+          find android/app/src/main/assets -maxdepth 3 -print 2>/dev/null || true
+          echo "=========================="
 
       - name: Build APK
         working-directory: android
