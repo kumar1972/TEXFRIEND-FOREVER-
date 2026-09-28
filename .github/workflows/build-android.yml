@@ -1,3 +1,4 @@
+
 name: Build Android APK
 
 on: [workflow_dispatch, push]
@@ -24,18 +25,23 @@ jobs:
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Verify Web Files and Create www
+      - name: Create www folder and copy web files
         run: |
           echo "=== Listing repository root files ==="
           ls -la
           mkdir -p www
-          # Copy all necessary web files safely, ensuring index.html exists
-          if [ -f "index.html" ]; then
-            cp -r index.html css js assets images images_data *.html *.js *.css www/ 2>/dev/null || true
-          else
-            shopt -s extglob
-            cp -r !(www|android|node_modules|.git|.github) www/ 2>/dev/null || true
-          fi
+          
+          # Copy all html, js, css, assets, images and other web files safely into www folder
+          cp -r *.html *.js *.css assets images Data config 2>/dev/null || true
+          
+          # Move them inside www if they were copied to root, wait, let's copy directly into www safely:
+          rm -rf www/*
+          for item in *.html *.js *.css assets images Data config; do
+            if [ -e "$item" ]; then
+              cp -r "$item" www/
+            fi
+          done
+          
           echo "=== Listing www folder contents ==="
           ls -la www/
 
