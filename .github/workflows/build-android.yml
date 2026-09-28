@@ -64,9 +64,6 @@ jobs:
         run: |
           rm -f capacitor.config.json
           rm -f capacitor.config.ts
-      - name: Add Android
-        run: |
-          rm -rf android
 
           cat > capacitor.config.json <<'EOF'
           {
@@ -76,8 +73,11 @@ jobs:
           }
           EOF
 
+      - name: Add Android
+        run: |
+          rm -rf android
           npx cap add android
-          
+
       - name: Set Custom App Icon
         run: |
           sudo apt-get update
@@ -101,21 +101,43 @@ jobs:
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
           convert "$ICON_FILE" -resize 48x48 \
-            android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+            android/app/src/main/res/mipmap-mdpi/ic_texforever.png
 
           convert "$ICON_FILE" -resize 72x72 \
-            android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+            android/app/src/main/res/mipmap-hdpi/ic_texforever.png
 
           convert "$ICON_FILE" -resize 96x96 \
-            android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+            android/app/src/main/res/mipmap-xhdpi/ic_texforever.png
 
           convert "$ICON_FILE" -resize 144x144 \
-            android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+            android/app/src/main/res/mipmap-xxhdpi/ic_texforever.png
 
           convert "$ICON_FILE" -resize 192x192 \
-            android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+            android/app/src/main/res/mipmap-xxxhdpi/ic_texforever.png
 
-          echo "Custom icon installed successfully."
+          echo "Custom icon PNG files created."
+
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+
+          if [ ! -f "$MANIFEST" ]; then
+            echo "ERROR: AndroidManifest.xml not found"
+            exit 1
+          fi
+
+          sed -i \
+            's#android:icon="@mipmap/ic_launcher"#android:icon="@mipmap/ic_texforever"#g' \
+            "$MANIFEST"
+
+          sed -i \
+            's#android:roundIcon="@mipmap/ic_launcher_round"#android:roundIcon="@mipmap/ic_texforever"#g' \
+            "$MANIFEST"
+
+          echo "Custom TEXFOREVER icon connected to AndroidManifest.xml."
+
+          echo "===== ICON FILES ====="
+          find android/app/src/main/res -type f -name "ic_texforever*" -print
+          echo "====================="
+
       - name: Create storage plugin
         run: |
           mkdir -p android/app/src/main/java/com/kumar/texforever
@@ -413,6 +435,11 @@ jobs:
           find android/app/src/main/assets -maxdepth 4 -print 2>/dev/null || true
           echo "===================================="
 
+          echo ""
+          echo "========== CUSTOM ICON =========="
+          find android/app/src/main/res -type f -name "ic_texforever*" -print
+          echo "================================"
+
       - name: Build APK
         run: |
           echo "===== CHECK ANDROID PROJECT ====="
@@ -437,10 +464,12 @@ jobs:
           echo "================================"
 
           ./gradlew assembleDebug --stacktrace
+
       - name: Rename APK
         run: |
           mv android/app/build/outputs/apk/debug/app-debug.apk \
              "android/app/build/outputs/apk/debug/TEXFRIEND TEXFOREVER.apk"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
