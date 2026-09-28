@@ -38,25 +38,27 @@ jobs:
 
           rm -rf www/*
 
-          # Copy all HTML files
+          echo "Copying HTML files..."
           find . -maxdepth 1 -type f -name "*.html" -exec cp {} www/ \;
 
-          # Copy all JavaScript files
+          echo "Copying JavaScript files..."
           find . -maxdepth 1 -type f -name "*.js" -exec cp {} www/ \;
 
-          # Copy all CSS files
+          echo "Copying CSS files..."
           find . -maxdepth 1 -type f -name "*.css" -exec cp {} www/ \;
 
-          # Copy folders required by the ERP
+          echo "Copying folders..."
+
           for item in assets images Data config; do
             if [ -e "$item" ]; then
               cp -r "$item" www/
             fi
           done
 
+          echo ""
           echo "===== WWW CONTENT ====="
           find www -maxdepth 3 -print
-          echo "========================"
+          echo "======================="
 
       - name: Init Capacitor
         run: |
@@ -81,7 +83,8 @@ jobs:
           import android.net.Uri;
           import android.provider.DocumentsContract;
 
-          import com.getcapacitor.ActivityResult;
+          import androidx.activity.result.ActivityResult;
+
           import com.getcapacitor.JSObject;
           import com.getcapacitor.Plugin;
           import com.getcapacitor.PluginCall;
@@ -315,6 +318,7 @@ jobs:
           package com.kumar.texforever;
 
           import android.os.Bundle;
+
           import com.getcapacitor.BridgeActivity;
 
           public class MainActivity extends BridgeActivity {
@@ -347,15 +351,17 @@ jobs:
         run: |
           npx cap sync android
 
-      - name: Verify www after sync
+      - name: Verify WWW
         run: |
-          echo "===== FINAL WWW CONTENT ====="
+          echo ""
+          echo "========== WWW =========="
           find www -maxdepth 3 -print
-          echo "=============================="
+          echo "========================="
 
-          echo "===== ANDROID ASSETS ====="
-          find android/app/src/main/assets -maxdepth 3 -print 2>/dev/null || true
-          echo "=========================="
+          echo ""
+          echo "========== ANDROID ASSETS =========="
+          find android/app/src/main/assets -maxdepth 4 -print 2>/dev/null || true
+          echo "===================================="
 
       - name: Build APK
         working-directory: android
