@@ -1,4 +1,4 @@
-name: Build Android APK
+Name: Build Android APK
 
 on: [workflow_dispatch, push]
 
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Install Capacitor
         run: |
@@ -42,14 +42,14 @@ jobs:
       - name: Sync
         run: npx cap sync android
 
-      - name: Configure Java 17 Compatibility
+      - name: Configure Java 21 Compatibility
         run: |
           cat >> android/app/build.gradle <<'EOF'
 
           android {
               compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
+                  sourceCompatibility JavaVersion.VERSION_21
+                  targetCompatibility JavaVersion.VERSION_21
               }
           }
           EOF
