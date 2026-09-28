@@ -35,7 +35,8 @@ jobs:
 
       - name: Install Capacitor
         run: |
-          npm install @capacitor/core@latest @capacitor/cli@latest
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+
 
       - name: Create www folder
         run: |
