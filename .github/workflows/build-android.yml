@@ -306,89 +306,27 @@ jobs:
           }
           EOF
 
-      - name: Register native plugin
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
+ 
+               - name: Register native plugin
+                 shell: bash
+           run: |
+          cat > android/app/src/main/java/com/kumar/texforever/MainActivity.java <<'EOF'
+          package com.kumar.texforever;
 
-          p = Path(
-              "android/app/src/main/java/com/kumar/texforever/MainActivity.java"
-          )
+          import android.os.Bundle;
 
-          s = p.read_text()
+          import com.getcapacitor.BridgeActivity;
+          import com.kumar.texforever.TexforeverStoragePlugin;
 
-          if "TexforeverStoragePlugin" not in s:
-
-              s = s.replace(
-                  "import com.getcapacitor.BridgeActivity;",
-                  "import com.getcapacitor.BridgeActivity;\n"
-                  "import com.kumar.texforever.TexforeverStoragePlugin;"
-              )
-
-              old = "public class MainActivity extends BridgeActivity {"
-
-              new = """public class MainActivity extends BridgeActivity {
+          public class MainActivity extends BridgeActivity {
 
               @Override
-              public void onCreate(
-                      android.os.Bundle savedInstanceState) {
-
-                  super.onCreate(savedInstanceState);
-
+              public void onCreate(Bundle savedInstanceState) {
                   registerPlugin(
                       TexforeverStoragePlugin.class
                   );
-              }
-          }"""
 
-              s = s.replace(old, new)
-
-              p.write_text(s)
-
-          print(p.read_text())
-          PY
-
-      - name: Sync Capacitor
-        run: |
-          npx cap sync android
-
-      - name: Configure Java 21 Compatibility
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          p = Path(
-              "android/app/build.gradle"
-          )
-
-          s = p.read_text()
-
-          if "sourceCompatibility JavaVersion.VERSION_21" not in s:
-
-              s += """
-
-          android {
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_21
-                  targetCompatibility JavaVersion.VERSION_21
+                  super.onCreate(savedInstanceState);
               }
           }
-          """
-
-              p.write_text(s)
-          PY
-
-      - name: Build APK
-        working-directory: android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+          EOF 
