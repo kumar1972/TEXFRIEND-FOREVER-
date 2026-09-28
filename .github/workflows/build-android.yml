@@ -248,20 +248,13 @@ jobs:
               }
           }
           EOF
-
-      - name: Register native plugin
-        shell: bash
-        run: |
+           - name: Register native plugin
+             shell: bash
+             run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          p = Path(
-              "android/app/src/main/java/com/kumar/texforever/MainActivity.java"
-          )
-
-          if not p.exists():
-              print("MainActivity.java not found")
-              raise SystemExit(1)
+          p = Path("android/app/src/main/java/com/kumar/texforever/MainActivity.java")
 
           s = p.read_text()
 
@@ -274,25 +267,15 @@ jobs:
 
               s = s.replace(
                   "public class MainActivity extends BridgeActivity {",
-                  "public class MainActivity extends BridgeActivity {\n\n"
-                  "    @Override\n"
-                  "    public void onCreate(android.os.Bundle savedInstanceState) {\n"
-                  "        super.onCreate(savedInstanceState);\n"
-                  "        registerPlugin(TexforeverStoragePlugin.class);\n"
-                  "    }\n"
-                  "}"
+                  """public class MainActivity extends BridgeActivity {
+
+              @Override
+              public void onCreate(android.os.Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  registerPlugin(TexforeverStoragePlugin.class);
+              }
+          }"""
               )
-
-              # Remove the extra closing brace created by the replacement
-              lines = s.splitlines()
-
-              if len(lines) >= 2:
-                  while lines[-1].strip() == "}" and lines[-2].strip() == "}":
-                      lines.pop()
-
-                  lines.append("}")
-
-              s = "\n".join(lines) + "\n"
 
               p.write_text(s)
 
