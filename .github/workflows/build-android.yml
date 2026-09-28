@@ -1,56 +1,83 @@
 name: Build Android APK
 
-on: [workflow_dispatch, push]
+on:
+  workflow_dispatch:
+  push:
+    branches: [ apk-build ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
-      - name: Setup Java 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Install Capacitor
         run: |
-          [ -f package.json ] || npm init -y
+          npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Copy web files to www
+      - name: Create www folder and copy web files
         run: |
           mkdir -p www
-          rsync -a --exclude='www' --exclude='android' --exclude='node_modules' --exclude='.git' --exclude='.github' --exclude='package.json' --exclude='package-lock.json' ./ www/
+          shopt -s extglob
+          cp -r !(www|android|node_modules|.git|.github) www/ 2>/dev/null || true
 
-      - name: Remove old Capacitor config
+      - name: Remove old capacitor config if exists
         run: rm -f capacitor.config.json capacitor.config.ts
 
-      - name: Initialize Capacitor
-        run: npx cap init "TEXFRIEND FOREVER" com.kumar.texfriendforever --web-dir=www
+      - name: Init Capacitor
+        run: npx cap init "Texfriend Forever" com.kumar.texfriendforever --web-dir=www
 
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Sync Capacitor
+      - name: Sync
         run: npx cap sync android
 
-      - name: Build Debug APK
-        working-directory: android
+      - name: DEBUG - Find Java version references
         run: |
+          echo "=== app/build.gradle content ==="
+          cat android/app/build.gradle
+          echo "=== variables.gradle content ==="
+          cat android/variables.gradle
+
+      - name: Force Java 17 for all Android modules
+        run: |
+          cat >> android/build.gradle << 'EOF'
+
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty("android")) {
+                      project.android {
+                          compileOptions {
+                              sourceCompatibility JavaVersion.VERSION_17
+                              targetCompatibility JavaVersion.VERSION_17
+                          }
+                      }
+                  }
+              }
+          }
+          EOF
+
+      - name: Build APK
+        run: |
+          cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: TEXFRIEND-debug-apk
+          name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
