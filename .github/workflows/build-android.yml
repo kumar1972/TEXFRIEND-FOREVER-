@@ -26,7 +26,8 @@ jobs:
           if [ ! -f package.json ]; then
             npm init -y
           fi
-       - name: Install Capacitor Assets
+
+      - name: Install Capacitor Assets
         run: npm install @capacitor/assets --save-dev
 
       - name: Generate Android Icons
@@ -34,7 +35,7 @@ jobs:
 
       - name: Install Capacitor
         run: |
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npm install @capacitor/core@latest @capacitor/cli@latest
 
       - name: Create www folder
         run: |
@@ -59,7 +60,7 @@ jobs:
 
       - name: Initialize Capacitor
         run: |
-          npx cap init "TEXFRIEND FOREVER" com.kumar.texfriendforever --web-dir=www
+          npx cap init "TexFriend Forever" com.kumar.texfriendforever --web-dir www
 
       - name: Add Android platform
         run: |
@@ -68,16 +69,3 @@ jobs:
       - name: Sync Capacitor
         run: |
           npx cap sync android
-
-      - name: Build Debug APK
-        working-directory: android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: TEXFRIEND FOREVER-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
