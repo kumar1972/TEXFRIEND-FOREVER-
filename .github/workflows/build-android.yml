@@ -64,7 +64,10 @@ jobs:
         run: |
           rm -f capacitor.config.json
           rm -f capacitor.config.ts
-
+      - name: Add Android
+        run: |
+          rm -rf android
+          npx cap add android
           npx cap init "Texforever" com.kumar.texforever --web-dir=www
       - name: Set Custom App Icon
         run: |
