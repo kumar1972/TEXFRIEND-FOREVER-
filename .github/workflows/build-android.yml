@@ -67,6 +67,15 @@ jobs:
       - name: Add Android
         run: |
           rm -rf android
+
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.kumar.texforever",
+            "appName": "Texforever",
+            "webDir": "www"
+          }
+          EOF
+
           npx cap add android
           
       - name: Set Custom App Icon
