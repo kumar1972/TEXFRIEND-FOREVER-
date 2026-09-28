@@ -1,40 +1,101 @@
 async function selectTexfriendFolder() {
 
-    // File System Access API (showDirectoryPicker) only exists on desktop
-    // Chrome/Edge. It does not exist on Android Chrome, iOS Safari, or any
-    // mobile browser. Without this check, tapping the button on mobile fails
-    // silently (only a console.error, nothing visible on screen).
-    if (typeof window.showDirectoryPicker !== "function") {
+    try {
 
-        alert(
-            "📁 Folder selection isn't supported on this browser/device.\n\n" +
-            "This feature only works on desktop Chrome or Edge. " +
-            "On mobile, please continue using cloud sync / backup-download instead."
+        const isCapacitor =
+            !!(
+                window.Capacitor &&
+                typeof window.Capacitor.isNativePlatform === "function" &&
+                window.Capacitor.isNativePlatform()
+            );
+
+        if (isCapacitor) {
+
+            const plugin =
+                window.Capacitor?.Plugins?.TexforeverStorage ||
+                window.Capacitor?.registerPlugin?.("TexforeverStorage");
+
+            if (!plugin || typeof plugin.selectFolder !== "function") {
+                throw new Error("Android folder picker is not available.");
+            }
+
+            const result = await plugin.selectFolder();
+
+            if (!result || !result.uri) {
+                throw new Error("No folder was selected.");
+            }
+
+            localStorage.setItem(
+                "texfriend_selected_folder",
+                result.name || "Selected Folder"
+            );
+
+            localStorage.setItem(
+                "texfriend_selected_folder_uri",
+                result.uri
+            );
+
+            localStorage.setItem(
+                "texfriend_save_mode",
+                "android_folder"
+            );
+
+            alert(
+                "📁 Folder Selected Successfully!\n\n" +
+                "Folder: " +
+                (result.name || "Selected Folder") +
+                "\n\nBackup files will be saved in this folder."
+            );
+
+            return result;
+        }
+
+        if (typeof window.showDirectoryPicker !== "function") {
+
+            alert(
+                "📁 Folder selection is not supported on this browser/device."
+            );
+
+            return null;
+        }
+
+        const handle = await window.showDirectoryPicker();
+
+        localStorage.setItem(
+            "texfriend_selected_folder",
+            handle.name
         );
 
-        return null;
-    }
+        localStorage.setItem(
+            "texfriend_save_mode",
+            "desktop_folder"
+        );
 
-    try {
-        const handle = await window.showDirectoryPicker();
-        console.log("Selected folder:", handle.name);
-        
-        // லோக்கல் ஸ்டோரேஜில் சேமித்தல்
-        localStorage.setItem("texfriend_selected_folder", handle.name);
-        
-        // கிளவுட் ஸ்டோரேஜ் அல்லது சிங்க் பகுதிக்கான செயல்பாடு
         if (typeof syncToCloudStorage === "function") {
             await syncToCloudStorage(handle);
         }
-        
-        alert("Folder successfully selected & synchronized: " + handle.name);
-        return handle;
-    } catch (err) {
-        console.error("Folder selection or cloud sync failed", err);
 
         alert(
-            "❌ Folder selection was cancelled or failed.\n\n" +
-            (err && err.message ? err.message : "Please try again.")
+            "📁 Folder successfully selected:\n" +
+            handle.name
+        );
+
+        return handle;
+
+    } catch (err) {
+
+        if (err && err.name === "AbortError") {
+            return null;
+        }
+
+        console.error(
+            "Folder selection failed:",
+            err
+        );
+
+        alert(
+            "❌ Folder selection failed.\n\n" +
+            (err?.message || "Please try again.")
         );
 
         return null;
