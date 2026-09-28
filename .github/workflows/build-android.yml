@@ -5,7 +5,6 @@ on: [workflow_dispatch, push]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -21,39 +20,37 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Install Dependencies & Build Web App (if needed)
+      - name: Install Capacitor
         run: |
-          if [ -f package.json ]; then
-            npm install
-          fi
+          [ -f package.json ] || npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Ensure www Directory Exists
+      - name: Copy web files to www
         run: |
           mkdir -p www
-          if [ ! -f www/index.html ]; then
-            if [ -f index.html ]; then
-              cp index.html www/
-            else
-              echo "<html><body><h1>TEXFOREVER</h1></body></html>" > www/index.html
-            fi
-          fi
+          rsync -a --exclude='www' --exclude='android' --exclude='node_modules' --exclude='.git' --exclude='.github' --exclude='package.json' --exclude='package-lock.json' ./ www/
 
-      - name: Install Capacitor Core & CLI & Android
-        run: |
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+      - name: Remove old Capacitor config
+        run: rm -f capacitor.config.json capacitor.config.ts
 
-      - name: Add Android Platform & Sync
-        run: |
-          npx cap add android
-          npx cap sync android
+      - name: Initialize Capacitor
+        run: npx cap init "TEXFRIEND FOREVER" com.kumar.texfriendforever --web-dir=www
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Build Debug APK
+        working-directory: android
         run: |
-          cd android
-          ./gradlew assembleDebug
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: TEXFRIEND-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
