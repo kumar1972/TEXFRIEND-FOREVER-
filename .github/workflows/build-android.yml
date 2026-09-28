@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -26,7 +27,6 @@ jobs:
           if [ ! -f package.json ]; then
             npm init -y
           fi
-
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Prepare www folder
@@ -78,15 +78,12 @@ jobs:
           import com.getcapacitor.PluginMethod;
           import com.getcapacitor.annotation.CapacitorPlugin;
 
-          import java.io.File;
-          import java.io.FileOutputStream;
           import java.io.OutputStream;
           import java.util.Base64;
 
           @CapacitorPlugin(name = "TexforeverStorage")
           public class TexforeverStoragePlugin extends Plugin {
 
-              private static final int FOLDER_PICKER_REQUEST = 7001;
               private PluginCall pendingFolderCall;
 
               @PluginMethod
@@ -94,7 +91,8 @@ jobs:
 
                   pendingFolderCall = call;
 
-                  Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                  Intent intent =
+                      new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 
                   intent.addFlags(
                       Intent.FLAG_GRANT_READ_URI_PERMISSION |
@@ -103,7 +101,11 @@ jobs:
                       Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
                   );
 
-                  startActivityForResult(call, intent, "folderPickerResult");
+                  startActivityForResult(
+                      call,
+                      intent,
+                      "folderPickerResult"
+                  );
               }
 
               @Override
@@ -112,12 +114,11 @@ jobs:
                       int resultCode,
                       Intent data) {
 
-                  super.handleOnActivityResult(requestCode, resultCode, data);
-
-                  if (requestCode != FOLDER_PICKER_REQUEST &&
-                      pendingFolderCall == null) {
-                      return;
-                  }
+                  super.handleOnActivityResult(
+                      requestCode,
+                      resultCode,
+                      data
+                  );
 
                   PluginCall call = pendingFolderCall;
                   pendingFolderCall = null;
@@ -126,49 +127,85 @@ jobs:
                       return;
                   }
 
-                  if (resultCode != Activity.RESULT_OK || data == null) {
-                      call.reject("Folder selection cancelled");
+                  if (resultCode != Activity.RESULT_OK ||
+                      data == null) {
+
+                      call.reject(
+                          "Folder selection cancelled"
+                      );
+
                       return;
                   }
 
                   Uri uri = data.getData();
 
                   if (uri == null) {
-                      call.reject("Selected folder URI is empty");
+
+                      call.reject(
+                          "Selected folder URI is empty"
+                      );
+
                       return;
                   }
 
                   try {
+
                       final int takeFlags =
                           data.getFlags() &
-                          (Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                           Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                          (
+                              Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                              Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                          );
 
                       getContext()
                           .getContentResolver()
-                          .takePersistableUriPermission(uri, takeFlags);
+                          .takePersistableUriPermission(
+                              uri,
+                              takeFlags
+                          );
 
                   } catch (Exception ignored) {
                   }
 
-                  JSObject result = new JSObject();
-                  result.put("uri", uri.toString());
-                  result.put("name", getFolderName(uri));
+                  JSObject result =
+                      new JSObject();
+
+                  result.put(
+                      "uri",
+                      uri.toString()
+                  );
+
+                  result.put(
+                      "name",
+                      getFolderName(uri)
+                  );
 
                   call.resolve(result);
               }
 
               private String getFolderName(Uri uri) {
+
                   try {
-                      String path = uri.getPath();
+
+                      String path =
+                          uri.getPath();
 
                       if (path != null) {
-                          int index = path.lastIndexOf(':');
 
-                          if (index >= 0 && index < path.length() - 1) {
-                              return path.substring(index + 1);
+                          int index =
+                              path.lastIndexOf(':');
+
+                          if (
+                              index >= 0 &&
+                              index < path.length() - 1
+                          ) {
+
+                              return path.substring(
+                                  index + 1
+                              );
                           }
                       }
+
                   } catch (Exception ignored) {
                   }
 
@@ -176,52 +213,88 @@ jobs:
               }
 
               @PluginMethod
-              public void saveBackup(PluginCall call) {
+              public void saveBackup(
+                      PluginCall call) {
 
-                  String fileName = call.getString("fileName");
-                  String base64Data = call.getString("data");
-                  String folderUriString = call.getString("folderUri");
+                  String fileName =
+                      call.getString("fileName");
 
-                  if (fileName == null || base64Data == null ||
-                      folderUriString == null) {
-                      call.reject("Missing backup data or folder");
+                  String base64Data =
+                      call.getString("data");
+
+                  String folderUriString =
+                      call.getString("folderUri");
+
+                  if (
+                      fileName == null ||
+                      base64Data == null ||
+                      folderUriString == null
+                  ) {
+
+                      call.reject(
+                          "Missing backup data or folder"
+                      );
+
                       return;
                   }
 
                   try {
 
-                      Uri treeUri = Uri.parse(folderUriString);
+                      Uri treeUri =
+                          Uri.parse(folderUriString);
 
-                      Uri fileUri = DocumentsContract.createDocument(
-                          getContext().getContentResolver(),
-                          treeUri,
-                          "application/json",
-                          fileName
-                      );
+                      Uri fileUri =
+                          DocumentsContract.createDocument(
+                              getContext()
+                                  .getContentResolver(),
+                              treeUri,
+                              "application/json",
+                              fileName
+                          );
 
                       if (fileUri == null) {
-                          call.reject("Unable to create backup file");
+
+                          call.reject(
+                              "Unable to create backup file"
+                          );
+
                           return;
                       }
 
                       byte[] bytes;
 
-                      if (android.os.Build.VERSION.SDK_INT >= 26) {
-                          bytes = Base64.getDecoder().decode(base64Data);
+                      if (
+                          android.os.Build.VERSION.SDK_INT >= 26
+                      ) {
+
+                          bytes =
+                              Base64.getDecoder()
+                                  .decode(base64Data);
+
                       } else {
-                          bytes = android.util.Base64.decode(
-                              base64Data,
-                              android.util.Base64.DEFAULT
-                          );
+
+                          bytes =
+                              android.util.Base64.decode(
+                                  base64Data,
+                                  android.util.Base64.DEFAULT
+                              );
                       }
 
-                      try (OutputStream output =
-                               getContext()
-                                   .getContentResolver()
-                                   .openOutputStream(fileUri)) {
+                      try (
+                          OutputStream output =
+                              getContext()
+                                  .getContentResolver()
+                                  .openOutputStream(
+                                      fileUri
+                                  )
+                      ) {
 
                           if (output == null) {
-                              call.reject("Unable to open selected folder");
+
+                              call.reject(
+                                  "Unable to open selected folder"
+                              );
+
                               return;
                           }
 
@@ -229,10 +302,23 @@ jobs:
                           output.flush();
                       }
 
-                      JSObject result = new JSObject();
-                      result.put("success", true);
-                      result.put("fileName", fileName);
-                      result.put("uri", fileUri.toString());
+                      JSObject result =
+                          new JSObject();
+
+                      result.put(
+                          "success",
+                          true
+                      );
+
+                      result.put(
+                          "fileName",
+                          fileName
+                      );
+
+                      result.put(
+                          "uri",
+                          fileUri.toString()
+                      );
 
                       call.resolve(result);
 
@@ -240,25 +326,31 @@ jobs:
 
                       call.reject(
                           "Backup save failed: " +
-                          (e.getMessage() != null
-                              ? e.getMessage()
-                              : "Unknown error")
+                          (
+                              e.getMessage() != null
+                                  ? e.getMessage()
+                                  : "Unknown error"
+                          )
                       );
                   }
               }
           }
           EOF
-                 - name: Register native plugin
-                   shell: bash
-                   run: |
+
+      - name: Register native plugin
+        shell: bash
+        run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          p = Path("android/app/src/main/java/com/kumar/texforever/MainActivity.java")
+          p = Path(
+              "android/app/src/main/java/com/kumar/texforever/MainActivity.java"
+          )
 
           s = p.read_text()
 
           if "TexforeverStoragePlugin" not in s:
+
               s = s.replace(
                   "import com.getcapacitor.BridgeActivity;",
                   "import com.getcapacitor.BridgeActivity;\n"
@@ -270,9 +362,14 @@ jobs:
                   """public class MainActivity extends BridgeActivity {
 
               @Override
-              public void onCreate(android.os.Bundle savedInstanceState) {
+              public void onCreate(
+                      android.os.Bundle savedInstanceState) {
+
                   super.onCreate(savedInstanceState);
-                  registerPlugin(TexforeverStoragePlugin.class);
+
+                  registerPlugin(
+                      TexforeverStoragePlugin.class
+                  );
               }
           }"""
               )
@@ -281,42 +378,5 @@ jobs:
 
           print(p.read_text())
           PY
-          - name: Sync Capacitor
-            run: |
-           npx cap sync android
 
-          - name: Configure Java 21 Compatibility
-            shell: bash
-            run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          p = Path("android/app/build.gradle")
-          s = p.read_text()
-
-          if "sourceCompatibility JavaVersion.VERSION_21" not in s:
-              s += """
-
-          android {
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_21
-                  targetCompatibility JavaVersion.VERSION_21
-              }
-          }
-          """
-
-          p.write_text(s)
-          PY
-
-          - name: Build APK
-            working-directory: android
-            run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
-
-           - name: Upload APK
-            uses: actions/upload-artifact@v4
-            with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+      - name: Sync Capac
