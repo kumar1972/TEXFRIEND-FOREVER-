@@ -5,8 +5,10 @@ on: [workflow_dispatch, push]
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -16,42 +18,49 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '21'
 
       - name: Install Capacitor
         run: |
-          npm init -y
+          if [ ! -f package.json ]; then
+            npm init -y
+          fi
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Clean and Create proper www folder
+        shell: bash
         run: |
           echo "=== Preparing clean www folder ==="
+
           mkdir -p www
-          
-          # Copy only specific web files/folders and strictly EXCLUDE node_modules, android, git, etc.
           rm -rf www/*
-          
+
           for item in *.html *.js *.css assets images Data config; do
-            if [ -e "$item" ] && [ "$item" != "node_modules" ] && [ "$item" != "android" ]; then
+            if [ -e "$item" ]; then
               cp -r "$item" www/
             fi
           done
-          
+
           echo "=== Final www folder contents ==="
           ls -la www/
 
       - name: Remove old capacitor config if exists
-        run: rm -f capacitor.config.json capacitor.config.ts
+        run: |
+          rm -f capacitor.config.json
+          rm -f capacitor.config.ts
 
       - name: Init Capacitor
-        run: npx cap init "Texforever" com.kumar.texforever --web-dir=www
+        run: |
+          npx cap init "Texforever" com.kumar.texforever --web-dir=www
 
       - name: Add Android platform
-        run: npx cap add android
+        run: |
+          npx cap add android
 
       - name: Sync
-        run: npx cap sync android
+        run: |
+          npx cap sync android
 
       - name: Configure Java 21 Compatibility
         run: |
@@ -66,13 +75,14 @@ jobs:
           EOF
 
       - name: Build APK
+        working-directory: android
         run: |
-          cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
