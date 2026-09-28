@@ -402,9 +402,28 @@ jobs:
           echo "===================================="
 
       - name: Build APK
-        working-directory: android
         run: |
-          chmod +x gradlew
+          echo "===== CHECK ANDROID PROJECT ====="
+          pwd
+          ls -la
+          echo "==============================="
+
+          if [ ! -f "android/gradlew" ]; then
+            echo "ERROR: android/gradlew does not exist"
+            echo "===== ANDROID CONTENT ====="
+            find android -maxdepth 3 -type f -print 2>/dev/null || true
+            echo "============================"
+            exit 1
+          fi
+
+          chmod +x android/gradlew
+
+          cd android
+
+          echo "===== GRADLE WRAPPER FOUND ====="
+          ls -la gradlew
+          echo "================================"
+
           ./gradlew assembleDebug --stacktrace
       - name: Rename APK
         run: |
