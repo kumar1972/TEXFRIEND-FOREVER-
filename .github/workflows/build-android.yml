@@ -57,13 +57,12 @@ jobs:
       - name: Add Android platform
         run: |
           npx cap add android
-
-      - name: Create native folder picker plugin
+                - name: Create Android storage plugin and build
         shell: bash
         run: |
           mkdir -p android/app/src/main/java/com/kumar/texforever
 
-          cat > android/app/src/main/java/com/kumar/texforever/TexforeverStoragePlugin.java <<'EOF'
+          cat > android/app/src/main/java/com/kumar/texforever/TexforeverStoragePlugin.java <<'PLUGIN_EOF'
           package com.kumar.texforever;
 
           import android.app.Activity;
@@ -128,24 +127,19 @@ jobs:
                   if (resultCode != Activity.RESULT_OK ||
                       data == null) {
 
-                      call.reject(
-                          "Folder selection cancelled"
-                      );
-
+                      call.reject("Folder selection cancelled");
                       return;
                   }
 
                   Uri uri = data.getData();
 
                   if (uri == null) {
-                      call.reject(
-                          "Selected folder URI is empty"
-                      );
+                      call.reject("Selected folder URI is empty");
                       return;
                   }
 
                   try {
-                      final int takeFlags =
+                      int takeFlags =
                           data.getFlags() &
                           (
                               Intent.FLAG_GRANT_READ_URI_PERMISSION |
@@ -161,18 +155,10 @@ jobs:
                   } catch (Exception ignored) {
                   }
 
-                  JSObject result =
-                      new JSObject();
+                  JSObject result = new JSObject();
 
-                  result.put(
-                      "uri",
-                      uri.toString()
-                  );
-
-                  result.put(
-                      "name",
-                      getFolderName(uri)
-                  );
+                  result.put("uri", uri.toString());
+                  result.put("name", getFolderName(uri));
 
                   call.resolve(result);
               }
@@ -183,16 +169,13 @@ jobs:
                       String path = uri.getPath();
 
                       if (path != null) {
-                          int index =
-                              path.lastIndexOf(':');
+                          int index = path.lastIndexOf(':');
 
                           if (
                               index >= 0 &&
                               index < path.length() - 1
                           ) {
-                              return path.substring(
-                                  index + 1
-                              );
+                              return path.substring(index + 1);
                           }
                       }
                   } catch (Exception ignored) {
@@ -218,9 +201,7 @@ jobs:
                       base64Data == null ||
                       folderUriString == null
                   ) {
-                      call.reject(
-                          "Missing backup data or folder"
-                      );
+                      call.reject("Missing backup data or folder");
                       return;
                   }
 
@@ -231,8 +212,7 @@ jobs:
 
                       Uri fileUri =
                           DocumentsContract.createDocument(
-                              getContext()
-                                  .getContentResolver(),
+                              getContext().getContentResolver(),
                               treeUri,
                               "application/json",
                               fileName
@@ -255,9 +235,7 @@ jobs:
                           OutputStream output =
                               getContext()
                                   .getContentResolver()
-                                  .openOutputStream(
-                                      fileUri
-                                  )
+                                  .openOutputStream(fileUri)
                       ) {
 
                           if (output == null) {
@@ -271,23 +249,11 @@ jobs:
                           output.flush();
                       }
 
-                      JSObject result =
-                          new JSObject();
+                      JSObject result = new JSObject();
 
-                      result.put(
-                          "success",
-                          true
-                      );
-
-                      result.put(
-                          "fileName",
-                          fileName
-                      );
-
-                      result.put(
-                          "uri",
-                          fileUri.toString()
-                      );
+                      result.put("success", true);
+                      result.put("fileName", fileName);
+                      result.put("uri", fileUri.toString());
 
                       call.resolve(result);
 
@@ -304,12 +270,9 @@ jobs:
                   }
               }
           }
-          EOF
+          PLUGIN_EOF
 
-             - name: Register native plugin
-              shell: bash
-              run: |
-          cat > android/app/src/main/java/com/kumar/texforever/MainActivity.java <<'EOF'
+          cat > android/app/src/main/java/com/kumar/texforever/MainActivity.java <<'MAIN_EOF'
           package com.kumar.texforever;
 
           import android.os.Bundle;
@@ -320,6 +283,7 @@ jobs:
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
+
                   registerPlugin(
                       TexforeverStoragePlugin.class
                   );
@@ -327,15 +291,8 @@ jobs:
                   super.onCreate(savedInstanceState);
               }
           }
-          EOF
+          MAIN_EOF
 
-      - name: Sync Capacitor
-        run: |
-          npx cap sync android
-
-      - name: Configure Java 21 Compatibility
-        shell: bash
-        run: |
           python3 - <<'PY'
           from pathlib import Path
 
@@ -352,13 +309,13 @@ jobs:
               }
           }
           """
-
               p.write_text(s)
+
           PY
 
-      - name: Build APK
-        working-directory: android
-        run: |
+          npx cap sync android
+
+          cd android
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
@@ -368,4 +325,3 @@ jobs:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-               
