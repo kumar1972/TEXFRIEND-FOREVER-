@@ -1,13 +1,14 @@
 name: Build Android APK
 
-on: [workflow_dispatch, push]
+on:
+  workflow_dispatch:
+  push:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -32,8 +33,6 @@ jobs:
       - name: Prepare www folder
         shell: bash
         run: |
-          echo "=== Preparing www folder ==="
-
           mkdir -p www
           rm -rf www/*
 
@@ -79,7 +78,6 @@ jobs:
           import com.getcapacitor.annotation.CapacitorPlugin;
 
           import java.io.OutputStream;
-          import java.util.Base64;
 
           @CapacitorPlugin(name = "TexforeverStorage")
           public class TexforeverStoragePlugin extends Plugin {
@@ -140,16 +138,13 @@ jobs:
                   Uri uri = data.getData();
 
                   if (uri == null) {
-
                       call.reject(
                           "Selected folder URI is empty"
                       );
-
                       return;
                   }
 
                   try {
-
                       final int takeFlags =
                           data.getFlags() &
                           (
@@ -163,7 +158,6 @@ jobs:
                               uri,
                               takeFlags
                           );
-
                   } catch (Exception ignored) {
                   }
 
@@ -186,12 +180,9 @@ jobs:
               private String getFolderName(Uri uri) {
 
                   try {
-
-                      String path =
-                          uri.getPath();
+                      String path = uri.getPath();
 
                       if (path != null) {
-
                           int index =
                               path.lastIndexOf(':');
 
@@ -199,13 +190,11 @@ jobs:
                               index >= 0 &&
                               index < path.length() - 1
                           ) {
-
                               return path.substring(
                                   index + 1
                               );
                           }
                       }
-
                   } catch (Exception ignored) {
                   }
 
@@ -213,8 +202,7 @@ jobs:
               }
 
               @PluginMethod
-              public void saveBackup(
-                      PluginCall call) {
+              public void saveBackup(PluginCall call) {
 
                   String fileName =
                       call.getString("fileName");
@@ -230,11 +218,9 @@ jobs:
                       base64Data == null ||
                       folderUriString == null
                   ) {
-
                       call.reject(
                           "Missing backup data or folder"
                       );
-
                       return;
                   }
 
@@ -253,32 +239,17 @@ jobs:
                           );
 
                       if (fileUri == null) {
-
                           call.reject(
                               "Unable to create backup file"
                           );
-
                           return;
                       }
 
-                      byte[] bytes;
-
-                      if (
-                          android.os.Build.VERSION.SDK_INT >= 26
-                      ) {
-
-                          bytes =
-                              Base64.getDecoder()
-                                  .decode(base64Data);
-
-                      } else {
-
-                          bytes =
-                              android.util.Base64.decode(
-                                  base64Data,
-                                  android.util.Base64.DEFAULT
-                              );
-                      }
+                      byte[] bytes =
+                          android.util.Base64.decode(
+                              base64Data,
+                              android.util.Base64.DEFAULT
+                          );
 
                       try (
                           OutputStream output =
@@ -290,11 +261,9 @@ jobs:
                       ) {
 
                           if (output == null) {
-
                               call.reject(
                                   "Unable to open selected folder"
                               );
-
                               return;
                           }
 
@@ -357,9 +326,9 @@ jobs:
                   "import com.kumar.texforever.TexforeverStoragePlugin;"
               )
 
-              s = s.replace(
-                  "public class MainActivity extends BridgeActivity {",
-                  """public class MainActivity extends BridgeActivity {
+              old = "public class MainActivity extends BridgeActivity {"
+
+              new = """public class MainActivity extends BridgeActivity {
 
               @Override
               public void onCreate(
@@ -372,11 +341,54 @@ jobs:
                   );
               }
           }"""
-              )
+
+              s = s.replace(old, new)
 
               p.write_text(s)
 
           print(p.read_text())
           PY
 
-      - name: Sync Capac
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
+
+      - name: Configure Java 21 Compatibility
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path(
+              "android/app/build.gradle"
+          )
+
+          s = p.read_text()
+
+          if "sourceCompatibility JavaVersion.VERSION_21" not in s:
+
+              s += """
+
+          android {
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_21
+                  targetCompatibility JavaVersion.VERSION_21
+              }
+          }
+          """
+
+              p.write_text(s)
+          PY
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
