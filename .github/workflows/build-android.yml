@@ -24,11 +24,20 @@ jobs:
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Create www folder and copy web files
+      - name: Verify Web Files and Create www
         run: |
+          echo "=== Listing repository root files ==="
+          ls -la
           mkdir -p www
-          shopt -s extglob
-          cp -r !(www|android|node_modules|.git|.github) www/ 2>/dev/null || true
+          # Copy all necessary web files safely, ensuring index.html exists
+          if [ -f "index.html" ]; then
+            cp -r index.html css js assets images images_data *.html *.js *.css www/ 2>/dev/null || true
+          else
+            shopt -s extglob
+            cp -r !(www|android|node_modules|.git|.github) www/ 2>/dev/null || true
+          fi
+          echo "=== Listing www folder contents ==="
+          ls -la www/
 
       - name: Remove old capacitor config if exists
         run: rm -f capacitor.config.json capacitor.config.ts
