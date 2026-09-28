@@ -1,71 +1,26 @@
-name: Build Android APK
-
-on: [workflow_dispatch, push]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Create package.json
-        run: |
-          if [ ! -f package.json ]; then
-            npm init -y
-          fi
-
-      - name: Install Capacitor Assets
-        run: npm install @capacitor/assets --save-dev
-
-      - name: Generate Android Icons
-        run: npx capacitor-assets generate --android
-
-      - name: Install Capacitor
-        run: |
-          npm install @capacitor/core@latest @capacitor/cli@latest
-
-      - name: Create www folder
-        run: |
-          mkdir -p www
-
-      - name: Copy web files to www
-        shell: bash
-        run: |
-          find . -maxdepth 1 \
-            ! -name "." \
-            ! -name "./www" \
-            ! -name "./android" \
-            ! -name "./node_modules" \
-            ! -name "./.git" \
-            ! -name "./.github" \
-            -exec cp -r {} www/ \;
-
-      - name: Remove old Capacitor config
-        run: |
-          rm -f capacitor.config.json
-          rm -f capacitor.config.ts
-
-      - name: Initialize Capacitor
-        run: |
-          npx cap init "TexFriend Forever" com.kumar.texfriendforever --web-dir www
-
-      - name: Add Android platform
-        run: |
-          npx cap add android
-
-      - name: Sync Capacitor
-        run: |
-          npx cap sync android
+{
+  "name": "texfriend-forever-app",
+  "version": "1.0.0",
+  "description": "TexFriend Forever App",
+  "author": "kumar1972",
+  "main": "main.js",
+  "scripts": {
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.texfriend.forever",
+    "productName": "TexFriend Forever",
+    "publish": null,
+    "win": {
+      "target": "nsis",
+      "icon": "icon-512.ico"
+    },
+    "files": [
+      "**/*"
+    ]
+  }
+}
