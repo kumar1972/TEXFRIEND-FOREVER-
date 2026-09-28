@@ -72,10 +72,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
-          if [ ! -f "icon.ico" ]; then
-            echo "ERROR: icon.ico not found in repository root"
+          echo "Searching for icon.ico..."
+
+          ICON_FILE=$(find . -type f \( -iname "icon.ico" \) | head -n 1)
+
+          if [ -z "$ICON_FILE" ]; then
+            echo "ERROR: icon.ico was not found anywhere in repository"
+            echo "===== ROOT FILES ====="
+            ls -la
+            echo "======================"
             exit 1
           fi
+
+          echo "Icon found: $ICON_FILE"
 
           mkdir -p android/app/src/main/res/mipmap-mdpi
           mkdir -p android/app/src/main/res/mipmap-hdpi
@@ -83,22 +92,22 @@ jobs:
           mkdir -p android/app/src/main/res/mipmap-xxhdpi
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
-          magick "icon.ico" -resize 48x48 \
+          magick "$ICON_FILE" -resize 48x48 \
             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
 
-          magick "icon.ico" -resize 72x72 \
+          magick "$ICON_FILE" -resize 72x72 \
             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
 
-          magick "icon.ico" -resize 96x96 \
+          magick "$ICON_FILE" -resize 96x96 \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
 
-          magick "icon.ico" -resize 144x144 \
+          magick "$ICON_FILE" -resize 144x144 \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
 
-          magick "icon.ico" -resize 192x192 \
+          magick "$ICON_FILE" -resize 192x192 \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-          echo "Custom TEXFOREVER icon installed successfully."
+          echo "Custom icon installed successfully."
       - name: Create storage plugin
         run: |
           mkdir -p android/app/src/main/java/com/kumar/texforever
