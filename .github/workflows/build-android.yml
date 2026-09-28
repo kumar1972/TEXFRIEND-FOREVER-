@@ -1,9 +1,6 @@
 name: Build Android APK
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [ apk-build ]
+on: [workflow_dispatch, push]
 
 jobs:
   build:
@@ -14,7 +11,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -52,26 +49,19 @@ jobs:
           echo "=== variables.gradle content ==="
           cat android/variables.gradle
 
-      - name: Force Java 17 for all Android modules
+      - name: Configure Java 17
         run: |
-          cat >> android/build.gradle << 'EOF'
+          cat >> android/build.gradle <<'EOF'
 
-          subprojects {
-              afterEvaluate { project ->
-                  if (project.hasProperty("android")) {
-                      project.android {
-                          compileOptions {
-                              sourceCompatibility JavaVersion.VERSION_17
-                              targetCompatibility JavaVersion.VERSION_17
-                          }
-                      }
-                  }
-              }
+           subprojects {
+          tasks.withType(JavaCompile).configureEach {
+               options.release.set(17)
+             }
           }
-          EOF
+      EOF
 
-      - name: Build APK
-        run: |
+       - name: Build APK
+           run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
