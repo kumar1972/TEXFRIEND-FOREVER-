@@ -25,7 +25,17 @@ jobs:
         run: |
           if [ -f package.json ]; then
             npm install
-            # Oru vela build script irundhal inge podavum (eg: npm run build)
+          fi
+
+      - name: Ensure www Directory Exists
+        run: |
+          mkdir -p www
+          if [ ! -f www/index.html ]; then
+            if [ -f index.html ]; then
+              cp index.html www/
+            else
+              echo "<html><body><h1>TEXFOREVER</h1></body></html>" > www/index.html
+            fi
           fi
 
       - name: Install Capacitor Core & CLI & Android
