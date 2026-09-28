@@ -24,7 +24,7 @@ jobs:
       - name: Create package.json
         run: |
           if [ ! -f package.json ]; then
-            npm init -y
+          npm init -y
           fi
 
       - name: Install Capacitor Assets
@@ -37,36 +37,27 @@ jobs:
         run: |
           npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
-
       - name: Create www folder
         run: |
           mkdir -p www
+          if [ ! -f www/index.html ]; then
+            echo "<html><body><h1>TEXFOREVER</h1></body></html>" > www/index.html
+          fi
 
-      - name: Copy web files to www
-        shell: bash
-        run: |
-          find . -maxdepth 1 \
-            ! -name "." \
-            ! -name "./www" \
-            ! -name "./android" \
-            ! -name "./node_modules" \
-            ! -name "./.git" \
-            ! -name "./.github" \
-            -exec cp -r {} www/ \;
-
-      - name: Remove old Capacitor config
-        run: |
-          rm -f capacitor.config.json
-          rm -f capacitor.config.ts
-
-      - name: Initialize Capacitor
-        run: |
-          npx cap init "TexFriend Forever" com.kumar.texfriendforever --web-dir www
-
-      - name: Add Android platform
-        run: |
-          npx cap add android
+      - name: Add Android Platform
+        run: npx cap add android
 
       - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Debug APK
         run: |
-          npx cap sync android
+          cd android
+          ./gradlew assembleDebug
+
+      # **INGE THAAN UPLOAD ARTIFACT STEP VARAVENDUM:**
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
