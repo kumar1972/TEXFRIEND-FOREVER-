@@ -248,9 +248,9 @@ jobs:
               }
           }
           EOF
-           - name: Register native plugin
-             shell: bash
-             run: |
+                 - name: Register native plugin
+                   shell: bash
+                   run: |
           python3 - <<'PY'
           from pathlib import Path
 
@@ -281,7 +281,6 @@ jobs:
 
           print(p.read_text())
           PY
-
       - name: Sync Capacitor
         run: |
           npx cap sync android
