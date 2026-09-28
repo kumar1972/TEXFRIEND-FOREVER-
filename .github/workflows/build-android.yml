@@ -203,114 +203,87 @@ jobs:
 
                   return "Selected Folder";
               }
+           @PluginMethod
+           public void saveBackup(PluginCall call) {
 
-              @PluginMethod
-              public void saveBackup(PluginCall call) {
+          String fileName = call.getString("fileName");
+          String base64Data = call.getString("data");
+          String folderUriString = call.getString("folderUri");
 
-                  String fileName =
-                      call.getString("fileName");
-
-                  String base64Data =
-                      call.getString("data");
-
-                  String folderUriString =
-                      call.getString("folderUri");
-
-                  if (
-                      fileName == null ||
-                      base64Data == null ||
-                      folderUriString == null
-                  ) {
-
-                      call.reject(
-                          "Missing backup data or folder"
-                      );
-
-                      return;
-                  }
-
-                  try {
-
-                      Uri treeUri =
-                          Uri.parse(folderUriString);
-
-                      Uri fileUri =
-                          DocumentsContract.createDocument(
-                              getContext().getContentResolver(),
-                              treeUri,
-                              "application/json",
-                              fileName
-                          );
-
-                      if (fileUri == null) {
-
-                          call.reject(
-                              "Unable to create backup file"
-                          );
-
-                          return;
-                      }
-
-                      byte[] bytes =
-                          android.util.Base64.decode(
-                              base64Data,
-                              android.util.Base64.DEFAULT
-                          );
-
-                      try (
-                          OutputStream output =
-                              getContext()
-                                  .getContentResolver()
-                                  .openOutputStream(fileUri)
-                      ) {
-
-                          if (output == null) {
-
-                              call.reject(
-                                  "Unable to open selected folder"
-                              );
-
-                              return;
-                          }
-
-                          output.write(bytes);
-                          output.flush();
-                      }
-
-                      JSObject resultData =
-                          new JSObject();
-
-                      resultData.put(
-                          "success",
-                          true
-                      );
-
-                      resultData.put(
-                          "fileName",
-                          fileName
-                      );
-
-                      resultData.put(
-                          "uri",
-                          fileUri.toString()
-                      );
-
-                      call.resolve(resultData);
-
-                  } catch (Exception e) {
-
-                      call.reject(
-                          "Backup save failed: " +
-                          (
-                              e.getMessage() != null
-                              ? e.getMessage()
-                              : "Unknown error"
-                          )
-                      );
-                  }
-              }
+          if (fileName == null || base64Data == null || folderUriString == null) {
+          call.reject("Missing backup data or folder");
+          return;
           }
-          EOF
+  
+          try {
+
+          Uri treeUri = Uri.parse(folderUriString);
+ 
+          String treeDocumentId =
+            DocumentsContract.getTreeDocumentId(treeUri);
+
+          Uri parentDocumentUri =
+            DocumentsContract.buildDocumentUriUsingTree(
+                treeUri,
+                treeDocumentId
+            );
+
+          Uri fileUri =
+            DocumentsContract.createDocument(
+                getContext().getContentResolver(),
+                parentDocumentUri,
+                "application/json",
+                fileName
+            );
+
+          if (fileUri == null) {
+            call.reject("Unable to create backup file");
+            return;
+          }
+
+          byte[] bytes =
+            android.util.Base64.decode(
+                base64Data,
+                android.util.Base64.DEFAULT
+            );
+
+          try (
+            OutputStream output =
+                getContext()
+                    .getContentResolver()
+                    .openOutputStream(fileUri)
+          ) {
+
+            if (output == null) {
+                call.reject("Unable to open selected folder");
+                return;
+            }
+
+            output.write(bytes);
+            output.flush();
+          }
+
+          JSObject resultData = new JSObject();
+
+          resultData.put("success", true);
+          resultData.put("fileName", fileName);
+          resultData.put("uri", fileUri.toString());
+
+          call.resolve(resultData);
+
+          } catch (Exception e) {
+
+          call.reject(
+            "Backup save failed: " +
+            (
+                e.getMessage() != null
+                ? e.getMessage()
+                : "Unknown error"
+             )
+           );
+           }
+          }
+           EOF
 
       - name: Create MainActivity
         run: |
