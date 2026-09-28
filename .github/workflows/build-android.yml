@@ -68,7 +68,7 @@ jobs:
         run: |
           rm -rf android
           npx cap add android
-          npx cap init "Texforever" com.kumar.texforever --web-dir=www
+          
       - name: Set Custom App Icon
         run: |
           sudo apt-get update
