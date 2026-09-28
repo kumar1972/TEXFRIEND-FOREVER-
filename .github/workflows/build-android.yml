@@ -26,12 +26,13 @@ jobs:
           if [ ! -f package.json ]; then
             npm init -y
           fi
+
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Clean and Create proper www folder
+      - name: Prepare www folder
         shell: bash
         run: |
-          echo "=== Preparing clean www folder ==="
+          echo "=== Preparing www folder ==="
 
           mkdir -p www
           rm -rf www/*
@@ -42,10 +43,10 @@ jobs:
             fi
           done
 
-          echo "=== Final www folder contents ==="
-          ls -la www/
+          echo "=== www contents ==="
+          find www -maxdepth 2 -type f | sort
 
-      - name: Remove old capacitor config if exists
+      - name: Remove old Capacitor config
         run: |
           rm -f capacitor.config.json
           rm -f capacitor.config.ts
@@ -58,13 +59,261 @@ jobs:
         run: |
           npx cap add android
 
-      - name: Sync
+      - name: Create native folder picker plugin
+        shell: bash
+        run: |
+          mkdir -p android/app/src/main/java/com/kumar/texforever
+
+          cat > android/app/src/main/java/com/kumar/texforever/TexforeverStoragePlugin.java <<'EOF'
+          package com.kumar.texforever;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.provider.DocumentsContract;
+
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.OutputStream;
+          import java.util.Base64;
+
+          @CapacitorPlugin(name = "TexforeverStorage")
+          public class TexforeverStoragePlugin extends Plugin {
+
+              private static final int FOLDER_PICKER_REQUEST = 7001;
+              private PluginCall pendingFolderCall;
+
+              @PluginMethod
+              public void selectFolder(PluginCall call) {
+
+                  pendingFolderCall = call;
+
+                  Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+
+                  intent.addFlags(
+                      Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                      Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                      Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION |
+                      Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
+                  );
+
+                  startActivityForResult(call, intent, "folderPickerResult");
+              }
+
+              @Override
+              protected void handleOnActivityResult(
+                      int requestCode,
+                      int resultCode,
+                      Intent data) {
+
+                  super.handleOnActivityResult(requestCode, resultCode, data);
+
+                  if (requestCode != FOLDER_PICKER_REQUEST &&
+                      pendingFolderCall == null) {
+                      return;
+                  }
+
+                  PluginCall call = pendingFolderCall;
+                  pendingFolderCall = null;
+
+                  if (call == null) {
+                      return;
+                  }
+
+                  if (resultCode != Activity.RESULT_OK || data == null) {
+                      call.reject("Folder selection cancelled");
+                      return;
+                  }
+
+                  Uri uri = data.getData();
+
+                  if (uri == null) {
+                      call.reject("Selected folder URI is empty");
+                      return;
+                  }
+
+                  try {
+                      final int takeFlags =
+                          data.getFlags() &
+                          (Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                           Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+                      getContext()
+                          .getContentResolver()
+                          .takePersistableUriPermission(uri, takeFlags);
+
+                  } catch (Exception ignored) {
+                  }
+
+                  JSObject result = new JSObject();
+                  result.put("uri", uri.toString());
+                  result.put("name", getFolderName(uri));
+
+                  call.resolve(result);
+              }
+
+              private String getFolderName(Uri uri) {
+                  try {
+                      String path = uri.getPath();
+
+                      if (path != null) {
+                          int index = path.lastIndexOf(':');
+
+                          if (index >= 0 && index < path.length() - 1) {
+                              return path.substring(index + 1);
+                          }
+                      }
+                  } catch (Exception ignored) {
+                  }
+
+                  return "Selected Folder";
+              }
+
+              @PluginMethod
+              public void saveBackup(PluginCall call) {
+
+                  String fileName = call.getString("fileName");
+                  String base64Data = call.getString("data");
+                  String folderUriString = call.getString("folderUri");
+
+                  if (fileName == null || base64Data == null ||
+                      folderUriString == null) {
+                      call.reject("Missing backup data or folder");
+                      return;
+                  }
+
+                  try {
+
+                      Uri treeUri = Uri.parse(folderUriString);
+
+                      Uri fileUri = DocumentsContract.createDocument(
+                          getContext().getContentResolver(),
+                          treeUri,
+                          "application/json",
+                          fileName
+                      );
+
+                      if (fileUri == null) {
+                          call.reject("Unable to create backup file");
+                          return;
+                      }
+
+                      byte[] bytes;
+
+                      if (android.os.Build.VERSION.SDK_INT >= 26) {
+                          bytes = Base64.getDecoder().decode(base64Data);
+                      } else {
+                          bytes = android.util.Base64.decode(
+                              base64Data,
+                              android.util.Base64.DEFAULT
+                          );
+                      }
+
+                      try (OutputStream output =
+                               getContext()
+                                   .getContentResolver()
+                                   .openOutputStream(fileUri)) {
+
+                          if (output == null) {
+                              call.reject("Unable to open selected folder");
+                              return;
+                          }
+
+                          output.write(bytes);
+                          output.flush();
+                      }
+
+                      JSObject result = new JSObject();
+                      result.put("success", true);
+                      result.put("fileName", fileName);
+                      result.put("uri", fileUri.toString());
+
+                      call.resolve(result);
+
+                  } catch (Exception e) {
+
+                      call.reject(
+                          "Backup save failed: " +
+                          (e.getMessage() != null
+                              ? e.getMessage()
+                              : "Unknown error")
+                      );
+                  }
+              }
+          }
+          EOF
+
+      - name: Register native plugin
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path(
+              "android/app/src/main/java/com/kumar/texforever/MainActivity.java"
+          )
+
+          if not p.exists():
+              print("MainActivity.java not found")
+              raise SystemExit(1)
+
+          s = p.read_text()
+
+          if "TexforeverStoragePlugin" not in s:
+              s = s.replace(
+                  "import com.getcapacitor.BridgeActivity;",
+                  "import com.getcapacitor.BridgeActivity;\n"
+                  "import com.kumar.texforever.TexforeverStoragePlugin;"
+              )
+
+              s = s.replace(
+                  "public class MainActivity extends BridgeActivity {",
+                  "public class MainActivity extends BridgeActivity {\n\n"
+                  "    @Override\n"
+                  "    public void onCreate(android.os.Bundle savedInstanceState) {\n"
+                  "        super.onCreate(savedInstanceState);\n"
+                  "        registerPlugin(TexforeverStoragePlugin.class);\n"
+                  "    }\n"
+                  "}"
+              )
+
+              # Remove the extra closing brace created by the replacement
+              lines = s.splitlines()
+
+              if len(lines) >= 2:
+                  while lines[-1].strip() == "}" and lines[-2].strip() == "}":
+                      lines.pop()
+
+                  lines.append("}")
+
+              s = "\n".join(lines) + "\n"
+
+              p.write_text(s)
+
+          print(p.read_text())
+          PY
+
+      - name: Sync Capacitor
         run: |
           npx cap sync android
 
       - name: Configure Java 21 Compatibility
+        shell: bash
         run: |
-          cat >> android/app/build.gradle <<'EOF'
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("android/app/build.gradle")
+          s = p.read_text()
+
+          if "sourceCompatibility JavaVersion.VERSION_21" not in s:
+              s += """
 
           android {
               compileOptions {
@@ -72,7 +321,10 @@ jobs:
                   targetCompatibility JavaVersion.VERSION_21
               }
           }
-          EOF
+          """
+
+          p.write_text(s)
+          PY
 
       - name: Build APK
         working-directory: android
