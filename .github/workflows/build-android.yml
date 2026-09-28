@@ -66,21 +66,17 @@ jobs:
           rm -f capacitor.config.ts
 
           npx cap init "Texforever" com.kumar.texforever --web-dir=www
-
       - name: Set Custom App Icon
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
-          echo "Searching for icon.ico..."
+          echo "Searching for icon-512.ico..."
 
           ICON_FILE=$(find . -type f \( -iname "icon-512.ico" \) | head -n 1)
 
           if [ -z "$ICON_FILE" ]; then
-            echo "ERROR: icon.ico was not found anywhere in repository"
-            echo "===== ROOT FILES ====="
-            ls -la
-            echo "======================"
+            echo "ERROR: icon-512.ico was not found anywhere in repository"
             exit 1
           fi
 
@@ -92,19 +88,19 @@ jobs:
           mkdir -p android/app/src/main/res/mipmap-xxhdpi
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
-          magick "$ICON_FILE" -resize 48x48 \
+          convert "$ICON_FILE" -resize 48x48 \
             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
 
-          magick "$ICON_FILE" -resize 72x72 \
+          convert "$ICON_FILE" -resize 72x72 \
             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
 
-          magick "$ICON_FILE" -resize 96x96 \
+          convert "$ICON_FILE" -resize 96x96 \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
 
-          magick "$ICON_FILE" -resize 144x144 \
+          convert "$ICON_FILE" -resize 144x144 \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
 
-          magick "$ICON_FILE" -resize 192x192 \
+          convert "$ICON_FILE" -resize 192x192 \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
           echo "Custom icon installed successfully."
