@@ -279,11 +279,11 @@ jobs:
                 e.getMessage() != null
                 ? e.getMessage()
                 : "Unknown error"
-             )
-           );
-           }
+               )
+             );
+            }
           }
-           EOF
+          EOF
 
       - name: Create MainActivity
         run: |
