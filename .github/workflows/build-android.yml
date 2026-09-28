@@ -74,7 +74,7 @@ jobs:
 
           echo "Searching for icon.ico..."
 
-          ICON_FILE=$(find . -type f \( -iname "icon.ico" \) | head -n 1)
+          ICON_FILE=$(find . -type f \( -iname "icon-512.ico" \) | head -n 1)
 
           if [ -z "$ICON_FILE" ]; then
             echo "ERROR: icon.ico was not found anywhere in repository"
