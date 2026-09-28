@@ -16,7 +16,8 @@
     "productName": "TexFriend Forever",
     "publish": null,
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "icon.ico"
     },
     "files": [
       "**/*"
