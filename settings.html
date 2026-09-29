@@ -3014,48 +3014,153 @@ async function backupAllData(){
     }
 }
 
-
 /* ============================================================
    BACKUP ALL DATA AS EXCEL (CSV)
+   Android + Folder Backup
 ============================================================ */
 
-async function backupAllData() {
+async function backupAllDataAsExcel(){
 
-    try {
+    try{
 
         const idbData = await idbGetAll();
         const allData = { ...idbData };
 
-        for (let i = 0; i < localStorage.length; i++) {
+        for(let i = 0; i < localStorage.length; i++){
 
             const key = localStorage.key(i);
 
-            if (!allData[key]) {
+            if(!allData[key]){
                 allData[key] = localStorage.getItem(key);
             }
         }
 
-        const payload = {
-            app: "TEXFRIEND FOREVER",
-            version: "Settings Backup with IndexedDB",
-            createdAt: new Date().toISOString(),
-            data: allData
-        };
+        let csvContent = "Key,Value\r\n";
 
-        const jsonData =
-            JSON.stringify(payload, null, 2);
+        for(const key of Object.keys(allData)){
+
+            let value = allData[key];
+
+            if(typeof value !== "string"){
+                value = JSON.stringify(value);
+            }
+
+            value = String(value)
+                .replace(/"/g, '""')
+                .replace(/\r?\n/g, ' ');
+
+            csvContent +=
+                '"' + String(key).replace(/"/g, '""') + '",' +
+                '"' + value + '"\r\n';
+        }
 
         const fileName =
             "texfriend_erp_backup_" +
-            new Date().toISOString().slice(0, 10) +
-            ".json";
+            new Date().toISOString().slice(0,10) +
+            ".csv";
 
-        const isCapacitor =
-            !!(
-                window.Capacitor &&
-                typeof window.Capacitor.isNativePlatform === "function" &&
-                window.Capacitor.isNativePlatform()
+        /* ====================================================
+           ANDROID NATIVE BACKUP
+        ==================================================== */
+
+        if(
+            window.Capacitor &&
+            window.Capacitor.Plugins &&
+            window.Capacitor.Plugins.TexforeverStorage
+        ){
+
+            let folderUri =
+                localStorage.getItem("texforever_backup_folder_uri");
+
+            if(!folderUri){
+                folderUri =
+                    localStorage.getItem("texfriend_backup_folder_uri");
+            }
+
+            if(!folderUri){
+
+                toast("Please select backup folder first!", false);
+
+                if(typeof selectTexfriendFolder === "function"){
+                    selectTexfriendFolder();
+                }
+
+                return;
+            }
+
+            const base64Data = btoa(
+                unescape(
+                    encodeURIComponent(csvContent)
+                )
             );
+
+            const result =
+                await window.Capacitor.Plugins.TexforeverStorage.saveBackup({
+                    fileName: fileName,
+                    data: base64Data,
+                    folderUri: folderUri
+                });
+
+            if(result && result.success){
+
+                toast(
+                    "Excel/CSV Backup Saved Successfully!",
+                    true
+                );
+
+                return;
+            }
+
+            throw new Error(
+                "Android backup failed"
+            );
+        }
+
+        /* ====================================================
+           NORMAL WEB / DESKTOP BACKUP
+        ==================================================== */
+
+        const blob = new Blob(
+            [csvContent],
+            { type: "text/csv;charset=utf-8" }
+        );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+        link.download = fileName;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(
+            () => URL.revokeObjectURL(url),
+            1000
+        );
+
+        toast(
+            "Excel/CSV Backup Download Started!",
+            true
+        );
+
+    }catch(e){
+
+        console.error(
+            "Excel Backup Error:",
+            e
+        );
+
+        alert(
+            "Excel Backup Error: " +
+            (e.message || e)
+        );
+    }
+                }
 
         /* ============================
            ANDROID APK
