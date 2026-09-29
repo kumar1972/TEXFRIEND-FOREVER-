@@ -2649,6 +2649,23 @@ async function saveCompanyLogoSafely(){
 
     return cloudResult !== false;
 }
+    function saveCloudToggleState() {
+    const toggle = $("cloudSyncToggle");
+    if (!toggle) return;
+
+    const isChecked = toggle.checked;
+
+    localStorage.setItem(
+        "erp_cloud_sync_enabled",
+        isChecked ? "true" : "false"
+    );
+
+    if (isChecked) {
+        toast("☁️ Cloud Auto-Sync: ENABLED (Online Mode)");
+    } else {
+        toast("📴 Cloud Auto-Sync: DISABLED (Full Offline Mode)");
+    }
+    }
 function saveSupabaseConfig() {
     const provider = $("databaseProviderInput").value;
     const url = $("supabaseUrlInput").value.trim();
