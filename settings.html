@@ -2969,17 +2969,21 @@ async function factoryResetCloud(){
 
 /* ============================================================
    BACKUP ALL DATA (JSON)
+   Android + Folder Backup
 ============================================================ */
 
 async function backupAllData(){
 
     try{
+
         const idbData = await idbGetAll();
         const allData = { ...idbData };
 
-        for(let i=0; i<localStorage.length; i++){
+        for(let i = 0; i < localStorage.length; i++){
+
             const key = localStorage.key(i);
-            if (!allData[key]) {
+
+            if(!allData[key]){
                 allData[key] = localStorage.getItem(key);
             }
         }
@@ -2991,28 +2995,117 @@ async function backupAllData(){
             data: allData
         };
 
+        const jsonContent =
+            JSON.stringify(payload, null, 2);
+
+        const fileName =
+            "texfriend_erp_backup_" +
+            new Date().toISOString().slice(0,10) +
+            ".json";
+
+
+        /* ANDROID NATIVE BACKUP */
+
+        if(
+            window.Capacitor &&
+            window.Capacitor.Plugins &&
+            window.Capacitor.Plugins.TexforeverStorage
+        ){
+
+            const folderUri =
+                localStorage.getItem(
+                    "texfriend_selected_folder_uri"
+                );
+
+            if(!folderUri){
+
+                alert(
+                    "Please select backup folder first!"
+                );
+
+                if(
+                    typeof selectTexfriendFolder ===
+                    "function"
+                ){
+                    await selectTexfriendFolder();
+                }
+
+                return;
+            }
+
+            const base64Data = btoa(
+                unescape(
+                    encodeURIComponent(jsonContent)
+                )
+            );
+
+            const result =
+                await window.Capacitor.Plugins
+                    .TexforeverStorage
+                    .saveBackup({
+                        fileName: fileName,
+                        data: base64Data,
+                        folderUri: folderUri
+                    });
+
+            if(result && result.success){
+
+                toast(
+                    "ERP JSON Backup Saved Successfully!",
+                    true
+                );
+
+                return;
+            }
+
+            throw new Error(
+                "Android JSON backup failed"
+            );
+        }
+
+
+        /* NORMAL WEB / DESKTOP BACKUP */
+
         const blob = new Blob(
-            [JSON.stringify(payload, null, 2)],
+            [jsonContent],
             { type: "application/json" }
         );
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const url =
+            URL.createObjectURL(blob);
+
+        const a =
+            document.createElement("a");
+
         a.href = url;
-        a.download = "texfriend_erp_backup_" + new Date().toISOString().slice(0,10) + ".json";
+        a.download = fileName;
+
         document.body.appendChild(a);
         a.click();
         a.remove();
 
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        toast("ERP JSON Backup Download Started!");
+        setTimeout(
+            () => URL.revokeObjectURL(url),
+            1000
+        );
+
+        toast(
+            "ERP JSON Backup Download Started!"
+        );
 
     }catch(e){
-        console.error("Backup Error:", e);
-        alert("Backup Error: " + e.message);
-    }
-}
 
+        console.error(
+            "Backup Error:",
+            e
+        );
+
+        alert(
+            "Backup Error: " +
+            (e.message || e)
+        );
+    }
+            }
 
 /* ============================================================
    BACKUP ALL DATA AS EXCEL (CSV)
