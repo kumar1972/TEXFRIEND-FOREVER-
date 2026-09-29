@@ -49,7 +49,38 @@ async function selectTexfriendFolder() {
 
             return result;
         }
+// Electron Desktop
+if (
+    window.texforeverStorage &&
+    typeof window.texforeverStorage.selectFolder === "function"
+) {
+    const result = await window.texforeverStorage.selectFolder();
 
+    if (!result || !result.success) {
+        throw new Error(
+            result?.message || "Electron folder selection failed."
+        );
+    }
+
+    localStorage.setItem(
+        "texfriend_selected_folder",
+        result.folder
+    );
+
+    localStorage.setItem(
+        "texfriend_save_mode",
+        "electron_folder"
+    );
+
+    alert(
+        "📁 Folder Selected Successfully!\n\n" +
+        "Folder: " +
+        result.folder +
+        "\n\nERP data will be saved in this folder."
+    );
+
+    return result;
+}
         if (typeof window.showDirectoryPicker !== "function") {
 
             alert(
