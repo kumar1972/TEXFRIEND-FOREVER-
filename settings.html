@@ -3059,6 +3059,7 @@ async function backupAllDataAsExcel(){
             new Date().toISOString().slice(0,10) +
             ".csv";
 
+
         /* ====================================================
            ANDROID NATIVE BACKUP
         ==================================================== */
@@ -3069,19 +3070,22 @@ async function backupAllDataAsExcel(){
             window.Capacitor.Plugins.TexforeverStorage
         ){
 
-            let folderUri =
-                localStorage.getItem("texforever_backup_folder_uri");
-
-            if(!folderUri){
-                folderUri =
-                    localStorage.getItem("texfriend_backup_folder_uri");
-            }
+            const folderUri =
+                localStorage.getItem(
+                    "texfriend_selected_folder_uri"
+                );
 
             if(!folderUri){
 
-                toast("Please select backup folder first!", false);
+                toast(
+                    "Please select backup folder first!",
+                    false
+                );
 
-                if(typeof selectTexfriendFolder === "function"){
+                if(
+                    typeof selectTexfriendFolder ===
+                    "function"
+                ){
                     selectTexfriendFolder();
                 }
 
@@ -3095,11 +3099,13 @@ async function backupAllDataAsExcel(){
             );
 
             const result =
-                await window.Capacitor.Plugins.TexforeverStorage.saveBackup({
-                    fileName: fileName,
-                    data: base64Data,
-                    folderUri: folderUri
-                });
+                await window.Capacitor.Plugins
+                    .TexforeverStorage
+                    .saveBackup({
+                        fileName: fileName,
+                        data: base64Data,
+                        folderUri: folderUri
+                    });
 
             if(result && result.success){
 
@@ -3116,13 +3122,16 @@ async function backupAllDataAsExcel(){
             );
         }
 
+
         /* ====================================================
            NORMAL WEB / DESKTOP BACKUP
         ==================================================== */
 
         const blob = new Blob(
             [csvContent],
-            { type: "text/csv;charset=utf-8" }
+            {
+                type: "text/csv;charset=utf-8"
+            }
         );
 
         const url =
@@ -3160,8 +3169,7 @@ async function backupAllDataAsExcel(){
             (e.message || e)
         );
     }
-                }
-
+}
         /* ============================
            ANDROID APK
            ============================ */
