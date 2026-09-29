@@ -2610,44 +2610,30 @@ async function saveCompanyLogoSafely(){
     return cloudResult !== false;
 }
 
-
-/* ============================================================
-   SAVE SUPABASE CONFIG & CLOUD TOGGLE (GUARDED)
-============================================================ */
-
-function saveCloudToggleState() {
-    const toggle = $("cloudSyncToggle");
-    if (!toggle) return;
-    const isChecked = toggle.checked;
-    localStorage.setItem("erp_cloud_sync_enabled", isChecked ? "true" : "false");
-    
-    if (isChecked) {
-        toast("☁️ Cloud Auto-Sync: ENABLED (Online Mode)");
-    } else {
-        toast("📴 Cloud Auto-Sync: DISABLED (Full Offline Mode)");
-    }
-}
-
 function saveSupabaseConfig() {
     const url = $("supabaseUrlInput").value.trim();
     const key = $("supabaseKeyInput").value.trim();
 
-    if(!url || !key) {
+    if (!url || !key) {
         toast("Please enter both URL and Key!", false);
         return;
     }
 
-    // இவை லோக்கல் ஸ்டோரேஜில் சேமிக்கப்படும்
+    // Common Database Settings
+    safeSave("database_provider", "supabase");
+    safeSave("database_server_url", url);
+    safeSave("database_api_key", key);
+
+    // Existing Supabase keys — compatibility
     safeSave("custom_supabase_url", url);
     safeSave("custom_supabase_key", key);
 
     saveCloudToggleState();
 
-    toast("Database Connection & Sync Updated!", true, function(){
+    toast("Database Connection & Sync Updated!", true, function () {
         window.location.reload();
     });
 }
-
 
 /* ============================================================
    SAVE ALL SETTINGS
