@@ -674,8 +674,7 @@ General Profile
 
 </div>
 
-
-<!-- DATABASE CONNECTION (SUPABASE) + CLOUD AUTO-SYNC TOGGLE -->
+<!-- DATABASE CONNECTION + CLOUD AUTO-SYNC -->
 
 <div class="form-section" style="border-left:4px solid #F59E0B">
 
@@ -683,37 +682,78 @@ General Profile
 ☁️ Database Connection & Sync
 </div>
 
-<!-- 🟢 NEW: CLOUD SYNC TOGGLE SWITCH 🟢 -->
+<!-- CLOUD SYNC TOGGLE -->
 <div class="form-group" style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; background:#EAF0EA; padding:12px 14px; border-radius:10px; border:1px solid #4A7C59; margin-bottom:12px;">
     <div>
         <label style="color:#2F4F38; font-size:12px; font-weight:800; cursor:pointer;" for="cloudSyncToggle">
-            ☁️ Cloud Auto-Sync (Supabase)
+            ☁️ Cloud Auto-Sync
         </label>
         <p style="font-size:10px; color:#4A554A; margin-top:2px;">
-            ON = Cloud Sync ஆன் | OFF = 📴 Full Offline (Local data மட்டும் பாதுகாப்பாக இருக்கும்)
+            ON = Cloud Sync | OFF = 📴 Full Offline (Local data மட்டும்)
         </p>
     </div>
-    <input type="checkbox" id="cloudSyncToggle" style="width:24px; height:24px; cursor:pointer; accent-color:#10B981; margin:0;" onchange="saveCloudToggleState()">
+
+    <input
+        type="checkbox"
+        id="cloudSyncToggle"
+        style="width:24px; height:24px; cursor:pointer; accent-color:#10B981; margin:0;"
+        onchange="saveCloudToggleState()"
+    >
 </div>
 
+<!-- DATABASE PROVIDER -->
 <div class="form-group">
-<label style="color:#2F4F38;font-size:12px">Supabase Project URL</label>
-<input type="text" id="supabaseUrlInput" placeholder="e.g., https://xxxxxx.supabase.co">
+    <label style="color:#2F4F38;font-size:12px">
+        Database Provider
+    </label>
+
+    <select
+        id="databaseProviderInput"
+        style="width:100%; padding:10px; border-radius:8px; border:1px solid #4A7C59;"
+    >
+        <option value="supabase">Supabase</option>
+        <option value="mysql">MySQL</option>
+        <option value="postgresql">PostgreSQL</option>
+    </select>
 </div>
 
+<!-- SERVER URL -->
 <div class="form-group">
-<label style="color:#2F4F38;font-size:12px">Supabase Anon Key</label>
-<input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    <label style="color:#2F4F38;font-size:12px">
+        Server / Project URL
+    </label>
+
+    <input
+        type="text"
+        id="supabaseUrlInput"
+        placeholder="https://xxxxxx.supabase.co"
+    >
 </div>
 
-<button type="button"
-        class="btn-action btn-warning"
-        style="width:100%"
-        onclick="saveSupabaseConfig()">
-💾 Update Database Connection
+<!-- API KEY -->
+<div class="form-group">
+    <label style="color:#2F4F38;font-size:12px">
+        API Key / Access Key
+    </label>
+
+    <input
+        type="password"
+        id="supabaseKeyInput"
+        placeholder="Enter API / Access Key"
+    >
+</div>
+
+<button
+    type="button"
+    class="btn-action btn-warning"
+    style="width:100%"
+    onclick="saveSupabaseConfig()"
+>
+💾 Save Database Connection
 </button>
 
 </div>
+
 
 
 <!-- DESIGN ASSETS -->
