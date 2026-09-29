@@ -49,7 +49,7 @@ jobs:
 
           echo "Copying folders..."
 
-          for item in assets images Data config; do
+          for item in assets images Data config icon; do
             if [ -e "$item" ]; then
               cp -r "$item" www/
             fi
