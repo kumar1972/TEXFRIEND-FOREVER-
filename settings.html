@@ -3,968 +3,332 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-
 <title>ERP Master Settings</title>
-
 <script src="config.js"></script>
 <script src="translator.js"></script>
 <script src="folder.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:'Poppins',sans-serif;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif;}
 
-html,body{
-    width:100%;
-    min-height:100vh;
-    background:#030712;
-    color:#1E2B23;
-}
+html,body{width:100%;min-height:100vh;background:#030712;color:#1E2B23;}
 
-body{
-    padding:12px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-}
+body{padding:12px;display:flex;flex-direction:column;align-items:center;}
 
 .container{
-    width:100%;
-    max-width:900px;
-    background:#fff;
-    padding:20px;
-    border-radius:20px;
-    box-shadow:0 10px 35px rgba(30,43,35,.06);
-    border:1px solid rgba(82,110,81,.15);
-    display:flex;
-    flex-direction:column;
-    gap:16px;
+    width:100%;max-width:900px;background:#fff;padding:20px;border-radius:20px;
+    box-shadow:0 10px 35px rgba(30,43,35,.06);border:1px solid rgba(82,110,81,.15);
+    display:flex;flex-direction:column;gap:16px;
 }
 
-.top-nav{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:5px;
-}
+.top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
 
 .back-btn{
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
-    color:#fff;
-    text-decoration:none;
-    font-weight:600;
-    font-size:11px;
-    background:#1A2421;
-    padding:8px 16px;
-    border-radius:8px;
+    display:inline-flex;align-items:center;gap:5px;color:#fff;text-decoration:none;
+    font-weight:600;font-size:11px;background:#1A2421;padding:8px 16px;border-radius:8px;
     box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
 
 .page-title{
-    font-size:18px;
-    margin-bottom:5px;
-    font-weight:800;
-    color:#2F4F38;
-    text-align:center;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-    border-bottom:2px solid #EAF0EA;
-    padding-bottom:12px;
+    font-size:18px;margin-bottom:5px;font-weight:800;color:#2F4F38;text-align:center;
+    text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #EAF0EA;padding-bottom:12px;
 }
 
 .form-section{
-    background:#F8FAF8;
-    border:1px solid #E2E8E2;
-    border-radius:14px;
-    padding:22px 15px 15px;
-    position:relative;
+    background:#F8FAF8;border:1px solid #E2E8E2;border-radius:14px;
+    padding:22px 15px 15px;position:relative;
 }
 
 .section-badge{
-    position:absolute;
-    top:-12px;
-    left:15px;
-    background:#4A7C59;
-    color:#fff;
-    font-size:10px;
-    font-weight:700;
-    padding:4px 12px;
-    border-radius:12px;
-    letter-spacing:.5px;
-    text-transform:uppercase;
+    position:absolute;top:-12px;left:15px;background:#4A7C59;color:#fff;font-size:10px;
+    font-weight:700;padding:4px 12px;border-radius:12px;letter-spacing:.5px;text-transform:uppercase;
 }
+.section-badge.blue{background:linear-gradient(135deg,#3B82F6,#1D4ED8);}
+.section-badge.amber{background:linear-gradient(135deg,#F59E0B,#D97706);}
+.section-badge.danger{background:linear-gradient(135deg,#EF4444,#DC2626);}
 
-.section-badge.blue{
-    background:linear-gradient(135deg,#3B82F6,#1D4ED8);
-}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;}
 
-.section-badge.amber{
-    background:linear-gradient(135deg,#F59E0B,#D97706);
-}
-
-.section-badge.danger{
-    background:linear-gradient(135deg,#EF4444,#DC2626);
-}
-
-.form-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:15px;
-}
-
-.form-group{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    margin-bottom:10px;
-}
-
-.form-group label{
-    font-size:11px;
-    font-weight:700;
-    color:#4A554A;
-}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.form-group label{font-size:11px;font-weight:700;color:#4A554A;}
 
 input,select,textarea{
-    width:100%;
-    padding:12px 14px;
-    border-radius:8px;
-    border:1px solid #D1DED1;
-    background:#fff;
-    color:#1E2B23;
-    font-size:12px;
-    font-weight:600;
-    outline:none;
+    width:100%;padding:12px 14px;border-radius:8px;border:1px solid #D1DED1;background:#fff;
+    color:#1E2B23;font-size:12px;font-weight:600;outline:none;
 }
-
-textarea{
-    resize:vertical;
-    height:80px;
-}
-
-input:focus,
-select:focus,
-textarea:focus{
-    border-color:#4A7C59;
-    box-shadow:0 0 0 3px rgba(74,124,89,.15);
-}
+textarea{resize:vertical;height:80px;}
+input:focus,select:focus,textarea:focus{border-color:#4A7C59;box-shadow:0 0 0 3px rgba(74,124,89,.15);}
 
 .checkbox-group-container{
-    background:#fff;
-    border:1px solid #D1DED1;
-    border-radius:10px;
-    padding:15px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-top:5px;
+    background:#fff;border:1px solid #D1DED1;border-radius:10px;padding:15px;
+    display:flex;flex-direction:column;gap:10px;margin-top:5px;
 }
-
 .checkbox-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:12px;
-    font-weight:600;
-    color:#1E2B23;
-    cursor:pointer;
+    display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#1E2B23;cursor:pointer;
 }
+.checkbox-item input[type=checkbox]{width:16px;height:16px;accent-color:#EF4444;}
 
-.checkbox-item input[type=checkbox]{
-    width:16px;
-    height:16px;
-    accent-color:#EF4444;
-}
+.users-table-container{margin-top:15px;background:#fff;border-radius:10px;overflow-x:auto;border:1px solid #D1DED1;}
+.users-table{width:100%;border-collapse:collapse;font-size:11px;text-align:center;}
+.users-table th,.users-table td{padding:10px;border-bottom:1px solid #E2E8E2;color:#1E2B23;}
+.users-table th{background:#EAF0EA;color:#2F4F38;font-weight:700;text-transform:uppercase;}
 
-.users-table-container{
-    margin-top:15px;
-    background:#fff;
-    border-radius:10px;
-    overflow-x:auto;
-    border:1px solid #D1DED1;
-}
-
-.users-table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:11px;
-    text-align:center;
-}
-
-.users-table th,
-.users-table td{
-    padding:10px;
-    border-bottom:1px solid #E2E8E2;
-    color:#1E2B23;
-}
-
-.users-table th{
-    background:#EAF0EA;
-    color:#2F4F38;
-    font-weight:700;
-    text-transform:uppercase;
-}
-
-input[type=file]{
-    padding:8px;
-    background:#F4F7F4;
-    border:1px dashed #4A7C59;
-    cursor:pointer;
-}
-
+input[type=file]{padding:8px;background:#F4F7F4;border:1px dashed #4A7C59;cursor:pointer;}
 input[type=file]::file-selector-button{
-    background:#4A7C59;
-    color:#fff;
-    border:0;
-    padding:6px 14px;
-    border-radius:6px;
-    font-weight:600;
-    font-size:10px;
-    cursor:pointer;
-    margin-right:10px;
+    background:#4A7C59;color:#fff;border:0;padding:6px 14px;border-radius:6px;
+    font-weight:600;font-size:10px;cursor:pointer;margin-right:10px;
 }
 
 .preview-box{
-    margin-top:10px;
-    background:#fff;
-    padding:14px;
-    min-height:100px;
-    border-radius:10px;
-    border:1px solid #D1DED1;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
+    margin-top:10px;background:#fff;padding:14px;min-height:100px;border-radius:10px;
+    border:1px solid #D1DED1;display:none;align-items:center;justify-content:center;overflow:hidden;
 }
+.preview-box img{display:block;max-width:100%;width:auto;height:auto;max-height:120px;object-fit:contain;border-radius:6px;}
 
-.preview-box img{
-    display:block;
-    max-width:100%;
-    width:auto;
-    height:auto;
-    max-height:120px;
-    object-fit:contain;
-    border-radius:6px;
-}
-
-.logo-status{
-    margin-top:7px;
-    font-size:10px;
-    font-weight:600;
-    text-align:center;
-    color:#4A7C59;
-}
+.logo-status{margin-top:7px;font-size:10px;font-weight:600;text-align:center;color:#4A7C59;}
 
 #advancedJsonEditor{
-    background:#1A2421;
-    color:#A7F3D0;
-    font-family:'Courier New',monospace;
-    font-size:11px;
-    padding:15px;
-    border-radius:10px;
-    border:1px solid #064E3B;
-    height:180px;
+    background:#1A2421;color:#A7F3D0;font-family:'Courier New',monospace;font-size:11px;
+    padding:15px;border-radius:10px;border:1px solid #064E3B;height:180px;
 }
 
 .btn-action{
-    color:#fff;
-    border:0;
-    padding:12px 16px;
-    border-radius:8px;
-    font-weight:700;
-    cursor:pointer;
-    font-size:11px;
-    transition:.2s;
-    box-shadow:0 4px 10px rgba(30,43,35,.1);
-    text-transform:uppercase;
-    letter-spacing:.5px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    text-decoration:none;
-    text-align:center;
+    color:#fff;border:0;padding:12px 16px;border-radius:8px;font-weight:700;cursor:pointer;
+    font-size:11px;transition:.2s;box-shadow:0 4px 10px rgba(30,43,35,.1);text-transform:uppercase;
+    letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:6px;
+    text-decoration:none;text-align:center;
 }
+.btn-action:disabled{opacity:.65;cursor:wait;transform:none!important;}
+.btn-action:hover{transform:translateY(-1px);}
+.btn-primary{background:linear-gradient(135deg,#4A7C59,#2F4F38);}
+.btn-success{background:linear-gradient(135deg,#10B981,#059669);}
+.btn-info{background:linear-gradient(135deg,#3B82F6,#1D4ED8);}
+.btn-warning{background:linear-gradient(135deg,#F59E0B,#D97706);}
+.btn-danger{background:linear-gradient(135deg,#EF4444,#DC2626);}
 
-.btn-action:disabled{
-    opacity:.65;
-    cursor:wait;
-    transform:none!important;
-}
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px;}
 
-.btn-action:hover{
-    transform:translateY(-1px);
-}
-
-.btn-primary{
-    background:linear-gradient(135deg,#4A7C59,#2F4F38);
-}
-
-.btn-success{
-    background:linear-gradient(135deg,#10B981,#059669);
-}
-
-.btn-info{
-    background:linear-gradient(135deg,#3B82F6,#1D4ED8);
-}
-
-.btn-warning{
-    background:linear-gradient(135deg,#F59E0B,#D97706);
-}
-
-.btn-danger{
-    background:linear-gradient(135deg,#EF4444,#DC2626);
-}
-
-.action-row{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:5px;
-}
-
-#settingsStatus{
-    font-size:11px;
-    text-align:center;
-    font-weight:700;
-    color:#2563EB;
-    min-height:16px;
-}
-
-.save-progress{
-    display:none;
-    text-align:center;
-    font-size:11px;
-    font-weight:700;
-    color:#2563EB;
-    padding:5px;
-}
-
-.exit-section{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-top:10px;
-}
+#settingsStatus{font-size:11px;text-align:center;font-weight:700;color:#2563EB;min-height:16px;}
+.save-progress{display:none;text-align:center;font-size:11px;font-weight:700;color:#2563EB;padding:5px;}
+.exit-section{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
 
 @media(max-width:600px){
-
-    body{
-        padding:8px;
-    }
-
-    .container{
-        padding:15px;
-        border-radius:15px;
-    }
-
-    .action-row{
-        grid-template-columns:1fr;
-    }
-
-    .top-nav{
-        gap:10px;
-    }
-
-    .page-title{
-        font-size:16px;
-    }
-
-    .form-section{
-        padding:22px 12px 14px;
-    }
-
-    .btn-action{
-        min-height:48px;
-    }
+    body{padding:8px;}
+    .container{padding:15px;border-radius:15px;}
+    .action-row{grid-template-columns:1fr;}
+    .top-nav{gap:10px;}
+    .page-title{font-size:16px;}
+    .form-section{padding:22px 12px 14px;}
+    .btn-action{min-height:48px;}
 }
 </style>
 </head>
-
 <body>
-
 <div class="container">
 
 <div class="top-nav">
-
-<a href="dashboard.html" class="back-btn">
-← Back to Menu
-</a>
-
-<span style="font-size:12px;font-weight:700;color:#4A7C59;text-transform:uppercase">
-⚙️ System Config
-</span>
-
+    <a href="dashboard.html" class="back-btn">← Back to Menu</a>
+    <span style="font-size:12px;font-weight:700;color:#4A7C59;text-transform:uppercase">⚙️ System Config</span>
 </div>
 
-<h2 class="page-title">
-ERP Master Settings
-</h2>
-
+<h2 class="page-title">ERP Master Settings</h2>
 <div id="settingsStatus"></div>
 <div id="saveProgress" class="save-progress"></div>
 
-
 <!-- USER ACCESS -->
-
 <div class="form-section" style="border-left:4px solid #EF4444">
-
-<div class="section-badge danger">
-🔒 User Access Control (All Pages)
+    <div class="section-badge danger">🔒 User Access Control (All Pages)</div>
+    <div class="form-group">
+        <label style="color:#2F4F38;font-size:12px">Select which pages the 'User' is allowed to access:</label>
+        <div class="checkbox-group-container" style="max-height:280px;overflow-y:auto">
+            <label class="checkbox-item"><input type="checkbox" id="perm_dashboard" checked> dashboard.html (Dashboard)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_design_list" checked> design_list.html (Design List)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_design_master" checked> design_master.html (Design Master)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_despatch" checked> Despatch.html (Despatch)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_dyeing_issue" checked> dyeing_issue.html (Dyeing Issue)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_dyeing_receive" checked> dyeing_receive.html (Dyeing Receive)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_index" checked> index.html (Index / Login)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_invoice" checked> invoice.html (Invoice / Bill)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_kora_yarn" checked> kora_yarn.html (Kora Yarn)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_party_orders" checked> Party_Orders.html (Party Orders)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_process_matrix" checked> process_matrix.html (Process Matrix)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_report" checked> report.html (Report)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_settings" checked> settings.html (Settings)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_warp_entry" checked> warp_entry.html (Warp Entry)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_warping" checked> warping.html (Warping)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_washing" checked> washing.html (Washing)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_weaving" checked> weaving.html (Weaving)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_weft_entry" checked> weft_entry.html (Weft Entry)</label>
+            <label class="checkbox-item"><input type="checkbox" id="perm_yarn_calc" checked> yarn_calc.html (Yarn Calculation)</label>
+        </div>
+    </div>
+    <button type="button" class="btn-action btn-danger" style="width:100%" onclick="updateUserPermissions()">Update User Permissions</button>
 </div>
-
-<div class="form-group">
-
-<label style="color:#2F4F38;font-size:12px">
-Select which pages the 'User' is allowed to access:
-</label>
-
-<div class="checkbox-group-container"
-     style="max-height:280px;overflow-y:auto">
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_dashboard" checked>
-dashboard.html (Dashboard)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_design_list" checked>
-design_list.html (Design List)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_design_master" checked>
-design_master.html (Design Master)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_despatch" checked>
-Despatch.html (Despatch)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_dyeing_issue" checked>
-dyeing_issue.html (Dyeing Issue)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_dyeing_receive" checked>
-dyeing_receive.html (Dyeing Receive)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_index" checked>
-index.html (Index / Login)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_invoice" checked>
-invoice.html (Invoice / Bill)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_kora_yarn" checked>
-kora_yarn.html (Kora Yarn)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_party_orders" checked>
-Party_Orders.html (Party Orders)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_process_matrix" checked>
-process_matrix.html (Process Matrix)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_report" checked>
-report.html (Report)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_settings" checked>
-settings.html (Settings)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_warp_entry" checked>
-warp_entry.html (Warp Entry)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_warping" checked>
-warping.html (Warping)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_washing" checked>
-washing.html (Washing)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_weaving" checked>
-weaving.html (Weaving)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_weft_entry" checked>
-weft_entry.html (Weft Entry)
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" id="perm_yarn_calc" checked>
-yarn_calc.html (Yarn Calculation)
-</label>
-
-</div>
-</div>
-
-<button type="button"
-        class="btn-action btn-danger"
-        style="width:100%"
-        onclick="updateUserPermissions()">
-
-Update User Permissions
-
-</button>
-
-</div>
-
 
 <!-- USER MANAGEMENT -->
-
-<div class="form-section"
-     style="border-left:4px solid #3B82F6">
-
-<div class="section-badge blue">
-👤 User Management
+<div class="form-section" style="border-left:4px solid #3B82F6">
+    <div class="section-badge blue">👤 User Management</div>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="newUsername" placeholder="Enter Username...">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="newPassword" placeholder="Enter Password...">
+        </div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+        <label>Role / Permissions Level</label>
+        <select id="newUserRole">
+            <option value="Standard User">Standard User</option>
+            <option value="Administrator">Administrator</option>
+        </select>
+    </div>
+    <button type="button" class="btn-action btn-info" style="width:100%" onclick="addNewUserAccount()">Create New User Account</button>
+    <div class="users-table-container">
+        <table class="users-table">
+            <thead>
+                <tr><th>Username</th><th>Password</th><th>Role</th><th>Action</th></tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+        </table>
+    </div>
 </div>
-
-<div class="form-grid">
-
-<div class="form-group">
-<label>Username</label>
-<input type="text"
-       id="newUsername"
-       placeholder="Enter Username...">
-</div>
-
-<div class="form-group">
-<label>Password</label>
-<input type="password"
-       id="newPassword"
-       placeholder="Enter Password...">
-</div>
-
-</div>
-
-<div class="form-group"
-     style="margin-top:10px">
-
-<label>Role / Permissions Level</label>
-
-<select id="newUserRole">
-
-<option value="Standard User">
-Standard User
-</option>
-
-<option value="Administrator">
-Administrator
-</option>
-
-</select>
-
-</div>
-
-<button type="button"
-        class="btn-action btn-info"
-        style="width:100%"
-        onclick="addNewUserAccount()">
-
-Create New User Account
-
-</button>
-
-<div class="users-table-container">
-
-<table class="users-table">
-
-<thead>
-<tr>
-<th>Username</th>
-<th>Password</th>
-<th>Role</th>
-<th>Action</th>
-</tr>
-</thead>
-
-<tbody id="usersTableBody"></tbody>
-
-</table>
-
-</div>
-
-</div>
-
 
 <!-- GENERAL PROFILE -->
-
 <div class="form-section">
-
-<div class="section-badge">
-General Profile
-</div>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Change Main Heading Name</label>
-
-<input type="text"
-       id="set_heading"
-       placeholder="Enter App Heading...">
-
-</div>
-
-<div class="form-group">
-
-<label>Company Logo Upload</label>
-
-<input type="file"
-       id="set_logo_file"
-       accept="image/png,image/jpeg,image/webp,image/jpg"
-       onchange="previewLogo(this)">
-
-<div id="logoPreviewBox"
-     class="preview-box">
-
-<img id="logoImgTag"
-     src=""
-     alt="Company Logo"
-     onerror="handleLogoImageError(this)">
-
-</div>
-
-<div id="logoStatus"
-     class="logo-status"></div>
-
-</div>
-
-</div>
-
-<div class="form-group"
-     style="margin-top:5px">
-
-<label>Default Company Address (For Invoices)</label>
-
-<textarea id="set_comp_addr"
-          placeholder="Enter Full Company Address..."></textarea>
-
-</div>
-
-</div>
-
-
-<!-- DATABASE CONNECTION (SUPABASE) + CLOUD AUTO-SYNC TOGGLE -->
-
-<div class="form-section" style="border-left:4px solid #F59E0B">
-
-<div class="section-badge amber">
-☁️ Database Connection & Sync
-</div>
-
-<!-- 🟢 NEW: CLOUD SYNC TOGGLE SWITCH 🟢 -->
-<div class="form-group" style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; background:#EAF0EA; padding:12px 14px; border-radius:10px; border:1px solid #4A7C59; margin-bottom:12px;">
-    <div>
-        <label style="color:#2F4F38; font-size:12px; font-weight:800; cursor:pointer;" for="cloudSyncToggle">
-            ☁️ Cloud Auto-Sync (Supabase)
-        </label>
-        <p style="font-size:10px; color:#4A554A; margin-top:2px;">
-            ON = Cloud Sync ஆன் | OFF = 📴 Full Offline (Local data மட்டும் பாதுகாப்பாக இருக்கும்)
-        </p>
+    <div class="section-badge">General Profile</div>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Change Main Heading Name</label>
+            <input type="text" id="set_heading" placeholder="Enter App Heading...">
+        </div>
+        <div class="form-group">
+            <label>Company Logo Upload</label>
+            <input type="file" id="set_logo_file" accept="image/png,image/jpeg,image/webp,image/jpg" onchange="previewLogo(this)">
+            <div id="logoPreviewBox" class="preview-box">
+                <img id="logoImgTag" src="" alt="Company Logo" onerror="handleLogoImageError(this)">
+            </div>
+            <div id="logoStatus" class="logo-status"></div>
+        </div>
     </div>
-    <input type="checkbox" id="cloudSyncToggle" style="width:24px; height:24px; cursor:pointer; accent-color:#10B981; margin:0;" onchange="saveCloudToggleState()">
+    <div class="form-group" style="margin-top:5px">
+        <label>Default Company Address (For Invoices)</label>
+        <textarea id="set_comp_addr" placeholder="Enter Full Company Address..."></textarea>
+    </div>
 </div>
 
-<div class="form-group">
-<label style="color:#2F4F38;font-size:12px">Supabase Project URL</label>
-<input type="text" id="supabaseUrlInput" placeholder="e.g., https://xxxxxx.supabase.co">
+<!-- DATABASE CONNECTION + CLOUD AUTO-SYNC -->
+<div class="form-section" style="border-left:4px solid #F59E0B">
+    <div class="section-badge amber">☁️ Database Connection & Sync</div>
+
+    <div class="form-group" style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; background:#EAF0EA; padding:12px 14px; border-radius:10px; border:1px solid #4A7C59; margin-bottom:12px;">
+        <div>
+            <label style="color:#2F4F38; font-size:12px; font-weight:800; cursor:pointer;" for="cloudSyncToggle">☁️ Cloud Auto-Sync</label>
+            <p style="font-size:10px; color:#4A554A; margin-top:2px;">ON = Cloud Sync | OFF = 📴 Full Offline (Local data மட்டும்)</p>
+        </div>
+        <input type="checkbox" id="cloudSyncToggle" style="width:24px; height:24px; cursor:pointer; accent-color:#10B981; margin:0;" onchange="saveCloudToggleState()">
+    </div>
+
+    <div class="form-group">
+        <label style="color:#2F4F38;font-size:12px">Database Provider</label>
+        <select id="databaseProviderInput" style="width:100%; padding:10px; border-radius:8px; border:1px solid #4A7C59;">
+            <option value="supabase">Supabase</option>
+            <option value="mysql">MySQL</option>
+            <option value="postgresql">PostgreSQL</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label style="color:#2F4F38;font-size:12px">Server / Project URL</label>
+        <input type="text" id="supabaseUrlInput" placeholder="https://xxxxxx.supabase.co">
+    </div>
+
+    <div class="form-group">
+        <label style="color:#2F4F38;font-size:12px">API Key / Access Key</label>
+        <input type="password" id="supabaseKeyInput" placeholder="Enter API / Access Key">
+    </div>
+
+    <button type="button" class="btn-action btn-warning" style="width:100%" onclick="saveSupabaseConfig()">💾 Save Database Connection</button>
 </div>
-
-<div class="form-group">
-<label style="color:#2F4F38;font-size:12px">Supabase Anon Key</label>
-<input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-</div>
-
-<button type="button"
-        class="btn-action btn-warning"
-        style="width:100%"
-        onclick="saveSupabaseConfig()">
-💾 Update Database Connection
-</button>
-
-</div>
-
 
 <!-- DESIGN ASSETS -->
-
 <div class="form-section">
-
-<div class="section-badge blue">
-Design Assets
+    <div class="section-badge blue">Design Assets</div>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Select Design No</label>
+            <select id="settingDesignSelect" onchange="loadDesignBitmap(this.value)">
+                <option value="">Select Design Number</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Upload Bitmap Image for Design</label>
+            <input type="file" id="designBitmapFile" accept="image/png,image/jpeg,image/webp,image/jpg" onchange="previewDesignBitmap(this)">
+            <div id="designBitmapPreviewBox" class="preview-box">
+                <img id="designBitmapImgTag" src="" alt="Design Bitmap" onerror="handleDesignImageError(this)">
+            </div>
+        </div>
+    </div>
 </div>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Select Design No</label>
-
-<select id="settingDesignSelect"
-        onchange="loadDesignBitmap(this.value)">
-
-<option value="">
-Select Design Number
-</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Upload Bitmap Image for Design</label>
-
-<input type="file"
-       id="designBitmapFile"
-       accept="image/png,image/jpeg,image/webp,image/jpg"
-       onchange="previewDesignBitmap(this)">
-
-<div id="designBitmapPreviewBox"
-     class="preview-box">
-
-<img id="designBitmapImgTag"
-     src=""
-     alt="Design Bitmap"
-     onerror="handleDesignImageError(this)">
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 
 <!-- PARTY DIRECTORY -->
-
 <div class="form-section">
-
-<div class="section-badge amber">
-Party Directory
+    <div class="section-badge amber">Party Directory</div>
+    <div class="form-group">
+        <label>Manage Existing Parties</label>
+        <select id="partyListSelect" onchange="selectPartyToEdit(this.value)">
+            <option value="">Select Party to Edit/View</option>
+        </select>
+    </div>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Party Name</label>
+            <input type="text" id="partyNameInput" placeholder="Enter Party Name...">
+        </div>
+        <div class="form-group">
+            <label>Party Address & GST Details</label>
+            <textarea id="partyAddressInput" placeholder="Enter Full Address & GST No..."></textarea>
+        </div>
+    </div>
+    <div class="action-row">
+        <button type="button" class="btn-action btn-success" onclick="savePartyMaster()">💾 Save / Add Party</button>
+        <button type="button" class="btn-action btn-danger" onclick="deletePartyMaster()">🗑️ Delete Party</button>
+    </div>
 </div>
-
-<div class="form-group">
-
-<label>Manage Existing Parties</label>
-
-<select id="partyListSelect"
-        onchange="selectPartyToEdit(this.value)">
-
-<option value="">
-Select Party to Edit/View
-</option>
-
-</select>
-
-</div>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Party Name</label>
-
-<input type="text"
-       id="partyNameInput"
-       placeholder="Enter Party Name...">
-
-</div>
-
-<div class="form-group">
-
-<label>Party Address & GST Details</label>
-
-<textarea id="partyAddressInput"
-          placeholder="Enter Full Address & GST No..."></textarea>
-
-</div>
-
-</div>
-
-<div class="action-row">
-
-<button type="button"
-        class="btn-action btn-success"
-        onclick="savePartyMaster()">
-
-💾 Save / Add Party
-
-</button>
-
-<button type="button"
-        class="btn-action btn-danger"
-        onclick="deletePartyMaster()">
-
-🗑️ Delete Party
-
-</button>
-
-</div>
-
-</div>
-
 
 <!-- ADVANCED CONFIG -->
-
 <div class="form-section">
-
-<div class="section-badge danger">
-Advanced Config
+    <div class="section-badge danger">Advanced Config</div>
+    <div class="form-group">
+        <label>🛠️ Local Database JSON Editor</label>
+        <textarea id="advancedJsonEditor" placeholder="Click Load JSON Data only when required..."></textarea>
+    </div>
+    <div class="action-row">
+        <button type="button" class="btn-action btn-info" onclick="loadStorageDataToEditor()">📥 Load JSON</button>
+        <button type="button" class="btn-action btn-success" onclick="saveStorageDataFromEditor()">💾 Save JSON</button>
+    </div>
 </div>
-
-<div class="form-group">
-
-<label>
-🛠️ Local Database JSON Editor
-</label>
-
-<textarea id="advancedJsonEditor"
-          placeholder="Click Load JSON Data only when required..."></textarea>
-
-</div>
-
-<div class="action-row">
-
-<button type="button"
-        class="btn-action btn-info"
-        onclick="loadStorageDataToEditor()">
-
-📥 Load JSON
-
-</button>
-
-<button type="button"
-        class="btn-action btn-success"
-        onclick="saveStorageDataFromEditor()">
-
-💾 Save JSON
-
-</button>
-
-</div>
-
-</div>
-
 
 <!-- SYSTEM ACTIONS -->
-
 <div class="exit-section">
-
-<!-- SAVE ALL -->
-
-<button type="button"
-        id="saveAllButton"
-        class="btn-action btn-success"
-        style="width:100%;font-size:13px;padding:14px"
-        onclick="executeSaveAll()">
-
-💾 SAVE ALL SETTINGS & EXIT
-
-</button>
-
-<button type="button"
-        class="btn-action btn-success"
-        style="width:100%;"
-        onclick="selectTexfriendFolder()">
-
-📁 SELECT FOLDER
-
-</button>
-
-<!-- EXIT -->
-
-<button type="button"
-        class="btn-action btn-info"
-        style="width:100%"
-        onclick="exitToDashboard()">
-
-🏠 EXIT TO DASHBOARD
-
-</button>
-
-<!-- BACKUP -->
-
-<button type="button"
-        class="btn-action btn-info"
-        style="width:100%"
-        onclick="backupAllData()">
-
-📥 BACKUP ERP DATA (JSON)
-
-</button>
-
-<button type="button"
-        class="btn-action btn-success"
-        style="width:100%"
-        onclick="backupAllDataAsExcel()">
-
-📊 BACKUP ERP DATA AS EXCEL (CSV)
-
-</button>
-
-<!-- RESET -->
-
-<div class="action-row">
-
-<button type="button"
-        class="btn-action btn-warning"
-        onclick="clearLocalCache()">
-
-🧹 CLEAR LOCAL CACHE
-
-</button>
-
-<button type="button"
-        class="btn-action btn-danger"
-        onclick="factoryResetCloud()">
-
-⚠️ FACTORY RESET CLOUD
-
-</button>
-
+    <button type="button" id="saveAllButton" class="btn-action btn-success" style="width:100%;font-size:13px;padding:14px" onclick="executeSaveAll()">💾 SAVE ALL SETTINGS & EXIT</button>
+    <button type="button" class="btn-action btn-success" style="width:100%;" onclick="selectTexfriendFolder()">📁 SELECT FOLDER</button>
+    <button type="button" class="btn-action btn-info" style="width:100%" onclick="exitToDashboard()">🏠 EXIT TO DASHBOARD</button>
+    <button type="button" class="btn-action btn-info" style="width:100%" onclick="backupAllData()">📥 BACKUP ERP DATA (JSON)</button>
+    <button type="button" class="btn-action btn-success" style="width:100%" onclick="backupAllDataAsExcel()">📊 BACKUP ERP DATA AS EXCEL (CSV)</button>
+    <div class="action-row">
+        <button type="button" class="btn-action btn-warning" onclick="clearLocalCache()">🧹 CLEAR LOCAL CACHE</button>
+        <button type="button" class="btn-action btn-danger" onclick="factoryResetCloud()">⚠️ FACTORY RESET CLOUD</button>
+    </div>
 </div>
 
 </div>
-
-</div>
-
 
 <script>
-
 "use strict";
-
 
 /* ============================================================
    TEXFRIEND FOREVER SETTINGS
@@ -975,25 +339,15 @@ let tempDesignBitmapData = "";
 let settingsInitialized = false;
 let saveAllRunning = false;
 
-
-/* ============================================================
-   CONSTANTS
-============================================================ */
-
+/* CONSTANTS */
 const LOGO_MAX_WIDTH = 512;
 const LOGO_MAX_HEIGHT = 512;
-const RAW_FILE_SIZE_LIMIT = 8 * 1024 * 1024; // 8 MB
-
+const RAW_FILE_SIZE_LIMIT = 8 * 1024 * 1024;
 const DESIGN_MAX_WIDTH = 800;
 const DESIGN_MAX_HEIGHT = 800;
-
 const MAX_IMAGE_BYTES = 350 * 1024;
 
-
-/* ============================================================
-   INDEXEDDB HELPER (Added for PWA Offline Storage)
-============================================================ */
-
+/* INDEXEDDB HELPER */
 const DB_NAME = "TexFriendProDB";
 const STORE_NAME = "erp_store";
 const DB_VERSION = 1;
@@ -1016,9 +370,8 @@ async function idbGet(key) {
     try {
         const db = await openIndexedDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, "readonly");
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.get(key);
+            const tx = db.transaction(STORE_NAME, "readonly");
+            const request = tx.objectStore(STORE_NAME).get(key);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
@@ -1031,9 +384,8 @@ async function idbSet(key, value) {
     try {
         const db = await openIndexedDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, "readwrite");
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.put(value, key);
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            const request = tx.objectStore(STORE_NAME).put(value, key);
             request.onsuccess = () => resolve(true);
             request.onerror = () => reject(request.error);
         });
@@ -1046,12 +398,11 @@ async function idbGetAll() {
     try {
         const db = await openIndexedDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, "readonly");
-            const store = transaction.objectStore(STORE_NAME);
+            const tx = db.transaction(STORE_NAME, "readonly");
+            const store = tx.objectStore(STORE_NAME);
             const requestID = store.getAllKeys();
             const requestVal = store.getAll();
-            
-            transaction.oncomplete = () => {
+            tx.oncomplete = () => {
                 const keys = requestID.result;
                 const values = requestVal.result;
                 const result = {};
@@ -1060,254 +411,133 @@ async function idbGetAll() {
                 }
                 resolve(result);
             };
-            transaction.onerror = () => reject(transaction.error);
+            tx.onerror = () => reject(tx.error);
         });
     } catch (e) {
         return {};
     }
 }
 
-
-/* ============================================================
-   GET ELEMENT
-============================================================ */
-
-function $(id){
+/* GET ELEMENT */
+function $(id) {
     return document.getElementById(id);
 }
 
-
-/* ============================================================
-   STATUS
-============================================================ */
-
-function status(message,ok=true){
-
+/* STATUS */
+function status(message, ok = true) {
     const el = $("settingsStatus");
-
-    if(!el) return;
-
+    if (!el) return;
     el.textContent = message;
-
-    el.style.color =
-        ok ? "#2563EB" : "#DC2626";
+    el.style.color = ok ? "#2563EB" : "#DC2626";
 }
 
-
-/* ============================================================
-   SAVE PROGRESS
-============================================================ */
-
-function saveProgress(message){
-
+/* SAVE PROGRESS */
+function saveProgress(message) {
     const el = $("saveProgress");
-
-    if(!el) return;
-
+    if (!el) return;
     el.style.display = "block";
     el.textContent = message;
 }
 
-
-function hideSaveProgress(){
-
+function hideSaveProgress() {
     const el = $("saveProgress");
-
-    if(el){
-        el.style.display = "none";
-    }
+    if (el) el.style.display = "none";
 }
 
-
-/* ============================================================
-   SAFE LOAD (Updated with IndexedDB support)
-============================================================ */
-
-function safeLoad(key,fallback){
-    try{
-        if(typeof window.localLoad === "function"){
-            return window.localLoad(key,fallback);
+/* SAFE LOAD */
+function safeLoad(key, fallback) {
+    try {
+        if (typeof window.localLoad === "function") {
+            return window.localLoad(key, fallback);
         }
         const raw = localStorage.getItem(key);
-        if(raw === null){
-            return fallback;
-        }
-        try{
+        if (raw === null) return fallback;
+        try {
             return JSON.parse(raw);
-        }catch(e){
+        } catch (e) {
             return raw;
         }
-    }catch(e){
+    } catch (e) {
         return fallback;
     }
 }
 
-
-/* ============================================================
-   SAFE SAVE (Updated with IndexedDB sync)
-============================================================ */
-
-function safeSave(key,value){
-    try{
-        if(typeof window.localSave === "function"){
-            return window.localSave(key,value);
+/* SAFE SAVE */
+function safeSave(key, value) {
+    try {
+        if (typeof window.localSave === "function") {
+            return window.localSave(key, value);
         }
-        localStorage.setItem(
-            key,
-            typeof value === "string" ? value : JSON.stringify(value)
-        );
+        localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
         idbSet(key, value);
         return true;
-    }catch(e){
+    } catch (e) {
         return false;
     }
 }
 
-
-/* ============================================================
-   CLOUD SAVE
-============================================================ */
-
-async function pageCloudSave(key,value){
-
-    try{
-
-        if(typeof window.supabaseSave === "function"){
-
-            return await window.supabaseSave(
-                key,
-                value
-            );
-
+/* CLOUD SAVE */
+async function pageCloudSave(key, value) {
+    try {
+        if (typeof window.supabaseSave === "function") {
+            return await window.supabaseSave(key, value);
         }
-
-        return safeSave(key,value);
-
-    }catch(e){
-
-        console.warn(
-            "Cloud save fallback:",
-            key,
-            e
-        );
-
-        safeSave(key,value);
-
+        return safeSave(key, value);
+    } catch (e) {
+        console.warn("Cloud save fallback:", key, e);
+        safeSave(key, value);
         return true;
     }
 }
 
-
-/* ============================================================
-   TEXT CLEAN
-============================================================ */
-
-function cleanInputText(v){
-
-    return v == null
-        ? ""
-        : String(v)
-            .replace(/\\/g,"")
-            .replace(/"/g,"")
-            .trim();
+/* TEXT CLEAN */
+function cleanInputText(v) {
+    return v == null ? "" : String(v).replace(/\\/g, "").replace(/"/g, "").trim();
 }
 
-
-/* ============================================================
-   NORMALIZE IMAGE
-============================================================ */
-
-function normalizeImageData(value){
-
-    if(!value) return "";
-
+/* NORMALIZE IMAGE */
+function normalizeImageData(value) {
+    if (!value) return "";
     let data = String(value).trim();
-
-    if(
-        (data.startsWith('"') && data.endsWith('"')) ||
-        (data.startsWith("'") && data.endsWith("'"))
-    ){
-
-        data = data.slice(1,-1);
+    if ((data.startsWith('"') && data.endsWith('"')) || (data.startsWith("'") && data.endsWith("'"))) {
+        data = data.slice(1, -1);
     }
-
-    data = data
-        .replace(/\\"/g,'"')
-        .trim();
-
-    if(
-        /^(data:image\/|blob:|https?:\/\/)/i.test(data)
-    ){
-
+    data = data.replace(/\\"/g, '"').trim();
+    if (/^(data:image\/|blob:|https?:\/\/)/i.test(data)) {
         return data;
     }
-
     return "";
 }
 
-
-/* ============================================================
-   IMAGE SIZE
-============================================================ */
-
-function getDataUrlBytes(dataUrl){
-
-    try{
-
-        if(
-            !dataUrl ||
-            !dataUrl.startsWith("data:")
-        ){
-            return 0;
-        }
-
-        const base64 =
-            dataUrl.split(",")[1] || "";
-
-        return Math.floor(
-            (base64.length * 3) / 4
-        );
-
-    }catch(e){
-
+/* IMAGE SIZE */
+function getDataUrlBytes(dataUrl) {
+    try {
+        if (!dataUrl || !dataUrl.startsWith("data:")) return 0;
+        const base64 = dataUrl.split(",")[1] || "";
+        return Math.floor((base64.length * 3) / 4);
+    } catch (e) {
         return 0;
     }
 }
 
-
-/* ============================================================
-   IMAGE COMPRESSION
-============================================================ */
-
+/* IMAGE COMPRESSION */
 function compressImageSafe(file, maxW, maxH, callback) {
-    if (!file) {
-        callback("");
-        return;
-    }
 
-    if (!file.type || !file.type.startsWith("image/")) {
-        callback("");
-        return;
-    }
+    if (!file) { callback(""); return; }
+    if (!file.type || !file.type.startsWith("image/")) { callback(""); return; }
 
     function renderToDataUrl(source, w, h) {
         try {
             const canvas = document.createElement("canvas");
             canvas.width = w;
             canvas.height = h;
-
             const ctx = canvas.getContext("2d", { alpha: true });
-
-            if (!ctx) {
-                callback("");
-                return;
-            }
+            if (!ctx) { callback(""); return; }
 
             ctx.clearRect(0, 0, w, h);
             ctx.drawImage(source, 0, 0, w, h);
 
             let result = "";
-
             try {
                 result = canvas.toDataURL("image/webp", 0.78);
             } catch (e) {
@@ -1337,9 +567,7 @@ function compressImageSafe(file, maxW, maxH, callback) {
                         if (getDataUrlBytes(smaller) < getDataUrlBytes(result)) {
                             result = smaller;
                         }
-                        if (getDataUrlBytes(result) <= MAX_IMAGE_BYTES) {
-                            break;
-                        }
+                        if (getDataUrlBytes(result) <= MAX_IMAGE_BYTES) break;
                     } catch (err) {}
                 }
             }
@@ -1362,23 +590,48 @@ function compressImageSafe(file, maxW, maxH, callback) {
         }
     }
 
+    function fallbackViaImageElement() {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = function () {
+            URL.revokeObjectURL(objectUrl);
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            if (!w || !h) { callback(""); return; }
+            const scale = Math.min(1, maxW / w, maxH / h);
+            w = Math.max(1, Math.round(w * scale));
+            h = Math.max(1, Math.round(h * scale));
+            renderToDataUrl(img, w, h);
+        };
+
+        img.onerror = function () {
+            URL.revokeObjectURL(objectUrl);
+            callback("");
+        };
+
+        img.src = objectUrl;
+    }
+
     if (typeof createImageBitmap === "function") {
+
         const SAFE_DECODE_CEILING = 1024;
 
+        /* FIX #2: only resizeWidth is passed, so the aspect ratio is preserved
+           (previously resizeWidth + resizeHeight forced every image to 1024x1024) */
         createImageBitmap(file, {
             resizeWidth: SAFE_DECODE_CEILING,
-            resizeHeight: SAFE_DECODE_CEILING,
             resizeQuality: "medium"
-        }).then(function(bitmap) {
-            let w = bitmap.width;
-            let h = bitmap.height;
-
+        })
+        .then(function (bitmap) {
+            const w = bitmap.width;
+            const h = bitmap.height;
             const scale = Math.min(1, maxW / w, maxH / h);
             const targetW = Math.max(1, Math.round(w * scale));
             const targetH = Math.max(1, Math.round(h * scale));
-
             renderToDataUrl(bitmap, targetW, targetH);
-        }).catch(function(err) {
+        })
+        .catch(function () {
             fallbackViaImageElement();
         });
 
@@ -1386,1241 +639,529 @@ function compressImageSafe(file, maxW, maxH, callback) {
     }
 
     fallbackViaImageElement();
-
-    function fallbackViaImageElement() {
-        const img = new Image();
-        const objectUrl = URL.createObjectURL(file);
-
-        img.onload = function() {
-            URL.revokeObjectURL(objectUrl);
-            let w = img.naturalWidth || img.width;
-            let h = img.naturalHeight || img.height;
-
-            if (!w || !h) {
-                callback("");
-                return;
-            }
-
-            const scale = Math.min(1, maxW / w, maxH / h);
-            w = Math.max(1, Math.round(w * scale));
-            h = Math.max(1, Math.round(h * scale));
-
-            renderToDataUrl(img, w, h);
-        };
-
-        img.onerror = function() {
-            URL.revokeObjectURL(objectUrl);
-            callback("");
-        };
-
-        img.src = objectUrl;
-    }
 }
 
+/* TOAST */
+function toast(message, ok = true, callback) {
+    try {
+        const old = $("customToast");
+        if (old) old.remove();
 
-/* ============================================================
-   TOAST
-============================================================ */
-
-function toast(
-    message,
-    ok=true,
-    callback
-){
-
-    try{
-
-        const old =
-            $("customToast");
-
-        if(old){
-            old.remove();
-        }
-
-        const t =
-            document.createElement("div");
-
+        const t = document.createElement("div");
         t.id = "customToast";
+        t.textContent = (ok ? "✅ " : "⚠️ ") + message;
 
-        t.textContent =
-            (ok ? "✅ " : "⚠️ ") +
-            message;
-
-        Object.assign(
-            t.style,
-            {
-                position:"fixed",
-                top:"20px",
-                left:"50%",
-                transform:"translateX(-50%)",
-                background:ok ? "#10B981" : "#DC2626",
-                color:"#fff",
-                padding:"14px 24px",
-                borderRadius:"10px",
-                boxShadow:"0 10px 25px rgba(0,0,0,.3)",
-                zIndex:"999999",
-                fontWeight:"700",
-                fontSize:"14px",
-                textAlign:"center",
-                minWidth:"280px",
-                maxWidth:"calc(100% - 30px)"
-            }
-        );
+        Object.assign(t.style, {
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: ok ? "#10B981" : "#DC2626",
+            color: "#fff",
+            padding: "14px 24px",
+            borderRadius: "10px",
+            boxShadow: "0 10px 25px rgba(0,0,0,.3)",
+            zIndex: "999999",
+            fontWeight: "700",
+            fontSize: "14px",
+            textAlign: "center",
+            minWidth: "280px",
+            maxWidth: "calc(100% - 30px)"
+        });
 
         document.body.appendChild(t);
 
-        setTimeout(function(){
+        setTimeout(function () {
+            if (t && t.parentNode) t.remove();
+            if (callback) callback();
+        }, 1200);
 
-            if(t && t.parentNode){
-                t.remove();
-            }
-
-            if(callback){
-                callback();
-            }
-
-        },1200);
-
-    }catch(e){
-
-        console.log("Toast:",message);
-
-        if(callback){
-            callback();
-        }
+    } catch (e) {
+        console.log("Toast:", message);
+        if (callback) callback();
     }
 }
 
-
-/* ============================================================
-   EXIT TO DASHBOARD
-============================================================ */
-
-function exitToDashboard(){
-
-    try{
-
-        window.location.replace(
-            "dashboard.html"
-        );
-
-    }catch(e){
-
-        location.href =
-            "dashboard.html";
+/* EXIT TO DASHBOARD */
+function exitToDashboard() {
+    try {
+        window.location.replace("dashboard.html");
+    } catch (e) {
+        location.href = "dashboard.html";
     }
 }
 
-
-/* ============================================================
-   STORED COMPANY LOGO
-============================================================ */
-
-function getStoredCompanyLogo(){
-
-    const keys = [
-        "company_logo",
-        "company_logo_base64",
-        "logo"
-    ];
-
-    for(const key of keys){
-
-        try{
-
-            const raw =
-                localStorage.getItem(key);
-
-            const value =
-                normalizeImageData(raw);
-
-            if(value){
-                return value;
-            }
-
-        }catch(e){}
+/* STORED COMPANY LOGO */
+function getStoredCompanyLogo() {
+    const keys = ["company_logo", "company_logo_base64", "logo"];
+    for (const key of keys) {
+        try {
+            const raw = localStorage.getItem(key);
+            const value = normalizeImageData(raw);
+            if (value) return value;
+        } catch (e) {}
     }
-
     return "";
 }
 
-
-/* ============================================================
-   SHOW LOGO
-============================================================ */
-
-function showCompanyLogo(src){
-
+/* SHOW LOGO */
+function showCompanyLogo(src) {
     const img = $("logoImgTag");
     const box = $("logoPreviewBox");
     const st = $("logoStatus");
 
-    if(!img || !box){
-        return;
-    }
+    if (!img || !box) return;
 
-    const clean =
-        normalizeImageData(src);
+    const clean = normalizeImageData(src);
 
-    if(!clean){
-
+    if (!clean) {
         img.removeAttribute("src");
-
         box.style.display = "none";
-
-        if(st){
-            st.textContent = "";
-        }
-
+        if (st) st.textContent = "";
         return;
     }
 
-    img.onload = function(){
-
+    img.onload = function () {
         box.style.display = "flex";
-
-        if(st){
-
-            st.textContent =
-                "✅ Company Logo Ready";
-
-            st.style.color =
-                "#4A7C59";
+        if (st) {
+            st.textContent = "✅ Company Logo Ready";
+            st.style.color = "#4A7C59";
         }
     };
 
-    img.onerror = function(){
-
+    img.onerror = function () {
         box.style.display = "none";
-
-        if(st){
-
-            st.textContent =
-                "⚠️ Saved logo could not be displayed";
-
-            st.style.color =
-                "#DC2626";
+        if (st) {
+            st.textContent = "⚠️ Saved logo could not be displayed";
+            st.style.color = "#DC2626";
         }
     };
 
     img.src = clean;
 }
 
-
-function handleLogoImageError(img){
-
-    if(img){
-        img.removeAttribute("src");
-    }
-
-    if($("logoPreviewBox")){
-        $("logoPreviewBox").style.display = "none";
-    }
+function handleLogoImageError(img) {
+    if (img) img.removeAttribute("src");
+    if ($("logoPreviewBox")) $("logoPreviewBox").style.display = "none";
 }
 
-
-function handleDesignImageError(img){
-
-    if(img){
-        img.removeAttribute("src");
-    }
-
-    if($("designBitmapPreviewBox")){
-        $("designBitmapPreviewBox").style.display = "none";
-    }
+function handleDesignImageError(img) {
+    if (img) img.removeAttribute("src");
+    if ($("designBitmapPreviewBox")) $("designBitmapPreviewBox").style.display = "none";
 }
 
+/* USER PERMISSION */
+function checkUserPermission() {
+    const role = localStorage.getItem("erp_logged_role") || localStorage.getItem("user_role");
 
-/* ============================================================
-   USER PERMISSION
-============================================================ */
+    if (role === "Administrator" || role === "Admin") return true;
 
-function checkUserPermission(){
+    const p = safeLoad("user_permissions", {});
 
-    const role =
-        localStorage.getItem("erp_logged_role") ||
-        localStorage.getItem("user_role");
-
-    if(
-        role === "Administrator" ||
-        role === "Admin"
-    ){
-
-        return true;
-    }
-
-    const p =
-        safeLoad(
-            "user_permissions",
-            {}
-        );
-
-    return !(
-        p &&
-        (
-            p.settings === false ||
-            p["settings.html"] === false
-        )
-    );
+    return !(p && (p.settings === false || p["settings.html"] === false));
 }
 
+/* DESIGN DROPDOWN */
+function loadDesignDropdownInSettings() {
+    const pre = safeLoad("pre_design_numbers", []) || [];
+    const masters = safeLoad("design_masters_data", []) || [];
+    const specs = safeLoad("design_specs", {}) || {};
+    const orders = safeLoad("party_orders_data", []) || [];
 
-/* ============================================================
-   DESIGN DROPDOWN
-============================================================ */
+    const all = new Set();
 
-function loadDesignDropdownInSettings(){
-
-    const pre =
-        safeLoad(
-            "pre_design_numbers",
-            []
-        ) || [];
-
-    const masters =
-        safeLoad(
-            "design_masters_data",
-            []
-        ) || [];
-
-    const specs =
-        safeLoad(
-            "design_specs",
-            {}
-        ) || {};
-
-    const orders =
-        safeLoad(
-            "party_orders_data",
-            []
-        ) || [];
-
-    const all =
-        new Set();
-
-    (
-        Array.isArray(pre) ? pre : []
-    ).forEach(function(d){
-
-        const value =
-            typeof d === "object"
-                ? (
-                    d.designNo ||
-                    d.designNumber
-                )
-                : d;
-
-        if(value){
-            all.add(value);
-        }
+    (Array.isArray(pre) ? pre : []).forEach(function (d) {
+        const value = typeof d === "object" ? (d.designNo || d.designNumber) : d;
+        if (value) all.add(value);
     });
 
-    (
-        Array.isArray(masters)
-            ? masters
-            : []
-    ).forEach(function(d){
-
-        const value =
-            d && (
-                d.name ||
-                d.designNo ||
-                d.designNumber
-            );
-
-        if(value){
-            all.add(value);
-        }
+    (Array.isArray(masters) ? masters : []).forEach(function (d) {
+        const value = d && (d.name || d.designNo || d.designNumber);
+        if (value) all.add(value);
     });
 
-    if(
-        specs &&
-        typeof specs === "object"
-    ){
-
-        Object.keys(specs)
-            .forEach(function(k){
-                all.add(k);
-            });
+    if (specs && typeof specs === "object") {
+        Object.keys(specs).forEach(function (k) { all.add(k); });
     }
 
-    (
-        Array.isArray(orders)
-            ? orders
-            : []
-    ).forEach(function(o){
-
-        const value =
-            o && (
-                o.designNumber ||
-                o.designNo
-            );
-
-        if(value){
-            all.add(value);
-        }
+    (Array.isArray(orders) ? orders : []).forEach(function (o) {
+        const value = o && (o.designNumber || o.designNo);
+        if (value) all.add(value);
     });
 
-    const select =
-        $("settingDesignSelect");
+    const select = $("settingDesignSelect");
+    if (!select) return;
 
-    if(!select){
-        return;
-    }
+    select.innerHTML = '<option value="">Select Design Number</option>';
 
-    select.innerHTML =
-        '<option value="">Select Design Number</option>';
-
-    Array.from(all)
-        .filter(Boolean)
-        .forEach(function(d){
-
-            const opt =
-                document.createElement("option");
-
-            opt.value =
-                String(d);
-
-            opt.textContent =
-                String(d);
-
-            select.appendChild(opt);
-        });
+    Array.from(all).filter(Boolean).forEach(function (d) {
+        const opt = document.createElement("option");
+        opt.value = String(d);
+        opt.textContent = String(d);
+        select.appendChild(opt);
+    });
 }
 
+/* LOAD DESIGN BITMAP */
+function loadDesignBitmap(designNo) {
+    const box = $("designBitmapPreviewBox");
+    const img = $("designBitmapImgTag");
 
-/* ============================================================
-   LOAD DESIGN BITMAP
-============================================================ */
-
-function loadDesignBitmap(designNo){
-
-    const box =
-        $("designBitmapPreviewBox");
-
-    const img =
-        $("designBitmapImgTag");
-
-    if(!designNo){
-
+    if (!designNo) {
         tempDesignBitmapData = "";
-
-        if(box){
-            box.style.display = "none";
-        }
-
+        if (box) box.style.display = "none";
         return;
     }
 
-    const specs =
-        safeLoad(
-            "design_specs",
-            {}
-        ) || {};
+    const specs = safeLoad("design_specs", {}) || {};
+    const clean = String(designNo).replace("#", "").trim().toLowerCase();
 
-    const clean =
-        String(designNo)
-            .replace("#","")
-            .trim()
-            .toLowerCase();
+    const key = Object.keys(specs).find(function (k) {
+        return String(k).replace("#", "").trim().toLowerCase() === clean;
+    }) || designNo;
 
-    const key =
-        Object.keys(specs)
-            .find(function(k){
+    const bitmap = normalizeImageData(specs[key] && specs[key].bitmap);
 
-                return String(k)
-                    .replace("#","")
-                    .trim()
-                    .toLowerCase()
-                    === clean;
+    tempDesignBitmapData = bitmap;
 
-            }) ||
-        designNo;
-
-    const bitmap =
-        normalizeImageData(
-            specs[key] &&
-            specs[key].bitmap
-        );
-
-    tempDesignBitmapData =
-        bitmap;
-
-    if(img && bitmap){
-
-        img.onload = function(){
-
-            if(box){
-                box.style.display = "flex";
-            }
+    if (img && bitmap) {
+        img.onload = function () {
+            if (box) box.style.display = "flex";
         };
-
         img.src = bitmap;
-
-    }else{
-
-        if(box){
-            box.style.display = "none";
-        }
+    } else {
+        if (box) box.style.display = "none";
     }
 }
 
+/* LOGO PREVIEW */
+function previewLogo(input) {
+    const file = input && input.files && input.files[0];
+    if (!file) return;
 
-/* ============================================================
-   LOGO PREVIEW
-============================================================ */
-
-function previewLogo(input){
-
-    const file =
-        input &&
-        input.files &&
-        input.files[0];
-
-    if(!file){
-        return;
-    }
-
-    if(
-        !file.type ||
-        !file.type.startsWith("image/")
-    ){
-
-        alert(
-            "Please select a valid image file."
-        );
-
+    if (!file.type || !file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
         input.value = "";
-
         return;
     }
 
-    if(file.size > RAW_FILE_SIZE_LIMIT){
-
+    if (file.size > RAW_FILE_SIZE_LIMIT) {
         alert(
             "This photo file is too large to process safely on this device (" +
-            (file.size / (1024*1024)).toFixed(1) +
+            (file.size / (1024 * 1024)).toFixed(1) +
             " MB).\n\nPlease pick a smaller/compressed photo, or use your phone's " +
             "gallery editor to shrink it before uploading."
         );
-
         input.value = "";
-
         return;
     }
 
-    compressImageSafe(
-        file,
-        LOGO_MAX_WIDTH,
-        LOGO_MAX_HEIGHT,
-        function(b64){
+    compressImageSafe(file, LOGO_MAX_WIDTH, LOGO_MAX_HEIGHT, function (b64) {
 
-            if(!b64){
-
-                input.value = "";
-
-                if($("logoStatus")){
-
-                    $("logoStatus").textContent =
-                        "⚠️ Logo compression failed";
-
-                    $("logoStatus").style.color =
-                        "#DC2626";
-                }
-
-                return;
+        if (!b64) {
+            input.value = "";
+            if ($("logoStatus")) {
+                $("logoStatus").textContent = "⚠️ Logo compression failed";
+                $("logoStatus").style.color = "#DC2626";
             }
-
-            tempLogoData = b64;
-
-            showCompanyLogo(
-                tempLogoData
-            );
-
-            const size =
-                getDataUrlBytes(
-                    tempLogoData
-                );
-
-            if($("logoStatus")){
-
-                $("logoStatus").textContent =
-                    "✅ Logo optimized: " +
-                    Math.round(size / 1024) +
-                    " KB";
-
-                $("logoStatus").style.color =
-                    "#4A7C59";
-            }
+            return;
         }
-    );
+
+        tempLogoData = b64;
+        showCompanyLogo(tempLogoData);
+
+        const size = getDataUrlBytes(tempLogoData);
+
+        if ($("logoStatus")) {
+            $("logoStatus").textContent = "✅ Logo optimized: " + Math.round(size / 1024) + " KB";
+            $("logoStatus").style.color = "#4A7C59";
+        }
+    });
 }
 
+/* DESIGN BITMAP PREVIEW */
+function previewDesignBitmap(input) {
+    const file = input && input.files && input.files[0];
+    if (!file) return;
 
-/* ============================================================
-   DESIGN BITMAP PREVIEW
-============================================================ */
-
-function previewDesignBitmap(input){
-
-    const file =
-        input &&
-        input.files &&
-        input.files[0];
-
-    if(!file){
-        return;
-    }
-
-    if(
-        !file.type ||
-        !file.type.startsWith("image/")
-    ){
-
-        alert(
-            "Please select a valid image file."
-        );
-
+    if (!file.type || !file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
         input.value = "";
-
         return;
     }
 
-    if(file.size > RAW_FILE_SIZE_LIMIT){
-
+    if (file.size > RAW_FILE_SIZE_LIMIT) {
         alert(
             "This photo file is too large to process safely on this device (" +
-            (file.size / (1024*1024)).toFixed(1) +
+            (file.size / (1024 * 1024)).toFixed(1) +
             " MB).\n\nPlease pick a smaller/compressed photo, or use your phone's " +
             "gallery editor to shrink it before uploading."
         );
-
         input.value = "";
-
         return;
     }
 
-    compressImageSafe(
-        file,
-        DESIGN_MAX_WIDTH,
-        DESIGN_MAX_HEIGHT,
-        function(b64){
+    compressImageSafe(file, DESIGN_MAX_WIDTH, DESIGN_MAX_HEIGHT, function (b64) {
 
-            if(!b64){
-
-                input.value = "";
-                return;
-            }
-
-            tempDesignBitmapData =
-                b64;
-
-            const img =
-                $("designBitmapImgTag");
-
-            const box =
-                $("designBitmapPreviewBox");
-
-            if(img){
-
-                img.src =
-                    tempDesignBitmapData;
-
-                if(box){
-                    box.style.display = "flex";
-                }
-            }
+        if (!b64) {
+            input.value = "";
+            return;
         }
-    );
+
+        tempDesignBitmapData = b64;
+
+        const img = $("designBitmapImgTag");
+        const box = $("designBitmapPreviewBox");
+
+        if (img) {
+            img.src = tempDesignBitmapData;
+            if (box) box.style.display = "flex";
+        }
+    });
 }
 
-
-/* ============================================================
-   PARTY DATABASE
-============================================================ */
-
-function getPartyDatabase(){
-
-    const db =
-        safeLoad(
-            "party_master_db",
-            {}
-        );
-
-    return (
-        db &&
-        typeof db === "object" &&
-        !Array.isArray(db)
-    )
-        ? db
-        : {};
+/* PARTY DATABASE */
+function getPartyDatabase() {
+    const db = safeLoad("party_master_db", {});
+    return (db && typeof db === "object" && !Array.isArray(db)) ? db : {};
 }
 
+/* PARTY DROPDOWN */
+function loadPartyDropdown() {
+    const select = $("partyListSelect");
+    if (!select) return;
 
-/* ============================================================
-   PARTY DROPDOWN
-============================================================ */
+    const db = getPartyDatabase();
 
-function loadPartyDropdown(){
+    select.innerHTML = '<option value="">Select Party to Edit/View</option>';
 
-    const select =
-        $("partyListSelect");
+    Object.keys(db).sort().forEach(function (p) {
+        const o = document.createElement("option");
+        o.value = p;
+        o.textContent = p;
+        select.appendChild(o);
+    });
+}
 
-    if(!select){
+/* SELECT PARTY */
+function selectPartyToEdit(name) {
+    if (!$("partyNameInput") || !$("partyAddressInput")) return;
+
+    $("partyNameInput").value = name || "";
+    $("partyAddressInput").value = name ? String(getPartyDatabase()[name] || "") : "";
+}
+
+/* SAVE PARTY */
+async function savePartyMaster() {
+    const name = $("partyNameInput").value.trim();
+    const addr = $("partyAddressInput").value.trim();
+
+    if (!name) {
+        toast("Please enter a Party Name!", false);
         return;
     }
 
-    const db =
-        getPartyDatabase();
-
-    select.innerHTML =
-        '<option value="">Select Party to Edit/View</option>';
-
-    Object.keys(db)
-        .sort()
-        .forEach(function(p){
-
-            const o =
-                document.createElement("option");
-
-            o.value = p;
-            o.textContent = p;
-
-            select.appendChild(o);
-        });
-}
-
-
-/* ============================================================
-   SELECT PARTY
-============================================================ */
-
-function selectPartyToEdit(name){
-
-    if(
-        !$("partyNameInput") ||
-        !$("partyAddressInput")
-    ){
-        return;
-    }
-
-    $("partyNameInput").value =
-        name || "";
-
-    $("partyAddressInput").value =
-        name
-            ? String(
-                getPartyDatabase()[name] || ""
-              )
-            : "";
-}
-
-
-/* ============================================================
-   SAVE PARTY
-============================================================ */
-
-async function savePartyMaster(){
-
-    const name =
-        $("partyNameInput")
-            .value
-            .trim();
-
-    const addr =
-        $("partyAddressInput")
-            .value
-            .trim();
-
-    if(!name){
-
-        toast(
-            "Please enter a Party Name!",
-            false
-        );
-
-        return;
-    }
-
-    const db =
-        getPartyDatabase();
-
+    const db = getPartyDatabase();
     db[name] = addr;
 
-    safeSave(
-        "party_master_db",
-        db
-    );
+    safeSave("party_master_db", db);
+    safeSave("party_master_list", Object.keys(db));
 
-    safeSave(
-        "party_master_list",
-        Object.keys(db)
-    );
-
-    await pageCloudSave(
-        "party_master_db",
-        db
-    );
-
-    await pageCloudSave(
-        "party_master_list",
-        Object.keys(db)
-    );
+    await pageCloudSave("party_master_db", db);
+    await pageCloudSave("party_master_list", Object.keys(db));
 
     loadPartyDropdown();
+    $("partyListSelect").value = name;
 
-    $("partyListSelect").value =
-        name;
-
-    toast(
-        "Party Details Saved Successfully!"
-    );
+    toast("Party Details Saved Successfully!");
 }
 
+/* DELETE PARTY */
+async function deletePartyMaster() {
+    const name = $("partyListSelect").value;
 
-/* ============================================================
-   DELETE PARTY
-============================================================ */
-
-async function deletePartyMaster(){
-
-    const name =
-        $("partyListSelect").value;
-
-    if(!name){
-
-        toast(
-            "Please select a Party to delete!",
-            false
-        );
-
+    if (!name) {
+        toast("Please select a Party to delete!", false);
         return;
     }
 
-    if(
-        !confirm(
-            "Are you sure you want to delete party: " +
-            name +
-            "?"
-        )
-    ){
-        return;
-    }
+    if (!confirm("Are you sure you want to delete party: " + name + "?")) return;
 
-    const db =
-        getPartyDatabase();
-
+    const db = getPartyDatabase();
     delete db[name];
 
-    safeSave(
-        "party_master_db",
-        db
-    );
+    safeSave("party_master_db", db);
+    safeSave("party_master_list", Object.keys(db));
 
-    safeSave(
-        "party_master_list",
-        Object.keys(db)
-    );
-
-    await pageCloudSave(
-        "party_master_db",
-        db
-    );
-
-    await pageCloudSave(
-        "party_master_list",
-        Object.keys(db)
-    );
+    await pageCloudSave("party_master_db", db);
+    await pageCloudSave("party_master_list", Object.keys(db));
 
     $("partyNameInput").value = "";
     $("partyAddressInput").value = "";
 
     loadPartyDropdown();
 
-    toast(
-        "Party deleted successfully!"
-    );
+    toast("Party deleted successfully!");
 }
 
-
-/* ============================================================
-   UPDATE USER PERMISSIONS
-============================================================ */
-
-async function updateUserPermissions(){
-
+/* UPDATE USER PERMISSIONS */
+async function updateUserPermissions() {
     const keys = [
-        "dashboard",
-        "design_list",
-        "design_master",
-        "despatch",
-        "dyeing_issue",
-        "dyeing_receive",
-        "index",
-        "invoice",
-        "kora_yarn",
-        "party_orders",
-        "process_matrix",
-        "report",
-        "settings",
-        "warp_entry",
-        "warping",
-        "washing",
-        "weaving",
-        "weft_entry",
-        "yarn_calc"
+        "dashboard", "design_list", "design_master", "despatch", "dyeing_issue",
+        "dyeing_receive", "index", "invoice", "kora_yarn", "party_orders",
+        "process_matrix", "report", "settings", "warp_entry", "warping",
+        "washing", "weaving", "weft_entry", "yarn_calc"
     ];
 
     const permissions = {};
 
-    keys.forEach(function(k){
-
-        const el =
-            $("perm_" + k);
-
-        permissions[k] =
-            !!(
-                el &&
-                el.checked
-            );
+    keys.forEach(function (k) {
+        const el = $("perm_" + k);
+        permissions[k] = !!(el && el.checked);
     });
 
-    safeSave(
-        "user_permissions",
-        permissions
-    );
+    safeSave("user_permissions", permissions);
+    await pageCloudSave("user_permissions", permissions);
 
-    await pageCloudSave(
-        "user_permissions",
-        permissions
-    );
-
-    toast(
-        "All Pages User Permissions Updated!"
-    );
+    toast("All Pages User Permissions Updated!");
 }
 
+/* LOAD USER PERMISSIONS */
+function loadUserPermissions() {
+    const p = safeLoad("user_permissions", {}) || {};
 
-/* ============================================================
-   LOAD USER PERMISSIONS
-============================================================ */
-
-function loadUserPermissions(){
-
-    const p =
-        safeLoad(
-            "user_permissions",
-            {}
-        ) || {};
-
-    Object.keys(p)
-        .forEach(function(k){
-
-            const el =
-                $("perm_" + k);
-
-            if(el){
-
-                el.checked =
-                    p[k] !== false;
-            }
-        });
+    Object.keys(p).forEach(function (k) {
+        const el = $("perm_" + k);
+        if (el) el.checked = p[k] !== false;
+    });
 }
 
-
-/* ============================================================
-   USERS
-============================================================ */
-
-function getUsers(){
-
-    const users =
-        safeLoad(
-            "erp_system_users",
-            []
-        );
-
-    return Array.isArray(users)
-        ? users
-        : [];
+/* USERS */
+function getUsers() {
+    const users = safeLoad("erp_system_users", []);
+    return Array.isArray(users) ? users : [];
 }
 
+/* USERS TABLE */
+function renderUsersTable() {
+    const tbody = $("usersTableBody");
+    if (!tbody) return;
 
-/* ============================================================
-   USERS TABLE
-============================================================ */
-
-function renderUsersTable(){
-
-    const tbody =
-        $("usersTableBody");
-
-    if(!tbody){
-        return;
-    }
-
-    const users =
-        getUsers();
-
+    const users = getUsers();
     tbody.innerHTML = "";
 
-    users.forEach(function(u,i){
+    users.forEach(function (u, i) {
+        const tr = document.createElement("tr");
 
-        const tr =
-            document.createElement("tr");
-
-        [
-            u.username,
-            u.password,
-            u.role
-        ].forEach(function(v){
-
-            const td =
-                document.createElement("td");
-
-            td.textContent =
-                v == null
-                    ? ""
-                    : String(v);
-
+        [u.username, u.password, u.role].forEach(function (v) {
+            const td = document.createElement("td");
+            td.textContent = v == null ? "" : String(v);
             tr.appendChild(td);
         });
 
-        const td =
-            document.createElement("td");
-
-        const b =
-            document.createElement("button");
-
+        const td = document.createElement("td");
+        const b = document.createElement("button");
         b.type = "button";
-
-        b.className =
-            "btn-action btn-danger";
-
-        b.style.cssText =
-            "padding:4px 8px;font-size:9px";
-
+        b.className = "btn-action btn-danger";
+        b.style.cssText = "padding:4px 8px;font-size:9px";
         b.textContent = "Del";
-
-        b.onclick = function(){
-
-            deleteUserAccount(i);
-        };
+        b.onclick = function () { deleteUserAccount(i); };
 
         td.appendChild(b);
-
         tr.appendChild(td);
-
         tbody.appendChild(tr);
     });
 }
 
+/* ADD USER */
+async function addNewUserAccount() {
+    const name = $("newUsername").value.trim();
+    const pass = $("newPassword").value.trim();
+    const role = $("newUserRole").value;
 
-/* ============================================================
-   ADD USER
-============================================================ */
-
-async function addNewUserAccount(){
-
-    const name =
-        $("newUsername")
-            .value
-            .trim();
-
-    const pass =
-        $("newPassword")
-            .value
-            .trim();
-
-    const role =
-        $("newUserRole")
-            .value;
-
-    if(!name || !pass){
-
-        toast(
-            "Please enter Username and Password!",
-            false
-        );
-
+    if (!name || !pass) {
+        toast("Please enter Username and Password!", false);
         return;
     }
 
-    const users =
-        getUsers();
+    const users = getUsers();
 
-    if(
-        users.some(function(u){
-
-            return String(u.username)
-                .toLowerCase()
-                === name.toLowerCase();
-
-        })
-    ){
-
-        toast(
-            "Username already exists!",
-            false
-        );
-
+    if (users.some(function (u) {
+        return String(u.username).toLowerCase() === name.toLowerCase();
+    })) {
+        toast("Username already exists!", false);
         return;
     }
 
-    users.push({
-        username:name,
-        password:pass,
-        role:role
-    });
+    users.push({ username: name, password: pass, role: role });
 
-    safeSave(
-        "erp_system_users",
-        users
-    );
-
-    await pageCloudSave(
-        "erp_system_users",
-        users
-    );
+    safeSave("erp_system_users", users);
+    await pageCloudSave("erp_system_users", users);
 
     $("newUsername").value = "";
     $("newPassword").value = "";
 
     renderUsersTable();
 
-    toast(
-        "New User Account Created!"
-    );
+    toast("New User Account Created!");
 }
 
+/* DELETE USER */
+async function deleteUserAccount(index) {
+    if (!confirm("Are you sure you want to delete this user?")) return;
 
-/* ============================================================
-   DELETE USER
-============================================================ */
+    const users = getUsers();
 
-async function deleteUserAccount(index){
+    if (index < 0 || index >= users.length) return;
 
-    if(
-        !confirm(
-            "Are you sure you want to delete this user?"
-        )
-    ){
-        return;
-    }
+    users.splice(index, 1);
 
-    const users =
-        getUsers();
-
-    if(
-        index < 0 ||
-        index >= users.length
-    ){
-        return;
-    }
-
-    users.splice(
-        index,
-        1
-    );
-
-    safeSave(
-        "erp_system_users",
-        users
-    );
-
-    await pageCloudSave(
-        "erp_system_users",
-        users
-    );
+    safeSave("erp_system_users", users);
+    await pageCloudSave("erp_system_users", users);
 
     renderUsersTable();
 
-    toast(
-        "User deleted successfully!"
-    );
+    toast("User deleted successfully!");
 }
 
+/* SAVE COMPANY LOGO */
+async function saveCompanyLogoSafely() {
+    const logo = normalizeImageData(tempLogoData);
 
-/* ============================================================
-   SAVE COMPANY LOGO
-============================================================ */
+    if (!logo) return true;
 
-async function saveCompanyLogoSafely(){
+    const size = getDataUrlBytes(logo);
 
-    const logo =
-        normalizeImageData(
-            tempLogoData
-        );
-
-    if(!logo){
-        return true;
-    }
-
-    const size =
-        getDataUrlBytes(logo);
-
-    if(
-        size > MAX_IMAGE_BYTES
-    ){
-
-        toast(
-            "Logo is too large. Please upload again.",
-            false
-        );
-
+    if (size > MAX_IMAGE_BYTES) {
+        toast("Logo is too large. Please upload again.", false);
         return false;
     }
 
-    saveProgress(
-        "Saving company logo..."
-    );
+    saveProgress("Saving company logo...");
 
-    safeSave(
-        "company_logo",
-        logo
-    );
+    safeSave("company_logo", logo);
+    safeSave("company_logo_base64", logo);
+    safeSave("logo", logo);
 
-    safeSave(
-        "company_logo_base64",
-        logo
-    );
+    const cloudResult = await pageCloudSave("company_logo", logo);
 
-    safeSave(
-        "logo",
-        logo
-    );
-
-    const cloudResult =
-        await pageCloudSave(
-            "company_logo",
-            logo
-        );
-
-    if($("logoStatus")){
-
-        $("logoStatus").textContent =
-            "✅ Logo saved • " +
-            Math.round(size / 1024) +
-            " KB";
-
-        $("logoStatus").style.color =
-            "#4A7C59";
+    if ($("logoStatus")) {
+        $("logoStatus").textContent = "✅ Logo saved • " + Math.round(size / 1024) + " KB";
+        $("logoStatus").style.color = "#4A7C59";
     }
 
     return cloudResult !== false;
 }
 
-
-/* ============================================================
-   SAVE SUPABASE CONFIG & CLOUD TOGGLE (GUARDED)
-============================================================ */
-
+/* CLOUD TOGGLE */
 function saveCloudToggleState() {
     const toggle = $("cloudSyncToggle");
     if (!toggle) return;
+
     const isChecked = toggle.checked;
+
     localStorage.setItem("erp_cloud_sync_enabled", isChecked ? "true" : "false");
-    
+
     if (isChecked) {
         toast("☁️ Cloud Auto-Sync: ENABLED (Online Mode)");
     } else {
@@ -2628,250 +1169,133 @@ function saveCloudToggleState() {
     }
 }
 
+/* DATABASE CONFIG */
 function saveSupabaseConfig() {
+    const provider = $("databaseProviderInput").value;
     const url = $("supabaseUrlInput").value.trim();
     const key = $("supabaseKeyInput").value.trim();
 
-    if(!url || !key) {
-        toast("Please enter both URL and Key!", false);
+    if (!url || !key) {
+        toast("Please enter Server URL and API Key!", false);
         return;
     }
 
-    // இவை லோக்கல் ஸ்டோரேஜில் சேமிக்கப்படும்
-    safeSave("custom_supabase_url", url);
-    safeSave("custom_supabase_key", key);
+    safeSave("database_provider", provider);
+    safeSave("database_server_url", url);
+    safeSave("database_api_key", key);
+
+    if (provider === "supabase") {
+        safeSave("custom_supabase_url", url);
+        safeSave("custom_supabase_key", key);
+    }
 
     saveCloudToggleState();
 
-    toast("Database Connection & Sync Updated!", true, function(){
+    toast("Database Connection & Sync Updated!", true, function () {
         window.location.reload();
     });
 }
 
+/* SAVE ALL SETTINGS */
+async function executeSaveAll() {
 
-/* ============================================================
-   SAVE ALL SETTINGS
-============================================================ */
-
-async function executeSaveAll(){
-
-    if(saveAllRunning){
-        return;
-    }
+    if (saveAllRunning) return;
 
     saveAllRunning = true;
 
-    const button =
-        $("saveAllButton");
+    const button = $("saveAllButton");
 
-    if(button){
-
+    if (button) {
         button.disabled = true;
         button.style.opacity = "0.65";
         button.style.cursor = "wait";
     }
 
-    try{
+    try {
 
-        saveProgress(
-            "Saving ERP settings..."
-        );
-
-        status(
-            "Saving settings..."
-        );
+        saveProgress("Saving ERP settings...");
+        status("Saving settings...");
 
         saveCloudToggleState();
 
-        const heading =
-            cleanInputText(
-                $("set_heading")
-                    ? $("set_heading").value
-                    : ""
-            );
+        const heading = cleanInputText($("set_heading") ? $("set_heading").value : "");
+        const addr = $("set_comp_addr") ? $("set_comp_addr").value.trim() : "";
 
-        const addr =
-            $("set_comp_addr")
-                ? $("set_comp_addr").value.trim()
-                : "";
+        if (heading) safeSave("app_heading_name", heading);
+        if (addr) safeSave("company_full_address", addr);
 
+        if (tempLogoData) {
+            const logo = normalizeImageData(tempLogoData);
 
-        if(heading){
+            if (!logo) throw new Error("Invalid company logo.");
+            if (getDataUrlBytes(logo) > MAX_IMAGE_BYTES) throw new Error("Company logo is too large.");
 
-            safeSave(
-                "app_heading_name",
-                heading
-            );
+            safeSave("company_logo", logo);
+            safeSave("company_logo_base64", logo);
+            safeSave("logo", logo);
         }
 
-        if(addr){
+        const select = $("settingDesignSelect");
 
-            safeSave(
-                "company_full_address",
-                addr
-            );
-        }
+        if (select && select.value && tempDesignBitmapData) {
+            const specs = safeLoad("design_specs", {}) || {};
+            const clean = String(select.value).replace("#", "").trim().toLowerCase();
 
-        if(tempLogoData){
+            const key = Object.keys(specs).find(function (k) {
+                return String(k).replace("#", "").trim().toLowerCase() === clean;
+            }) || select.value;
 
-            const logo =
-                normalizeImageData(
-                    tempLogoData
-                );
-
-            if(!logo){
-
-                throw new Error(
-                    "Invalid company logo."
-                );
-            }
-
-            if(
-                getDataUrlBytes(logo) >
-                MAX_IMAGE_BYTES
-            ){
-
-                throw new Error(
-                    "Company logo is too large."
-                );
-            }
-
-            safeSave(
-                "company_logo",
-                logo
-            );
-
-            safeSave(
-                "company_logo_base64",
-                logo
-            );
-
-            safeSave(
-                "logo",
-                logo
-            );
-        }
-
-        const select =
-            $("settingDesignSelect");
-
-        if(
-            select &&
-            select.value &&
-            tempDesignBitmapData
-        ){
-
-            const specs =
-                safeLoad(
-                    "design_specs",
-                    {}
-                ) || {};
-
-            const clean =
-                String(select.value)
-                    .replace("#","")
-                    .trim()
-                    .toLowerCase();
-
-            const key =
-                Object.keys(specs)
-                    .find(function(k){
-
-                        return String(k)
-                            .replace("#","")
-                            .trim()
-                            .toLowerCase()
-                            === clean;
-
-                    }) ||
-                select.value;
-
-            if(
-                !specs[key] ||
-                typeof specs[key] !== "object"
-            ){
-
+            if (!specs[key] || typeof specs[key] !== "object") {
                 specs[key] = {};
             }
 
-            specs[key].bitmap =
-                normalizeImageData(
-                    tempDesignBitmapData
-                );
+            specs[key].bitmap = normalizeImageData(tempDesignBitmapData);
 
-            safeSave(
-                "design_specs",
-                specs
-            );
+            safeSave("design_specs", specs);
         }
 
-        status(
-            "✅ Settings saved locally"
-        );
+        status("✅ Settings saved locally");
 
-        saveProgress(
-            "✅ Saved. Opening Dashboard..."
-        );
-
-        // CLOUD SYNC ONLY IF ENABLED
+        /* FIX #3: wait for the cloud uploads to finish BEFORE redirecting,
+           otherwise the browser can cancel requests still in flight */
         if (typeof window.isCloudSyncActive === "function" && window.isCloudSyncActive()) {
+
+            saveProgress("☁️ Syncing to cloud...");
+
             const cloudJobs = [];
 
-            if(heading){
-                cloudJobs.push(pageCloudSave("app_heading_name", heading));
-            }
+            if (heading) cloudJobs.push(pageCloudSave("app_heading_name", heading));
+            if (addr) cloudJobs.push(pageCloudSave("company_full_address", addr));
 
-            if(addr){
-                cloudJobs.push(pageCloudSave("company_full_address", addr));
-            }
-
-            if(tempLogoData){
+            if (tempLogoData) {
                 cloudJobs.push(pageCloudSave("company_logo", normalizeImageData(tempLogoData)));
             }
 
-            if(select && select.value && tempDesignBitmapData){
+            if (select && select.value && tempDesignBitmapData) {
                 const specs = safeLoad("design_specs", {}) || {};
                 cloudJobs.push(pageCloudSave("design_specs", specs));
             }
 
-            Promise.allSettled(cloudJobs)
-                .then(function(results){
-                    console.log("TEXFRIEND FOREVER cloud sync completed:", results);
-                })
-                .catch(function(error){
-                    console.warn("Background cloud sync:", error);
-                });
+            const results = await Promise.allSettled(cloudJobs);
+            console.log("TEXFRIEND FOREVER cloud sync completed:", results);
         }
 
-        window.location.replace(
-            "dashboard.html"
-        );
+        saveProgress("✅ Saved. Opening Dashboard...");
 
-    }catch(e){
+        window.location.replace("dashboard.html");
 
-        console.error(
-            "executeSaveAll ERROR:",
-            e
-        );
+    } catch (e) {
 
-        status(
-            "❌ Save failed: " +
-            e.message,
-            false
-        );
+        console.error("executeSaveAll ERROR:", e);
 
+        status("❌ Save failed: " + e.message, false);
         hideSaveProgress();
 
-        alert(
-            "Save Error:\n\n" +
-            e.message +
-            "\n\nYour local data has been protected."
-        );
+        alert("Save Error:\n\n" + e.message + "\n\nYour local data has been protected.");
 
         saveAllRunning = false;
 
-        if(button){
-
+        if (button) {
             button.disabled = false;
             button.style.opacity = "1";
             button.style.cursor = "pointer";
@@ -2881,58 +1305,30 @@ async function executeSaveAll(){
     }
 }
 
-
-/* ============================================================
-   CLEAR LOCAL CACHE
-============================================================ */
-
-async function clearLocalCache(){
-
-    if(
-        typeof window.handleLocalReset ===
-        "function"
-    ){
-
+/* CLEAR LOCAL CACHE */
+async function clearLocalCache() {
+    if (typeof window.handleLocalReset === "function") {
         return await window.handleLocalReset();
     }
-
-    alert(
-        "❌ Clear Cache function is not available. Please check config.js."
-    );
+    alert("❌ Clear Cache function is not available. Please check config.js.");
 }
 
-
-/* ============================================================
-   FACTORY RESET CLOUD
-============================================================ */
-
-async function factoryResetCloud(){
-
-    if(
-        typeof window.handleCloudReset ===
-        "function"
-    ){
-
+/* FACTORY RESET CLOUD */
+async function factoryResetCloud() {
+    if (typeof window.handleCloudReset === "function") {
         return await window.handleCloudReset();
     }
-
-    alert(
-        "❌ Factory Reset function is not available. Please check config.js."
-    );
+    alert("❌ Factory Reset function is not available. Please check config.js.");
 }
 
+/* BACKUP ALL DATA (JSON) - Android + Folder Backup */
+async function backupAllData() {
+    try {
 
-/* ============================================================
-   BACKUP ALL DATA (JSON)
-============================================================ */
-
-async function backupAllData(){
-
-    try{
         const idbData = await idbGetAll();
         const allData = { ...idbData };
 
-        for(let i=0; i<localStorage.length; i++){
+        for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (!allData[key]) {
                 allData[key] = localStorage.getItem(key);
@@ -2946,185 +1342,147 @@ async function backupAllData(){
             data: allData
         };
 
-        const blob = new Blob(
-            [JSON.stringify(payload, null, 2)],
-            { type: "application/json" }
-        );
+        const jsonContent = JSON.stringify(payload, null, 2);
 
+        const fileName = "texfriend_erp_backup_" + new Date().toISOString().slice(0, 10) + ".json";
+
+        /* ANDROID NATIVE BACKUP */
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TexforeverStorage) {
+
+            const folderUri = localStorage.getItem("texfriend_selected_folder_uri");
+
+            if (!folderUri) {
+                alert("Please select backup folder first!");
+                if (typeof selectTexfriendFolder === "function") {
+                    await selectTexfriendFolder();
+                }
+                return;
+            }
+
+            const base64Data = btoa(unescape(encodeURIComponent(jsonContent)));
+
+            const result = await window.Capacitor.Plugins.TexforeverStorage.saveBackup({
+                fileName: fileName,
+                data: base64Data,
+                folderUri: folderUri
+            });
+
+            if (result && result.success) {
+                toast("ERP JSON Backup Saved Successfully!", true);
+                return;
+            }
+
+            throw new Error("Android JSON backup failed");
+        }
+
+        /* NORMAL WEB / DESKTOP BACKUP */
+        const blob = new Blob([jsonContent], { type: "application/json" });
         const url = URL.createObjectURL(blob);
+
         const a = document.createElement("a");
         a.href = url;
-        a.download = "texfriend_erp_backup_" + new Date().toISOString().slice(0,10) + ".json";
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         a.remove();
 
         setTimeout(() => URL.revokeObjectURL(url), 1000);
+
         toast("ERP JSON Backup Download Started!");
 
-    }catch(e){
+    } catch (e) {
         console.error("Backup Error:", e);
-        alert("Backup Error: " + e.message);
+        alert("Backup Error: " + (e.message || e));
     }
 }
 
-/* ============================================================
-   BACKUP ALL DATA AS EXCEL (CSV)
-   Android + Folder Backup
-============================================================ */
-
-async function backupAllDataAsExcel(){
-
-    try{
+/* BACKUP ALL DATA AS EXCEL (CSV) - Android + Folder Backup */
+async function backupAllDataAsExcel() {
+    try {
 
         const idbData = await idbGetAll();
         const allData = { ...idbData };
 
-        for(let i = 0; i < localStorage.length; i++){
-
+        for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-
-            if(!allData[key]){
+            if (!allData[key]) {
                 allData[key] = localStorage.getItem(key);
             }
         }
 
         let csvContent = "Key,Value\r\n";
 
-        for(const key of Object.keys(allData)){
+        for (const key of Object.keys(allData)) {
 
             let value = allData[key];
 
-            if(typeof value !== "string"){
+            if (typeof value !== "string") {
                 value = JSON.stringify(value);
             }
 
-            value = String(value)
-                .replace(/"/g, '""')
-                .replace(/\r?\n/g, ' ');
+            value = String(value).replace(/"/g, '""').replace(/\r?\n/g, ' ');
 
-            csvContent +=
-                '"' + String(key).replace(/"/g, '""') + '",' +
-                '"' + value + '"\r\n';
+            csvContent += '"' + String(key).replace(/"/g, '""') + '","' + value + '"\r\n';
         }
 
-        const fileName =
-            "texfriend_erp_backup_" +
-            new Date().toISOString().slice(0,10) +
-            ".csv";
+        const fileName = "texfriend_erp_backup_" + new Date().toISOString().slice(0, 10) + ".csv";
 
-        /* ====================================================
-           ANDROID NATIVE BACKUP
-        ==================================================== */
+        /* ANDROID NATIVE BACKUP */
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TexforeverStorage) {
 
-        if(
-            window.Capacitor &&
-            window.Capacitor.Plugins &&
-            window.Capacitor.Plugins.TexforeverStorage
-        ){
+            const folderUri = localStorage.getItem("texfriend_selected_folder_uri");
 
-            let folderUri =
-                localStorage.getItem("texforever_backup_folder_uri");
-
-            if(!folderUri){
-                folderUri =
-                    localStorage.getItem("texfriend_backup_folder_uri");
-            }
-
-            if(!folderUri){
-
+            if (!folderUri) {
                 toast("Please select backup folder first!", false);
-
-                if(typeof selectTexfriendFolder === "function"){
+                if (typeof selectTexfriendFolder === "function") {
                     selectTexfriendFolder();
                 }
-
                 return;
             }
 
-            const base64Data = btoa(
-                unescape(
-                    encodeURIComponent(csvContent)
-                )
-            );
+            const base64Data = btoa(unescape(encodeURIComponent(csvContent)));
 
-            const result =
-                await window.Capacitor.Plugins.TexforeverStorage.saveBackup({
-                    fileName: fileName,
-                    data: base64Data,
-                    folderUri: folderUri
-                });
+            const result = await window.Capacitor.Plugins.TexforeverStorage.saveBackup({
+                fileName: fileName,
+                data: base64Data,
+                folderUri: folderUri
+            });
 
-            if(result && result.success){
-
-                toast(
-                    "Excel/CSV Backup Saved Successfully!",
-                    true
-                );
-
+            if (result && result.success) {
+                toast("Excel/CSV Backup Saved Successfully!", true);
                 return;
             }
 
-            throw new Error(
-                "Android backup failed"
-            );
+            throw new Error("Android backup failed");
         }
 
-        /* ====================================================
-           NORMAL WEB / DESKTOP BACKUP
-        ==================================================== */
+        /* NORMAL WEB / DESKTOP BACKUP */
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
 
-        const blob = new Blob(
-            [csvContent],
-            { type: "text/csv;charset=utf-8" }
-        );
-
-        const url =
-            URL.createObjectURL(blob);
-
-        const link =
-            document.createElement("a");
-
+        const link = document.createElement("a");
         link.href = url;
         link.download = fileName;
-
         document.body.appendChild(link);
         link.click();
         link.remove();
 
-        setTimeout(
-            () => URL.revokeObjectURL(url),
-            1000
-        );
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-        toast(
-            "Excel/CSV Backup Download Started!",
-            true
-        );
+        toast("Excel/CSV Backup Download Started!", true);
 
-    }catch(e){
-
-        console.error(
-            "Excel Backup Error:",
-            e
-        );
-
-        alert(
-            "Excel Backup Error: " +
-            (e.message || e)
-        );
+    } catch (e) {
+        console.error("Excel Backup Error:", e);
+        alert("Excel Backup Error: " + (e.message || e));
     }
 }
 
-/* ============================================================
-   LOAD STORAGE JSON
-============================================================ */
-
-async function loadStorageDataToEditor(){
+/* LOAD STORAGE JSON */
+async function loadStorageDataToEditor() {
     const idbData = await idbGetAll();
     const allData = { ...idbData };
 
-    for(let i=0; i<localStorage.length; i++){
+    for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (!allData[key]) {
             allData[key] = localStorage.getItem(key);
@@ -3132,261 +1490,148 @@ async function loadStorageDataToEditor(){
     }
 
     const editor = $("advancedJsonEditor");
-    if(editor){
+
+    if (editor) {
         editor.value = JSON.stringify(allData, null, 2);
     }
 
     toast("Database Loaded into JSON Editor!");
 }
 
-
-/* ============================================================
-   SAVE STORAGE JSON
-============================================================ */
-
-async function saveStorageDataFromEditor(){
-
-    const editor =
-        $("advancedJsonEditor");
-
-    if(!editor){
-        return;
-    }
+/* SAVE STORAGE JSON */
+async function saveStorageDataFromEditor() {
+    const editor = $("advancedJsonEditor");
+    if (!editor) return;
 
     let parsed;
 
-    try{
-
-        parsed =
-            JSON.parse(
-                editor.value
-            );
-
-    }catch(e){
-
-        alert(
-            "Invalid JSON format!\n\nError: " +
-            e.message
-        );
-
+    try {
+        parsed = JSON.parse(editor.value);
+    } catch (e) {
+        alert("Invalid JSON format!\n\nError: " + e.message);
         return;
     }
 
-    if(
-        !parsed ||
-        typeof parsed !== "object" ||
-        Array.isArray(parsed)
-    ){
-
-        alert(
-            "JSON root must be an object."
-        );
-
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        alert("JSON root must be an object.");
         return;
     }
 
-    if(
-        !confirm(
-            "⚠️ Overwrite local database with these JSON changes?"
-        )
-    ){
-        return;
-    }
+    if (!confirm("⚠️ Overwrite local database with these JSON changes?")) return;
 
-    try{
+    try {
 
-        for(
-            const key of Object.keys(parsed)
-        ){
+        for (const key of Object.keys(parsed)) {
+
             const val = typeof parsed[key] === "string" ? parsed[key] : JSON.stringify(parsed[key]);
+
             localStorage.setItem(key, val);
             await idbSet(key, parsed[key]);
         }
 
-        if(window.supabaseSave && window.isCloudSyncActive && window.isCloudSyncActive()){
+        if (window.supabaseSave && window.isCloudSyncActive && window.isCloudSyncActive()) {
 
-            for(
-                const key of
-                (window.erpCloudKeys || [])
-            ){
+            for (const key of (window.erpCloudKeys || [])) {
 
-                if(!(key in parsed)){
-                    continue;
+                if (!(key in parsed)) continue;
+
+                let value = parsed[key];
+
+                if (typeof value === "string") {
+                    try {
+                        value = JSON.parse(value);
+                    } catch (e) {}
                 }
 
-                let value =
-                    parsed[key];
-
-                if(
-                    typeof value === "string"
-                ){
-
-                    try{
-
-                        value =
-                            JSON.parse(value);
-
-                    }catch(e){}
-                }
-
-                await window.supabaseSave(
-                    key,
-                    value
-                );
+                await window.supabaseSave(key, value);
             }
         }
 
-        toast(
-            "Database Updated Successfully!",
-            true,
-            function(){
+        toast("Database Updated Successfully!", true, function () {
+            location.reload();
+        });
 
-                location.reload();
-            }
-        );
-
-    }catch(e){
-
-        console.error(
-            "Database Save Error:",
-            e
-        );
-
-        alert(
-            "Database Save Error: " +
-            e.message
-        );
+    } catch (e) {
+        console.error("Database Save Error:", e);
+        alert("Database Save Error: " + e.message);
     }
 }
 
+/* INITIALISE SETTINGS */
+async function initialiseSettings() {
 
-/* ============================================================
-   INITIALISE SETTINGS
-============================================================ */
-
-async function initialiseSettings(){
-
-    if(settingsInitialized){
-        return;
-    }
+    if (settingsInitialized) return;
 
     settingsInitialized = true;
 
     try {
         const idbData = await idbGetAll();
+
         for (const key in idbData) {
             if (!localStorage.getItem(key)) {
-                localStorage.setItem(key, typeof idbData[key] === 'string' ? idbData[key] : JSON.stringify(idbData[key]));
+                localStorage.setItem(
+                    key,
+                    typeof idbData[key] === "string" ? idbData[key] : JSON.stringify(idbData[key])
+                );
             }
         }
-    } catch(e) {}
+    } catch (e) {}
 
-    if(!checkUserPermission()){
-
-        alert(
-            "Access Denied! You do not have permission to access settings. ❌"
-        );
-
-        location.href =
-            "dashboard.html";
-
+    if (!checkUserPermission()) {
+        alert("Access Denied! You do not have permission to access settings. ❌");
+        location.href = "dashboard.html";
         return;
     }
 
-
     /* HEADING */
-
-    const heading =
-        safeLoad(
-            "app_heading_name",
-            "TEXFRIEND FOREVER"
-        );
-
-    if($("set_heading")){
-
-        $("set_heading").value =
-            cleanInputText(heading);
+    const heading = safeLoad("app_heading_name", "TEXFRIEND FOREVER");
+    if ($("set_heading")) {
+        $("set_heading").value = cleanInputText(heading);
     }
-
 
     /* ADDRESS */
-
-    const address =
-        safeLoad(
-            "company_full_address",
-            "TEXFRIEND FOREVER ,Salem, Tamil Nadu."
-        );
-
-    if($("set_comp_addr")){
-
-        $("set_comp_addr").value =
-            String(address || "")
-                .replace(
-                    /\\n/g,
-                    "\n"
-                );
+    const address = safeLoad("company_full_address", "TEXFRIEND FOREVER ,Salem, Tamil Nadu.");
+    if ($("set_comp_addr")) {
+        $("set_comp_addr").value = String(address || "").replace(/\\n/g, "\n");
     }
 
-
     /* LOGO */
-
-    tempLogoData =
-        getStoredCompanyLogo();
-
-    showCompanyLogo(
-        tempLogoData
-    );
-
+    tempLogoData = getStoredCompanyLogo();
+    showCompanyLogo(tempLogoData);
 
     /* CLOUD AUTO-SYNC TOGGLE LOAD */
     const cloudToggle = $("cloudSyncToggle");
     if (cloudToggle) {
         const syncState = localStorage.getItem("erp_cloud_sync_enabled");
-        // default-ஆக ஆன் (true), பயனர் ஆப் செய்தால் மட்டுமே false
         cloudToggle.checked = (syncState !== "false");
     }
 
-    /* SUPABASE CONFIG */
-
-    if($("supabaseUrlInput")){
-        $("supabaseUrlInput").value = safeLoad("custom_supabase_url", "");
-    }
-    if($("supabaseKeyInput")){
-        $("supabaseKeyInput").value = safeLoad("custom_supabase_key", "");
+    /* COMMON DATABASE CONFIG */
+    if ($("databaseProviderInput")) {
+        $("databaseProviderInput").value = safeLoad("database_provider", "supabase");
     }
 
+    if ($("supabaseUrlInput")) {
+        $("supabaseUrlInput").value = safeLoad("database_server_url", safeLoad("custom_supabase_url", ""));
+    }
+
+    if ($("supabaseKeyInput")) {
+        $("supabaseKeyInput").value = safeLoad("database_api_key", safeLoad("custom_supabase_key", ""));
+    }
 
     /* OTHER DATA */
-
     loadDesignDropdownInSettings();
-
     loadPartyDropdown();
-
     loadUserPermissions();
-
     renderUsersTable();
 
-
-    status(
-        "⚙️ Settings ready"
-    );
+    status("⚙️ Settings ready");
 }
 
-
-/* ============================================================
-   DOM READY
-============================================================ */
-
-window.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-        initialiseSettings();
-
-    }
-);
-
+/* DOM READY */
+window.addEventListener("DOMContentLoaded", function () {
+    initialiseSettings();
+});
 </script>
-
 </body>
 </html>
