@@ -2649,24 +2649,26 @@ async function saveCompanyLogoSafely(){
 
     return cloudResult !== false;
 }
-
 function saveSupabaseConfig() {
+    const provider = $("databaseProviderInput").value;
     const url = $("supabaseUrlInput").value.trim();
     const key = $("supabaseKeyInput").value.trim();
 
     if (!url || !key) {
-        toast("Please enter both URL and Key!", false);
+        toast("Please enter Server URL and API Key!", false);
         return;
     }
 
     // Common Database Settings
-    safeSave("database_provider", "supabase");
+    safeSave("database_provider", provider);
     safeSave("database_server_url", url);
     safeSave("database_api_key", key);
 
     // Existing Supabase keys — compatibility
-    safeSave("custom_supabase_url", url);
-    safeSave("custom_supabase_key", key);
+    if (provider === "supabase") {
+        safeSave("custom_supabase_url", url);
+        safeSave("custom_supabase_key", key);
+    }
 
     saveCloudToggleState();
 
@@ -2674,6 +2676,7 @@ function saveSupabaseConfig() {
         window.location.reload();
     });
 }
+
 
 /* ============================================================
    SAVE ALL SETTINGS
