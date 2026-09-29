@@ -10,6 +10,36 @@ const fs = require('fs');
 
 let selectedStorageFolder = null;
 
+/* ------------------------------------------------------------
+   Remember the selected folder after app restart
+------------------------------------------------------------ */
+function configFilePath() {
+  return path.join(app.getPath('userData'), 'storage-config.json');
+}
+
+function loadSavedFolder() {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(configFilePath(), 'utf8'));
+    if (cfg && cfg.folder && fs.existsSync(cfg.folder)) {
+      selectedStorageFolder = cfg.folder;
+    }
+  } catch (e) {
+    /* no saved config yet */
+  }
+}
+
+function persistFolder() {
+  try {
+    fs.writeFileSync(
+      configFilePath(),
+      JSON.stringify({ folder: selectedStorageFolder }),
+      'utf8'
+    );
+  } catch (e) {
+    console.error('Could not save folder config:', e.message);
+  }
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
@@ -26,9 +56,13 @@ function createWindow() {
   win.loadFile('index.html');
 }
 
-// Select Storage Folder
-ipcMain.handle('select-storage-folder', async () => {
-  const result = await dialog.showOpenDialog({
+/* ------------------------------------------------------------
+   Select Storage Folder
+------------------------------------------------------------ */
+ipcMain.handle('select-storage-folder', async (event) => {
+  const parent = BrowserWindow.fromWebContents(event.sender);
+
+  const result = await dialog.showOpenDialog(parent, {
     title: 'Select TEXFOREVER Data Folder',
     properties: ['openDirectory', 'createDirectory']
   });
@@ -41,6 +75,7 @@ ipcMain.handle('select-storage-folder', async () => {
   }
 
   selectedStorageFolder = result.filePaths[0];
+  persistFolder();
 
   return {
     success: true,
@@ -48,7 +83,19 @@ ipcMain.handle('select-storage-folder', async () => {
   };
 });
 
-// Save ERP Data
+/* ------------------------------------------------------------
+   Get currently selected folder
+------------------------------------------------------------ */
+ipcMain.handle('get-storage-folder', async () => {
+  return {
+    success: !!selectedStorageFolder,
+    folder: selectedStorageFolder
+  };
+});
+
+/* ------------------------------------------------------------
+   Save ERP Data
+------------------------------------------------------------ */
 ipcMain.handle('save-erp-data', async (event, data) => {
   try {
     if (!selectedStorageFolder) {
@@ -58,12 +105,9 @@ ipcMain.handle('save-erp-data', async (event, data) => {
       };
     }
 
-    const filePath = path.join(
-      selectedStorageFolder,
-      'texforever_data.json'
-    );
+    const filePath = path.join(selectedStorageFolder, 'texforever_data.json');
 
-    fs.writeFileSync(
+    await fs.promises.writeFile(
       filePath,
       JSON.stringify(data, null, 2),
       'utf8'
@@ -83,7 +127,9 @@ ipcMain.handle('save-erp-data', async (event, data) => {
   }
 });
 
-// Load ERP Data
+/* ------------------------------------------------------------
+   Load ERP Data
+------------------------------------------------------------ */
 ipcMain.handle('load-erp-data', async () => {
   try {
     if (!selectedStorageFolder) {
@@ -93,10 +139,7 @@ ipcMain.handle('load-erp-data', async () => {
       };
     }
 
-    const filePath = path.join(
-      selectedStorageFolder,
-      'texforever_data.json'
-    );
+    const filePath = path.join(selectedStorageFolder, 'texforever_data.json');
 
     if (!fs.existsSync(filePath)) {
       return {
@@ -105,13 +148,11 @@ ipcMain.handle('load-erp-data', async () => {
       };
     }
 
-    const data = JSON.parse(
-      fs.readFileSync(filePath, 'utf8')
-    );
+    const raw = await fs.promises.readFile(filePath, 'utf8');
 
     return {
       success: true,
-      data
+      data: JSON.parse(raw)
     };
 
   } catch (error) {
@@ -122,7 +163,53 @@ ipcMain.handle('load-erp-data', async () => {
   }
 });
 
-app.whenReady().then(createWindow);
+/* ------------------------------------------------------------
+   Save Backup file (JSON / CSV) into the selected folder
+------------------------------------------------------------ */
+ipcMain.handle('save-backup', async (event, payload) => {
+  try {
+    if (!selectedStorageFolder) {
+      return {
+        success: false,
+        message: 'Please select a storage folder first'
+      };
+    }
+
+    if (!payload || !payload.fileName || typeof payload.content !== 'string') {
+      return {
+        success: false,
+        message: 'Invalid backup payload'
+      };
+    }
+
+    // path.basename blocks "../" path tricks
+    const safeName = path.basename(String(payload.fileName));
+    const filePath = path.join(selectedStorageFolder, safeName);
+
+    await fs.promises.writeFile(filePath, payload.content, 'utf8');
+
+    return {
+      success: true,
+      message: 'Backup saved successfully',
+      filePath
+    };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+});
+
+app.whenReady().then(() => {
+  loadSavedFolder();
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
