@@ -3380,16 +3380,22 @@ async function initialiseSettings(){
         // default-ஆக ஆன் (true), பயனர் ஆப் செய்தால் மட்டுமே false
         cloudToggle.checked = (syncState !== "false");
     }
+/* COMMON DATABASE CONFIG */
 
-    /* SUPABASE CONFIG */
+if ($("databaseProviderInput")) {
+    $("databaseProviderInput").value =
+        safeLoad("database_provider", "supabase");
+}
 
-    if($("supabaseUrlInput")){
-        $("supabaseUrlInput").value = safeLoad("custom_supabase_url", "");
-    }
-    if($("supabaseKeyInput")){
-        $("supabaseKeyInput").value = safeLoad("custom_supabase_key", "");
-    }
+if ($("supabaseUrlInput")) {
+    $("supabaseUrlInput").value =
+        safeLoad("database_server_url", safeLoad("custom_supabase_url", ""));
+}
 
+if ($("supabaseKeyInput")) {
+    $("supabaseKeyInput").value =
+        safeLoad("database_api_key", safeLoad("custom_supabase_key", ""));
+}
 
     /* OTHER DATA */
 
