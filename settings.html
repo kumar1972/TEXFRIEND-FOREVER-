@@ -2968,49 +2968,153 @@ async function backupAllData(){
     }
 }
 
-
 /* ============================================================
    BACKUP ALL DATA AS EXCEL (CSV)
+   Android + Folder Backup
 ============================================================ */
 
 async function backupAllDataAsExcel(){
+
     try{
+
         const idbData = await idbGetAll();
         const allData = { ...idbData };
 
-        for(let i=0; i<localStorage.length; i++){
+        for(let i = 0; i < localStorage.length; i++){
+
             const key = localStorage.key(i);
-            if (!allData[key]) {
+
+            if(!allData[key]){
                 allData[key] = localStorage.getItem(key);
             }
         }
 
-        let csvContent = "data:text/csv;charset=utf-8,Key,Value\r\n";
+        let csvContent = "Key,Value\r\n";
 
         for(const key of Object.keys(allData)){
+
             let value = allData[key];
+
             if(typeof value !== "string"){
                 value = JSON.stringify(value);
             }
-            value = '"' + value.replace(/"/g, '""').replace(/\n/g, ' ') + '"';
-            csvContent += '"' + key + '",' + value + "\r\n";
+
+            value = String(value)
+                .replace(/"/g, '""')
+                .replace(/\r?\n/g, ' ');
+
+            csvContent +=
+                '"' + String(key).replace(/"/g, '""') + '",' +
+                '"' + value + '"\r\n';
         }
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "texfriend_erp_backup_" + new Date().toISOString().slice(0,10) + ".csv");
+        const fileName =
+            "texfriend_erp_backup_" +
+            new Date().toISOString().slice(0,10) +
+            ".csv";
+
+        /* ====================================================
+           ANDROID NATIVE BACKUP
+        ==================================================== */
+
+        if(
+            window.Capacitor &&
+            window.Capacitor.Plugins &&
+            window.Capacitor.Plugins.TexforeverStorage
+        ){
+
+            let folderUri =
+                localStorage.getItem("texforever_backup_folder_uri");
+
+            if(!folderUri){
+                folderUri =
+                    localStorage.getItem("texfriend_backup_folder_uri");
+            }
+
+            if(!folderUri){
+
+                toast("Please select backup folder first!", false);
+
+                if(typeof selectTexfriendFolder === "function"){
+                    selectTexfriendFolder();
+                }
+
+                return;
+            }
+
+            const base64Data = btoa(
+                unescape(
+                    encodeURIComponent(csvContent)
+                )
+            );
+
+            const result =
+                await window.Capacitor.Plugins.TexforeverStorage.saveBackup({
+                    fileName: fileName,
+                    data: base64Data,
+                    folderUri: folderUri
+                });
+
+            if(result && result.success){
+
+                toast(
+                    "Excel/CSV Backup Saved Successfully!",
+                    true
+                );
+
+                return;
+            }
+
+            throw new Error(
+                "Android backup failed"
+            );
+        }
+
+        /* ====================================================
+           NORMAL WEB / DESKTOP BACKUP
+        ==================================================== */
+
+        const blob = new Blob(
+            [csvContent],
+            { type: "text/csv;charset=utf-8" }
+        );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+        link.download = fileName;
+
         document.body.appendChild(link);
         link.click();
         link.remove();
 
-        toast("Excel/CSV Backup Download Started!");
+        setTimeout(
+            () => URL.revokeObjectURL(url),
+            1000
+        );
+
+        toast(
+            "Excel/CSV Backup Download Started!",
+            true
+        );
+
     }catch(e){
-        console.error("Excel Backup Error:", e);
-        alert("Excel Backup Error: " + e.message);
+
+        console.error(
+            "Excel Backup Error:",
+            e
+        );
+
+        alert(
+            "Excel Backup Error: " +
+            (e.message || e)
+        );
     }
 }
-
 
 /* ============================================================
    LOAD STORAGE JSON
