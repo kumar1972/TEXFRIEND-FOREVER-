@@ -36,6 +36,7 @@ jobs:
           $package | ConvertTo-Json -Depth 100 | Set-Content package.json -Encoding UTF8
 
           Write-Host "Windows version set to $($package.version)"
+
       - name: Install dependencies
         run: npm install
 
@@ -54,9 +55,11 @@ jobs:
           Get-ChildItem -Path dist -Recurse
           Write-Host "================================"
 
-      - name: Upload Windows Installer
+      - name: Upload Windows Build
         uses: actions/upload-artifact@v4
         with:
-          name: TEXFOREVER-Windows-Setup
-          path: dist/*.exe
+          name: TEXFOREVER-Windows-Build
+          path: |
+            dist/*.exe
+            dist/win-unpacked/**
           if-no-files-found: error
