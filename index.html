@@ -911,6 +911,57 @@
             font-size: 13px;
             letter-spacing: 2px;
         }
+
+        /* Colorful animated loading line */
+        .splash-loader {
+            position: relative;
+            width: 200px;
+            height: 5px;
+            margin-top: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.10);
+            overflow: hidden;
+        }
+
+        .splash-loader::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -45%;
+            width: 45%;
+            height: 100%;
+            border-radius: 999px;
+
+            background: linear-gradient(
+                90deg,
+                #ef4444,
+                #f59e0b,
+                #fde047,
+                #22c55e,
+                #06b6d4,
+                #3b82f6,
+                #a855f7,
+                #ec4899,
+                #ef4444
+            );
+            background-size: 200% 100%;
+
+            box-shadow: 0 0 12px rgba(253, 224, 71, 0.6);
+
+            animation:
+                splashSlide 1.3s ease-in-out infinite,
+                splashColor 2.4s linear infinite;
+        }
+
+        @keyframes splashSlide {
+            0%   { left: -45%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes splashColor {
+            0%   { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
 /* =========================================================
    TEXFRIEND FOREVER — SUPREME ROYAL VISUAL FINISH
    Layered Glass • Cinematic Depth • Refined Micro UI
@@ -1981,9 +2032,11 @@ body::before,
 ========================================================= -->
 
 <div id="customSplash">
-    <img src="icon-512.png" alt="Texfriend FOREVER">
+    <img id="splashLogo" src="icon-512.png" alt="Texfriend FOREVER"
+         onerror="this.onerror=null;this.style.display='none';document.getElementById('splashFallback').style.display='block';">
+    <div id="splashFallback" style="display:none;font-size:64px;line-height:1;">👑</div>
     <h1>TEXFRIEND FOREVER</h1>
-    <p>Loading...</p>
+    <div class="splash-loader"></div>
 </div>
 
 <!-- =========================================================
@@ -2976,6 +3029,48 @@ body::before,
 
         initializeLogin();
 
+    }
+
+})();
+
+
+/* ============================================================
+   SPLASH LOGO (use saved company logo if available)
+============================================================ */
+
+(function () {
+
+    var img = document.getElementById("splashLogo");
+    var fallback = document.getElementById("splashFallback");
+
+    if (!img) return;
+
+    var keys = ["company_logo", "company_logo_base64", "logo"];
+
+    for (var i = 0; i < keys.length; i++) {
+
+        var v = null;
+
+        try {
+            v = localStorage.getItem(keys[i]);
+        } catch (e) {}
+
+        if (!v) continue;
+
+        v = v.trim()
+            .replace(/^["']|["']$/g, "")
+            .replace(/\\"/g, '"');
+
+        if (/^data:image\//i.test(v)) {
+
+            img.style.display = "";
+
+            if (fallback) fallback.style.display = "none";
+
+            img.src = v;
+
+            break;
+        }
     }
 
 })();
