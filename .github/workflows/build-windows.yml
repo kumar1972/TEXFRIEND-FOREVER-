@@ -23,12 +23,19 @@ jobs:
         run: |
           $package = Get-Content package.json -Raw | ConvertFrom-Json
 
-          $package.version = "1.0.1"
+          # Start from 1.0.1 and automatically increase the patch version
+          $runNumber = [int]${{ github.run_number }}
+          $patchVersion = $runNumber
+
+          if ($patchVersion -lt 1) {
+              $patchVersion = 1
+          }
+
+          $package.version = "1.0.$patchVersion"
 
           $package | ConvertTo-Json -Depth 100 | Set-Content package.json -Encoding UTF8
 
-          Write-Host "Windows version set to 1.0.1"
-
+          Write-Host "Windows version set to $($package.version)"
       - name: Install dependencies
         run: npm install
 
