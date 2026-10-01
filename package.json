@@ -40,7 +40,7 @@
           ]
         }
       ],
-      "icon": "assets/icon.ico"
+      "icon": "icon/icon.ico"
     },
     "nsis": {
       "oneClick": false,
