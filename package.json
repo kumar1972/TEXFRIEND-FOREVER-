@@ -4,9 +4,16 @@
   "description": "TexFriend Forever App",
   "author": "kumar1972",
   "main": "main.js",
-  "scripts": {
-    "build": "electron-builder"
   },
+  {
+  "scripts": {
+    "start": "electron .",
+    "build-windows": "electron-builder --win",
+    "build-windows-installer": "electron-builder --win nsis",
+    "build-android": "cordova build android",
+    "build-android-release": "cordova build android --release"
+  }
+}
   "devDependencies": {
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
