@@ -1,4 +1,5 @@
-name: Build Windows Setup
+
+name: Build Windows EXE
 
 on:
   workflow_dispatch:
@@ -9,7 +10,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -24,31 +24,61 @@ jobs:
       - name: Install Electron & Builder
         run: npm install --save-dev electron electron-builder
 
-      - name: Create Electron Files and Update Config
-        run: node scripts/setup-electron.js
       - name: Verify Setup
+        shell: pwsh
         run: |
-          echo "===== Checking Files ====="
-          if (Test-Path "main.js") { Write-Host "✓ main.js exists" } else { Write-Host "✗ main.js missing" }
-          if (Test-Path "index.html") { Write-Host "✓ index.html exists" } else { Write-Host "✗ index.html missing" }
-          if (Test-Path "package.json") { Write-Host "✓ package.json exists" } else { Write-Host "✗ package.json missing" }
+          Write-Host "===== Checking Files ====="
+
+          if (Test-Path "main.js") {
+            Write-Host "main.js exists"
+          } else {
+            throw "main.js missing"
+          }
+
+          if (Test-Path "preload.js") {
+            Write-Host "preload.js exists"
+          } else {
+            throw "preload.js missing"
+          }
+
+          if (Test-Path "index.html") {
+            Write-Host "index.html exists"
+          } else {
+            throw "index.html missing"
+          }
+
+          if (Test-Path "package.json") {
+            Write-Host "package.json exists"
+          } else {
+            throw "package.json missing"
+          }
 
       - name: Build Windows Installer
-        run: npm run build-windows-installer
+        run: npm run build
 
       - name: Rename EXE
+        shell: pwsh
         run: |
           $exeFiles = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse
+
+          if ($exeFiles.Count -eq 0) {
+            throw "No EXE file found in dist folder"
+          }
+
           foreach ($file in $exeFiles) {
-            $newName = Join-Path $file.Directory.FullName "TEXFRIEND TEXFOREVER Setup.exe"
-            Rename-Item -Path $file.FullName -NewName $newName -Force
-            Write-Host "Renamed: $newName"
+            $newName = Join-Path $file.Directory.FullName "TEXFOREVER Setup.exe"
+
+            if ($file.FullName -ne $newName) {
+              Rename-Item -Path $file.FullName -NewName "TEXFOREVER Setup.exe" -Force
+            }
+
+            Write-Host "Created: $newName"
           }
 
       - name: Upload Windows Setup
         uses: actions/upload-artifact@v4
         with:
-          name: windows-setup
+          name: TEXFOREVER-Windows
           path: dist/**/*.exe
           if-no-files-found: error
 
