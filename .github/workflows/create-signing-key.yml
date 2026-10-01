@@ -8,7 +8,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -32,17 +31,10 @@ jobs:
 
           echo "Signing key created."
 
-          keytool -list \
-            -v \
-            -keystore signing/texforever-release.jks \
-            -storepass texforever123
-
       - name: Convert keystore to Base64
         run: |
           base64 -w 0 signing/texforever-release.jks \
             > texforever-keystore-base64.txt
-
-          echo "Base64 keystore created."
 
       - name: Upload signing key
         uses: actions/upload-artifact@v4
