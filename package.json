@@ -1,3 +1,4 @@
+
 {
   "name": "texfriend-forever",
   "version": "1.0.0",
@@ -7,11 +8,11 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "dev": "electron .",
     "build-windows": "electron-builder --win --publish never",
     "build-windows-installer": "electron-builder --win nsis --publish never",
     "build-android": "cordova build android",
     "build-android-release": "cordova build android --release",
-    "dev": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
@@ -19,7 +20,8 @@
     "appId": "com.texfriend.forever",
     "productName": "TEXFRIEND FOREVER",
     "directories": {
-      "buildResources": "assets"
+      "buildResources": "assets",
+      "output": "dist"
     },
     "files": [
       "index.html",
@@ -27,10 +29,30 @@
       "js/**/*",
       "assets/**/*",
       "main.js",
-      "node_modules/**/*"
+      "package.json"
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
           "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TEXFRIEND FOREVER",
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12"
+  }
+}
