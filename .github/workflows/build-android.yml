@@ -86,8 +86,6 @@ jobs:
           gradle = Path("android/app/build.gradle")
           text = gradle.read_text()
 
-          # Current TEXFOREVER release starts at versionCode 3
-          # GitHub Actions run number is used to automatically increase it.
           version_code = max(3, int("${{ github.run_number }}") + 2)
 
           insert = f'''
@@ -501,42 +499,47 @@ jobs:
           find android/app/src/main/res -type f -name "ic_texforever*" -print
           echo "================================"
 
-      - name: Build APK
+      - name: Build Release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.TEXFOREVER_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.TEXFOREVER_KEY_ALIAS }}
         run: |
-          echo "===== CHECK ANDROID PROJECT ====="
-          pwd
-          ls -la
-          echo "==============================="
-
-          if [ ! -f "android/gradlew" ]; then
-            echo "ERROR: android/gradlew does not exist"
-            echo "===== ANDROID CONTENT ====="
-            find android -maxdepth 3 -type f -print 2>/dev/null || true
-            echo "============================"
-            exit 1
-          fi
-
           chmod +x android/gradlew
 
           cd android
 
-          echo "===== GRADLE WRAPPER FOUND ====="
-          ls -la gradlew
-          echo "================================"
-
           ./gradlew assembleRelease --stacktrace
 
-      - name: Rename APK
+      - name: Rename Release APK
         run: |
           mv android/app/build/outputs/apk/release/app-release.apk \
              android/app/build/outputs/apk/release/TEXFOREVER.apk
 
-      - name: Upload APK
+      - name: Build Developer Debug APK
+        run: |
+          cd android
+
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Rename Debug APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             android/app/build/outputs/apk/debug/TEXFOREVER-debug.apk
+
+      - name: Verify APK Files
+        run: |
+          echo "========== RELEASE APK =========="
+          ls -lh android/app/build/outputs/apk/release/TEXFOREVER.apk
+
+          echo ""
+          echo "========== DEBUG APK =========="
+          ls -lh android/app/build/outputs/apk/debug/TEXFOREVER-debug.apk
+
+      - name: Upload Android Developer Build
         uses: actions/upload-artifact@v4
         with:
-          name: TEXFOREVER-APK
-          path: "android/app/build/outputs/apk/release/TEXFOREVER.apk"
+          name: TEXFOREVER-Android-Developer
+          path: |
+            android/app/build/outputs/apk/release/TEXFOREVER.apk
+            android/app/build/outputs/apk/debug/TEXFOREVER-debug.apk
           if-no-files-found: error
