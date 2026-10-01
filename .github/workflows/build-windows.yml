@@ -45,7 +45,7 @@ jobs:
 
       - name: Build Windows Installer
         run: |
-          npm run build-windows-installer
+          npx electron-builder --win dir nsis --publish never
 
       - name: List Build Output
         shell: pwsh
