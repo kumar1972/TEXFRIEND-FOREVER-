@@ -1,6 +1,6 @@
 name: Create Android Signing Key
 
-on:
+"on":
   workflow_dispatch:
 
 jobs:
