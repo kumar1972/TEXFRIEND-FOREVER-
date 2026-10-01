@@ -36,7 +36,9 @@
         "arch": [
           "x64"
         ]
-      }
+      },
+      "icon": "icon-512.ico",
+      "artifactName": "TEXFOREVER Setup.${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
