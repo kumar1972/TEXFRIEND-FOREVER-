@@ -1,7 +1,7 @@
 {
-  "name": "texfriend-forever",
+  "name": "texforever",
   "version": "1.0.0",
-  "description": "TEXFRIEND FOREVER - Web Application",
+  "description": "TEXFOREVER - Web Application",
   "private": true,
   "homepage": "./",
   "main": "main.js",
@@ -11,7 +11,7 @@
 
     "build": "electron-builder --win nsis --publish never",
     "build-windows": "electron-builder --win --publish never",
-    "build-windows-installer": "electron-builder --win nsis --publish never",
+    "build-windows-installer": "electron-builder --win --publish never",
 
     "build-android": "cordova build android",
     "build-android-release": "cordova build android --release",
@@ -21,8 +21,8 @@
   },
 
   "build": {
-    "appId": "com.texfriend.forever",
-    "productName": "TEXFRIEND FOREVER",
+    "appId": "com.kumar.texforever",
+    "productName": "TEXFOREVER",
 
     "directories": {
       "output": "dist"
@@ -38,12 +38,20 @@
     ],
 
     "win": {
-      "target": {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      },
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "icon-512.ico",
       "artifactName": "TEXFOREVER Setup.${version}.${ext}"
     },
@@ -53,7 +61,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "TEXFRIEND FOREVER",
+      "shortcutName": "TEXFOREVER",
       "deleteAppDataOnUninstall": false
     }
   },
