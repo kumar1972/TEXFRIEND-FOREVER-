@@ -86,21 +86,27 @@ jobs:
           gradle = Path("android/app/build.gradle")
           text = gradle.read_text()
 
-          insert = '''
+          # Current TEXFOREVER release starts at versionCode 3
+          # GitHub Actions run number is used to automatically increase it.
+          version_code = max(3, int("${{ github.run_number }}") + 2)
+
+          insert = f'''
           
-          android {
-              defaultConfig {
-                  versionCode 3
+          android {{
+              defaultConfig {{
+                  versionCode {version_code}
                   versionName "1.0.2"
-              }
-          }
+              }}
+          }}
           '''
 
           gradle.write_text(text + insert)
 
-          print("Android version set:")
-          print("versionCode = 2")
-          print("versionName = 1.0.1")
+          print("================================")
+          print("TEXFOREVER Android Version")
+          print("versionCode =", version_code)
+          print("versionName = 1.0.2")
+          print("================================")
           PY
 
       - name: Set Custom App Icon
