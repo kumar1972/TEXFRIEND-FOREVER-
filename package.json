@@ -1,33 +1,36 @@
 {
-  "name": "texfriend-forever-app",
+  "name": "texfriend-forever",
   "version": "1.0.0",
-  "description": "TexFriend Forever App",
-  "author": "kumar1972",
+  "description": "TEXFRIEND FOREVER - Web Application",
+  "private": true,
+  "homepage": "./",
   "main": "main.js",
-  },
-  {
   "scripts": {
     "start": "electron .",
-    "build-windows": "electron-builder --win",
-    "build-windows-installer": "electron-builder --win nsis",
+    "build-windows": "electron-builder --win --publish never",
+    "build-windows-installer": "electron-builder --win nsis --publish never",
     "build-android": "cordova build android",
-    "build-android-release": "cordova build android --release"
-  }
-}
-  "devDependencies": {
-    "electron": "^31.0.0",
-    "electron-builder": "^24.13.3"
+    "build-android-release": "cordova build android --release",
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "build": {
     "appId": "com.texfriend.forever",
-    "productName": "TexFriend Forever",
-    "publish": null,
-    "win": {
-      "target": "nsis",
-      "icon": "icon-512.ico"
+    "productName": "TEXFRIEND FOREVER",
+    "directories": {
+      "buildResources": "assets"
     },
     "files": [
-      "**/*"
-    ]
-  }
-}
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "assets/**/*",
+      "main.js",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
