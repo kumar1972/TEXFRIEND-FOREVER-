@@ -8,6 +8,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
+    "build": "electron-builder --win nsis --publish never",
     "build-windows": "electron-builder --win --publish never",
     "build-windows-installer": "electron-builder --win nsis --publish never",
     "build-android": "cordova build android",
