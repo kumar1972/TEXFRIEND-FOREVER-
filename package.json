@@ -1,4 +1,3 @@
-
 {
   "name": "texfriend-forever",
   "version": "1.0.0",
@@ -20,7 +19,6 @@
     "appId": "com.texfriend.forever",
     "productName": "TEXFRIEND FOREVER",
     "directories": {
-      "buildResources": "assets",
       "output": "dist"
     },
     "files": [
@@ -32,15 +30,12 @@
       "package.json"
     ],
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "icon/icon.ico"
+      "target": {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
     },
     "nsis": {
       "oneClick": false,
