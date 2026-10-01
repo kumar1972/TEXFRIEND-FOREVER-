@@ -1,5 +1,4 @@
-
-name: Build Windows EXE
+name: Build Windows Setup
 
 on:
   workflow_dispatch:
@@ -10,82 +9,47 @@ jobs:
     runs-on: windows-latest
 
     steps:
+
       - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-    
+          node-version: 22
+
+      - name: Set Version
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+
+          $package.version = "1.0.1"
+
+          $package | ConvertTo-Json -Depth 100 | Set-Content package.json -Encoding UTF8
+
+          Write-Host "Windows version set to 1.0.1"
+
       - name: Install dependencies
         run: npm install
 
       - name: Install Electron & Builder
-        run: npm install --save-dev electron electron-builder
-
-      - name: Verify Setup
-        shell: pwsh
         run: |
-          Write-Host "===== Checking Files ====="
-
-          if (Test-Path "main.js") {
-            Write-Host "main.js exists"
-          } else {
-            throw "main.js missing"
-          }
-
-          if (Test-Path "preload.js") {
-            Write-Host "preload.js exists"
-          } else {
-            throw "preload.js missing"
-          }
-
-          if (Test-Path "index.html") {
-            Write-Host "index.html exists"
-          } else {
-            throw "index.html missing"
-          }
-
-          if (Test-Path "package.json") {
-            Write-Host "package.json exists"
-          } else {
-            throw "package.json missing"
-          }
+          npm install electron@^38.0.0 electron-builder@^26.0.0
 
       - name: Build Windows Installer
-        run: npm run build
+        run: |
+          npm run build-windows-installer
 
-      - name: Rename EXE
+      - name: List Build Output
         shell: pwsh
         run: |
-          $exeFiles = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse
+          Write-Host "===== WINDOWS BUILD OUTPUT ====="
+          Get-ChildItem -Path dist -Recurse
+          Write-Host "================================"
 
-          if ($exeFiles.Count -eq 0) {
-            throw "No EXE file found in dist folder"
-          }
-
-          foreach ($file in $exeFiles) {
-            $newName = Join-Path $file.Directory.FullName "TEXFOREVER Setup.exe"
-
-            if ($file.FullName -ne $newName) {
-              Rename-Item -Path $file.FullName -NewName "TEXFOREVER Setup.exe" -Force
-            }
-
-            Write-Host "Created: $newName"
-          }
-
-      - name: Upload Windows Setup
+      - name: Upload Windows Installer
         uses: actions/upload-artifact@v4
         with:
-          name: TEXFOREVER-Windows
-          path: dist/**/*.exe
+          name: TEXFOREVER-Windows-Setup
+          path: dist/*.exe
           if-no-files-found: error
-
-      - name: Create Release (if tagged)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dist/**/*.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
