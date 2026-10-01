@@ -26,7 +26,6 @@ jobs:
 
       - name: Create Electron Files and Update Config
         run: node scripts/setup-electron.js
-
       - name: Verify Setup
         run: |
           echo "===== Checking Files ====="
