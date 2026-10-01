@@ -78,6 +78,31 @@ jobs:
           rm -rf android
           npx cap add android
 
+      - name: Set Android Version
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          gradle = Path("android/app/build.gradle")
+          text = gradle.read_text()
+
+          insert = '''
+          
+          android {
+              defaultConfig {
+                  versionCode 2
+                  versionName "1.0.1"
+              }
+          }
+          '''
+
+          gradle.write_text(text + insert)
+
+          print("Android version set:")
+          print("versionCode = 2")
+          print("versionName = 1.0.1")
+          PY
+
       - name: Set Custom App Icon
         run: |
           sudo apt-get update
@@ -423,6 +448,36 @@ jobs:
         run: |
           npx cap sync android
 
+      - name: Configure Release Signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TEXFOREVER_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.TEXFOREVER_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TEXFOREVER_KEY_ALIAS }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/texforever-release.jks
+
+          cat >> android/app/build.gradle <<'EOF'
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file("texforever-release.jks")
+                      storePassword System.getenv("KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEYSTORE_PASSWORD")
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          EOF
+
+          echo "Release signing configuration added."
+
       - name: Verify WWW
         run: |
           echo ""
@@ -441,6 +496,9 @@ jobs:
           echo "================================"
 
       - name: Build APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.TEXFOREVER_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TEXFOREVER_KEY_ALIAS }}
         run: |
           echo "===== CHECK ANDROID PROJECT ====="
           pwd
@@ -463,16 +521,16 @@ jobs:
           ls -la gradlew
           echo "================================"
 
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease --stacktrace
 
       - name: Rename APK
         run: |
-          mv android/app/build/outputs/apk/debug/app-debug.apk \
-             "android/app/build/outputs/apk/debug/TEXFRIEND TEXFOREVER.apk"
+          mv android/app/build/outputs/apk/release/app-release.apk \
+             "android/app/build/outputs/apk/release/TEXFRIEND TEXFOREVER.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: "android/app/build/outputs/apk/debug/TEXFRIEND TEXFOREVER.apk"
+          name: app-release
+          path: "android/app/build/outputs/apk/release/TEXFRIEND TEXFOREVER.apk"
           if-no-files-found: error
