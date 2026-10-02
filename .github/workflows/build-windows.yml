@@ -25,11 +25,11 @@ jobs:
         run: npm install --save-dev electron electron-builder
 
       - name: Create Electron Main File
+        shell: pwsh
         run: |
-          $mainJs = @'
-          const { app, BrowserWindow, Menu } = require("electron");
-          const path = require("path");
-          const isDev = require("electron-is-dev");
+          $mainJs = @"
+          const { app, BrowserWindow, Menu } = require('electron');
+          const path = require('path');
 
           let mainWindow;
 
@@ -41,36 +41,27 @@ jobs:
               minHeight: 600,
               webPreferences: {
                 nodeIntegration: false,
-                contextIsolation: true,
-                preload: path.join(__dirname, "preload.js")
+                contextIsolation: true
               },
-              icon: path.join(__dirname, "assets/icon.ico")
+              icon: path.join(__dirname, 'assets/icon.ico')
             });
 
-            const startUrl = isDev
-              ? "http://localhost:3000"
-              : `file://$${path.join(__dirname, "../build/index.html")}`;
+            mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-            mainWindow.loadFile(path.join(__dirname, "index.html"));
-
-            if (isDev) {
-              mainWindow.webContents.openDevTools();
-            }
-
-            mainWindow.on("closed", () => {
+            mainWindow.on('closed', () => {
               mainWindow = null;
             });
           }
 
-          app.on("ready", createWindow);
+          app.on('ready', createWindow);
 
-          app.on("window-all-closed", () => {
-            if (process.platform !== "darwin") {
+          app.on('window-all-closed', () => {
+            if (process.platform !== 'darwin') {
               app.quit();
             }
           });
 
-          app.on("activate", () => {
+          app.on('activate', () => {
             if (mainWindow === null) {
               createWindow();
             }
@@ -78,156 +69,109 @@ jobs:
 
           const menu = Menu.buildFromTemplate([
             {
-              label: "File",
+              label: 'File',
               submenu: [
                 {
-                  label: "Exit",
-                  accelerator: "CmdOrCtrl+Q",
-                  click: () => {
-                    app.quit();
-                  }
+                  label: 'Exit',
+                  accelerator: 'CmdOrCtrl+Q',
+                  click: () => { app.quit(); }
                 }
-              ]
-            },
-            {
-              label: "Edit",
-              submenu: [
-                { role: "undo" },
-                { role: "redo" },
-                { type: "separator" },
-                { role: "cut" },
-                { role: "copy" },
-                { role: "paste" }
               ]
             }
           ]);
 
           Menu.setApplicationMenu(menu);
-          '@'
-          
+          "@
+
           Set-Content -Path "main.js" -Value $mainJs
+          Write-Host "main.js created successfully"
 
       - name: Create Preload File
+        shell: pwsh
         run: |
-          $preloadJs = @'
-          const { contextBridge } = require("electron");
+          $preloadJs = @"
+          const { contextBridge } = require('electron');
 
-          contextBridge.exposeInMainWorld("electron", {
+          contextBridge.exposeInMainWorld('electron', {
             version: () => process.version
           });
-          '@'
-          
+          "@
+
           Set-Content -Path "preload.js" -Value $preloadJs
+          Write-Host "preload.js created successfully"
 
-      - name: Update package.json for Electron
+      - name: Update package.json
+        shell: pwsh
         run: |
-          $packageJson = Get-Content "package.json" | ConvertFrom-Json
+          `$packageJson = Get-Content "package.json" -Raw | ConvertFrom-Json
           
-          $packageJson.main = "main.js"
-          $packageJson.homepage = "./"
+          `$packageJson.main = "main.js"
+          `$packageJson.homepage = "./"
           
-          if (-not $packageJson.build) {
-            $packageJson | Add-Member -NotePropertyName build -NotePropertyValue @{}
-          }
-          
-          $packageJson.build.appId = "com.kumar.texforever"
-          $packageJson.build.productName = "TEXFRIEND TEXFOREVER"
-          $packageJson.build.directories = @{ buildResources = "assets" }
-          $packageJson.build.files = @(
-            "index.html",
-            "css/**/*",
-            "js/**/*",
-            "assets/**/*",
-            "main.js",
-            "preload.js",
-            "node_modules/**/*"
-          )
-          
-          $packageJson.build.win = @{
-            target = @(
-              @{ target = "nsis"; arch = @("x64") },
-              @{ target = "portable"; arch = @("x64") }
+          `$build = @{
+            appId = "com.kumar.texforever"
+            productName = "TEXFRIEND TEXFOREVER"
+            directories = @{ buildResources = "assets" }
+            files = @(
+              "index.html",
+              "css/**/*",
+              "js/**/*",
+              "assets/**/*",
+              "main.js",
+              "preload.js",
+              "node_modules/**/*"
             )
+            win = @{
+              target = @(
+                @{ target = "nsis"; arch = @("x64") },
+                @{ target = "portable"; arch = @("x64") }
+              )
+            }
+            nsis = @{
+              oneClick = `$false
+              allowToChangeInstallationDirectory = `$true
+              createDesktopShortcut = `$true
+              createStartMenuShortcut = `$true
+              shortcutName = "TEXFRIEND TEXFOREVER"
+            }
           }
           
-          $packageJson.build.nsis = @{
-            oneClick = $false
-            allowToChangeInstallationDirectory = $true
-            createDesktopShortcut = $true
-            createStartMenuShortcut = $true
-            shortcutName = "TEXFRIEND TEXFOREVER"
-            installerIcon = "assets/icon.ico"
-            uninstallerIcon = "assets/icon.ico"
+          `$packageJson | Add-Member -NotePropertyName build -NotePropertyValue `$build -Force
+          
+          if (-not `$packageJson.scripts) {
+            `$packageJson | Add-Member -NotePropertyName scripts -NotePropertyValue @{}
           }
           
-          if (-not $packageJson.scripts) {
-            $packageJson | Add-Member -NotePropertyName scripts -NotePropertyValue @{}
-          }
+          `$packageJson.scripts.start = "electron ."
+          `$packageJson.scripts."build-windows" = "electron-builder --win"
+          `$packageJson.scripts."build-windows-installer" = "electron-builder --win nsis"
           
-          $packageJson.scripts.start = "electron ."
-          $packageJson.scripts.'build-windows' = "electron-builder --win"
-          $packageJson.scripts.'build-windows-installer' = "electron-builder --win nsis"
-          
-          $packageJson | ConvertTo-Json -Depth 10 | Set-Content "package.json"
+          `$packageJson | ConvertTo-Json -Depth 10 | Set-Content "package.json"
+          Write-Host "package.json updated"
 
-      - name: Verify Windows Build Setup
+      - name: Verify Setup
+        shell: pwsh
         run: |
-          echo "===== PROJECT FILES ====="
-          Get-ChildItem -Path "." -Depth 1
-          echo "========================="
+          Write-Host "===== Project Files ====="
+          Get-ChildItem -Path "." -Depth 1 | ForEach-Object { Write-Host $_.Name }
           
-          echo ""
-          echo "===== MAIN.JS ====="
-          if (Test-Path "main.js") {
-            echo "✓ main.js exists"
-          } else {
-            echo "✗ main.js missing"
-          }
-          echo "===================="
-          
-          echo ""
-          echo "===== INDEX.HTML ====="
-          if (Test-Path "index.html") {
-            echo "✓ index.html exists"
-          } else {
-            echo "✗ index.html missing"
-          }
-          echo "====================="
-          
-          echo ""
-          echo "===== PACKAGE.JSON BUILD CONFIG ====="
-          $packageJson = Get-Content "package.json" | ConvertFrom-Json
-          if ($packageJson.build) {
-            echo "✓ Build config exists"
-            echo "  productName: $($packageJson.build.productName)"
-            echo "  appId: $($packageJson.build.appId)"
-          } else {
-            echo "✗ Build config missing"
-          }
-          echo "====================================="
+          Write-Host "`n===== Checking Files ====="
+          if (Test-Path "main.js") { Write-Host "✓ main.js exists" } else { Write-Host "✗ main.js missing" }
+          if (Test-Path "index.html") { Write-Host "✓ index.html exists" } else { Write-Host "✗ index.html missing" }
+          if (Test-Path "package.json") { Write-Host "✓ package.json exists" } else { Write-Host "✗ package.json missing" }
 
       - name: Build Windows Installer
-        run: |
-          npm run build-windows-installer
-
-      - name: Check Build Output
-        run: |
-          echo "===== BUILD OUTPUT ====="
-          if (Test-Path "dist") {
-            Get-ChildItem -Path "dist" -Recurse
-          } else {
-            echo "✗ dist folder not found"
-          }
-          echo "========================"
+        run: npm run build-windows-installer
 
       - name: Rename EXE
+        shell: pwsh
         run: |
           $exeFiles = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse
           
           foreach ($file in $exeFiles) {
             $newName = Join-Path $file.Directory.FullName "TEXFRIEND TEXFOREVER Setup.exe"
-            Rename-Item -Path $file.FullName -NewName $newName
-            echo "Renamed to: $newName"
+            Rename-Item -Path $file.FullName -NewName $newName -Force
+            Write-Host "Renamed: $newName"
           }
 
       - name: Upload Windows Setup
