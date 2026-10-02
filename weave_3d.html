@@ -1313,7 +1313,6 @@ function getWarpTotalEnds() {
     let details = calculateYarnDetails("warp");
     if (details.totalYarns > 0) return details.totalYarns; 
     
-    // FIXED: Always read lines dynamically from DOM inputs if available to reflect live Warp Entry edits
     let dynamicTotal = 0;
     for(let i=1; i<=currentWarpCount; i++) {
         let e = $("wE" + i);
@@ -1521,7 +1520,6 @@ function loadSelectedDesign(){
         let dMasters = safeJSON("design_masters_data", []);
         let masterMatch = Array.isArray(dMasters) ? dMasters.find(m => cleanDesignName(designName(m)) === cleanName) : null;
 
-        // FIXED: Robustly load warp and weft lines from warp_entry_data & weft_entry_data first
         let rawWarp = [];
         let rawWeft = [];
         
@@ -1560,9 +1558,13 @@ function loadSelectedDesign(){
                 if(!rawWeft.length && masterMatch.weftLines) rawWeft = masterMatch.weftLines;
             }
         }
-        
-        if(!rawWarp.length) rawWarp = activeDesignObj.warpLines || activeDesignObj.warp || [];
-        if(!rawWeft.length) rawWeft = activeDesignObj.weftLines || activeDesignObj.weft || [];
+
+        if(!rawWarp.length && activeDesignObj.warpLines && activeDesignObj.warpLines.length > 0) {
+            rawWarp = activeDesignObj.warpLines;
+        }
+        if(!rawWeft.length && activeDesignObj.weftLines && activeDesignObj.weftLines.length > 0) {
+            rawWeft = activeDesignObj.weftLines;
+        }
         
         if(!rawWarp.length) rawWarp = [
             { color: '#1e3a8a', ends: 27, colourName: 'Navy', count: '21 ccc' },
@@ -1952,9 +1954,9 @@ function draw3DWeave(){
         const host = $("fsContent");
         if(!c || !host) return;
         
-        const rect = host.getBoundingClientRect();
-        const W = Math.max(320, Math.floor(rect.width)); 
-        const H = Math.max(240, Math.floor(rect.height));
+        let rect = host.getBoundingClientRect();
+        let W = Math.floor(rect.width) || window.innerWidth || 320; 
+        let H = Math.floor(rect.height) || (window.innerHeight - 120) || 240;
         const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
 
         if (c.width !== Math.floor(W * dpr) || c.height !== Math.floor(H * dpr)) {
@@ -2309,7 +2311,7 @@ function draw3DWeave(){
                     ctx.stroke();
                 }
                 ctx.restore();
-            } catch(e) { console.log(e); }
+            } catch(e) {}
         }
 
         const rulerBgColor = "#ffffff";
@@ -2424,11 +2426,12 @@ function openFullscreen() {
     modal.style.display="flex"; 
     document.body.style.overflow = "hidden";
     scale = 1; pointX = 0; pointY = 0; panning = false; 
+    drawFramePending = false;
     updateRulerCalDisplay();
-    requestAnimationFrame(()=>{ draw3DWeave(); }); 
+    setTimeout(() => { draw3DWeave(); }, 50); 
 }
 
-function refreshFullscreen3D() { scale = 1; pointX = 0; pointY = 0; draw3DWeave(); }
+function refreshFullscreen3D() { scale = 1; pointX = 0; pointY = 0; drawFramePending = false; draw3DWeave(); }
 
 function closeFullscreen() { 
     const modal = $("fsModal"); if(!modal) return; 
@@ -2875,7 +2878,7 @@ function executeRealA4Print() {
 
         const extraWeftCount = Math.max(1, Math.round(singleWeft.length * 0.25));
         const weft = [...singleWeft, ...singleWeft.slice(0, extraWeftCount)];
-        const weftYarnInfos = [...baseWarpYarnInfo, ...baseWarpYarnInfo.slice(0, extraWftCount)];
+        const weftYarnInfos = [...baseWeftYarnInfo, ...baseWeftYarnInfo.slice(0, extraWeftCount)];
 
         const realWarpLength = warp.length;
         const realWeftLength = weft.length;
@@ -2997,7 +3000,7 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, curW, edgeH);
+                        pCtx.fillRect(curX, y, edgeH, cellH);
                         pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                 } else {
@@ -3012,7 +3015,7 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, curW, edgeH);
+                        pCtx.fillRect(curX, y, edgeH, cellH);
                         pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                     if(curW >= 2.0) {
