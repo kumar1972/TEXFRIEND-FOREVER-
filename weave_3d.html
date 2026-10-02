@@ -414,9 +414,8 @@ input, select {
         color: #000000 !important; 
         padding: 0 !important; 
         margin: 0 !important; 
-        height: 100% !important; 
-        max-height: 100% !important;
-        overflow: hidden !important; 
+        height: auto !important; 
+        overflow: visible !important; 
     }
     .container, .header, .action-bar, .denting-tabs, .pm-form-box, .print-hide, .fs-modal, #fsModal, .colour-popup, #dentingModal, .cad-print-modal { 
         display: none !important; 
@@ -431,23 +430,20 @@ input, select {
         background-color: #ffffff !important;
         padding: 0 !important; 
         inset: auto !important; 
-        box-shadow: none !important;
-        height: 100% !important;
-        max-height: 100% !important;
-        overflow: hidden !important; 
+        box-shadow: none !important; 
     }
     .print-sheet { 
         box-shadow: none !important; 
         max-width: 100% !important; 
         width: 100% !important; 
-        max-height: 100% !important; 
-        height: 100% !important;
+        max-height: none !important; 
+        height: auto !important;
         margin: 0 !important; 
         padding: 0 !important; 
         border: none !important; 
         background: #ffffff !important; 
         background-color: #ffffff !important;
-        overflow: hidden !important; 
+        overflow: visible !important; 
     }
     .print-sheet-inner { 
         margin: 0 !important; 
@@ -456,9 +452,8 @@ input, select {
         box-shadow: none !important; 
         background: #ffffff !important; 
         background-color: #ffffff !important;
-        height: 100% !important;
-        max-height: 100% !important;
-        overflow: hidden !important; 
+        height: auto !important;
+        overflow: visible !important; 
     }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
@@ -478,7 +473,7 @@ input, select {
 .colour-popup { display: none; position: fixed; inset: 0; z-index: 9999999; background: #14251e; flex-direction: column; padding: 10px; overflow: hidden; }
 .colour-popup.active { display: flex !important; }
 .colour-popup-box { width: 100vw !important; max-width: none !important; height: 100vh !important; max-height: none !important; background: #14251e !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.colour-popup-head { display: flex align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
+.colour-popup-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
 .colour-popup-head b { color: #f59e0b; font-size: .95rem; }
 .colour-popup-close { background: #ef4444; border: 0; color: #fff; border-radius: 50%; width: 28px; height: 28px; font-weight: 900; font-size:0.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .search-box { width: calc(100% - 20px); padding: 8px; border-radius: 8px; border: 1px solid #395648; background: #0d1813; color: #fff; font-size: .8rem; margin: 10px; margin-top: 0; flex-shrink: 0; }
@@ -589,7 +584,7 @@ input, select {
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
             <div>
-                <label>⚙️ Denting</label>
+                <label>⚙️️ Denting</label>
                 <input type="text" id="dentingPatternInput" value="2" oninput="autoRefresh3D()" placeholder="Eg: 2">
             </div>
             <div>
@@ -2225,7 +2220,7 @@ function draw3DWeave(){
                     if(effectiveCellH >= 2.0) {
                         ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        ctx.fillRect(curX, y, edgeH, cellH);
+                        ctx.fillRect(curX, y, curW, edgeH);
                         ctx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                 } else {
@@ -2240,7 +2235,7 @@ function draw3DWeave(){
                     if(effectiveCellH >= 2.0) {
                         ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        ctx.fillRect(curX, y, edgeH, cellH);
+                        ctx.fillRect(curX, y, curW, edgeH);
                         ctx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                     if(effectiveCellW >= 2.0) {
@@ -2438,6 +2433,7 @@ function closeFullscreen() {
     modal.style.display="none"; 
     document.body.style.overflow = "";
     scale = 1; pointX = 0; pointY = 0; panning = false; lastDist = 0; 
+    drawFramePending = false;
 }
 
 let wasPinching = false;
@@ -2764,6 +2760,8 @@ function openCadPrintModal() {
 function closeCadPrintModal() { 
     const modal = $("cadPrintModal");
     if(modal) modal.style.display = "none"; 
+    document.body.style.overflow = "";
+    drawFramePending = false;
 }
 
 function updateCadPrintScale(val) {
@@ -2787,7 +2785,7 @@ function autoFitToA4() {
     updateCadPrintScale(fitVal);
 }
 
-function executeRealA4Print() {
+async function executeRealA4Print() {
     try {
         let baseWarp = []; let w_idx = 1; let warpSeerMap = []; let baseWarpYarnInfo = [];
         while(w_idx <= currentWarpCount){
@@ -3000,7 +2998,7 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.25)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, edgeH, cellH);
+                        pCtx.fillRect(curX, y, curW, edgeH);
                         pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                 } else {
@@ -3015,7 +3013,7 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, edgeH, cellH);
+                        pCtx.fillRect(curX, y, curW, edgeH);
                         pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                     if(curW >= 2.0) {
@@ -3151,7 +3149,7 @@ function executeRealA4Print() {
             }
         }
 
-        const dataURL = printCanvas.toDataURL("image/jpeg", 0.95);
+        const dataURL = printCanvas.toDataURL("image/png", 1.0);
         const ruler_mm = RULER_px / px_per_mm;
         const scaleFactor = selectedCadScalePercent / 100;
 
@@ -3160,42 +3158,69 @@ function executeRealA4Print() {
 
         const isPortrait = parseFloat(totalPrintH_cm) >= parseFloat(totalPrintW_cm);
 
-        const printWin = window.open("", "_blank", "width=950,height=1100");
-        if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
-
-        printWin.document.open();
-        printWin.document.write("<!DOCTYPE html>");
-        printWin.document.write('<html><head><meta charset="UTF-8"><title>3D Weave A4 Print</title>');
-        printWin.document.write(`
-            <style>
-                @page { size: A4 ${isPortrait ? "portrait" : "landscape"}; margin: 8mm; }
-                * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                html, body { margin: 0; padding: 0; background: #fff; width: 100%; height: 100%; font-family: sans-serif; }
-                body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-                .cad-header { font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #111; text-align: center; }
-                img { display: block; width: ${totalPrintW_cm}cm; height: ${totalPrintH_cm}cm; max-width: 100%; max-height: 94vh; object-fit: contain; border: 1px solid #e2e8f0; }
-            </style>
-        `);
-        printWin.document.write('</head><body>');
-        printWin.document.write(`<div class="cad-header">TEXFOREVER (Scale: ${selectedCadScalePercent}% = 1 Repeat: ${singleW_cm.toFixed(2)} × ${singleH_cm.toFixed(2)} cm)</div>`);
-        printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
-        printWin.document.write('</body></html>');
-        printWin.document.close();
-
-        const doPrint = function() {
-            printWin.focus();
-            printWin.print();
-        };
-
-        const img = printWin.document.getElementById("print3DImage");
-        if (img) {
-            img.onload = function() { setTimeout(doPrint, 250); };
+        // Native Printer moolam base64 image-ai print seiyyum murai
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Printer) {
+            try {
+                await window.Capacitor.Plugins.Printer.print({
+                    content: `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                        @page { size: A4 ${isPortrait ? "portrait" : "landscape"}; margin: 5mm; }
+                        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; width: 100%; height: 100vh; }
+                        img { max-width: 100%; max-height: 98vh; width: auto; height: auto; object-fit: contain; display: block; }
+                    </style></head><body>
+                        <img src="${dataURL}">
+                    </body></html>`
+                });
+                closeCadPrintModal();
+            } catch(err) {
+                alert("Native Print Error: " + err.message);
+                closeCadPrintModal();
+            }
         } else {
-            setTimeout(doPrint, 500);
+            // Normal browser popup (fallback)
+            const printWin = window.open("", "_blank", "width=950,height=1100");
+            if (!printWin) {
+                closeCadPrintModal();
+                return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
+            }
+
+            printWin.document.open();
+            printWin.document.write("<!DOCTYPE html>");
+            printWin.document.write('<html><head><meta charset="UTF-8"><title>3D Weave A4 Print</title>');
+            printWin.document.write(`
+                <style>
+                    @page { size: A4 ${isPortrait ? "portrait" : "landscape"}; margin: 8mm; }
+                    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    html, body { margin: 0; padding: 0; background: #fff; width: 100%; height: 100%; font-family: sans-serif; }
+                    body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                    .cad-header { font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #111; text-align: center; }
+                    img { display: block; width: ${totalPrintW_cm}cm; height: ${totalPrintH_cm}cm; max-width: 100%; max-height: 94vh; object-fit: contain; border: 1px solid #e2e8f0; }
+                </style>
+            `);
+            printWin.document.write('</head><body>');
+            printWin.document.write(`<div class="cad-header">TEXFOREVER (Scale: ${selectedCadScalePercent}% = 1 Repeat: ${singleW_cm.toFixed(2)} × ${singleH_cm.toFixed(2)} cm)</div>`);
+            printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
+            printWin.document.write('</body></html>');
+            printWin.document.close();
+
+            const doPrint = function() {
+                try {
+                    printWin.focus();
+                    printWin.print();
+                } catch(e) {}
+            };
+
+            const img = printWin.document.getElementById("print3DImage");
+            if (img) {
+                img.onload = function() { setTimeout(doPrint, 250); };
+            } else {
+                setTimeout(doPrint, 500);
+            }
+            closeCadPrintModal();
         }
-        closeCadPrintModal();
     } catch(e) {
         alert("Print Error: " + e.message);
+        closeCadPrintModal();
     }
 }
 
@@ -3231,16 +3256,65 @@ function closeGraphPrintPreview() {
     const modal = $("printModalBox");
     if (modal) {
         modal.style.display = "none";
-        document.body.style.overflow = "";
     }
+    document.body.style.overflow = "";
+    drawFramePending = false;
 }
 
-function triggerRealPrint() {
+// Print mudithu thirumba app-kku varum pothu scroll matrum view unlock aaga
+window.addEventListener("afterprint", () => {
+    document.body.style.overflow = "";
+    drawFramePending = false;
+    let pm = $("printModalBox");
+    if (pm && pm.style.display === "flex") {
+        pm.style.display = "none";
+    }
+});
+
+// Android print preview sheet-il irundhu back vandhadhum auto-unlock aaga
+window.addEventListener("focus", () => {
+    setTimeout(() => {
+        document.body.style.overflow = "";
+        drawFramePending = false;
+        let cModal = $("cadPrintModal");
+        if(cModal) cModal.style.display = "none";
+    }, 250);
+});
+
+async function triggerRealPrint() {
     const fs = $("fsModal");
     const wasFsOpen = fs && fs.style.display === "flex";
     if (wasFsOpen) fs.style.display = "none";
-    window.print();
-    if (wasFsOpen) fs.style.display = "flex";
+
+    // Capacitor Native Printer check
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Printer) {
+        try {
+            const printContent = $("printDesignContent").innerHTML;
+            await window.Capacitor.Plugins.Printer.print({
+                content: `<html><head><style>
+                    body { font-family: sans-serif; padding: 10px; color: #000; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #333; padding: 4px; text-align: center; }
+                </style></head><body>${printContent}</body></html>`
+            });
+        } catch (err) {
+            console.error("Native print error:", err);
+            window.print();
+        }
+    } else {
+        // Browser fallback
+        window.print();
+    }
+
+    // Print dialogue mudindhavudan scroll & display unlock
+    setTimeout(() => {
+        document.body.style.overflow = wasFsOpen ? "hidden" : "";
+        drawFramePending = false;
+        if (wasFsOpen) {
+            fs.style.display = "flex";
+            draw3DWeave();
+        }
+    }, 300);
 }
 
 function updatePrintOrientation() {
