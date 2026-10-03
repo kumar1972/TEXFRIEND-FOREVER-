@@ -1,11 +1,10 @@
-<!DOCTYPE html>
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>3D Warp & Weft Weave Simulator Pro</title>
 
-<!-- Supabase SDK -->
+<!-- Supabase SDK (Replaced Firebase SDKs) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="translator.js"></script>
@@ -293,16 +292,21 @@ input, select {
 
 .main-actions { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 6px; }
 .main-actions button { width: 100%; }
+.main-actions .wide { grid-column: 1 / -1; }
 
 /* FULLSCREEN DEDICATED PAGE — HIGH RESOLUTION ENGINE */
 .fs-modal { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; flex-direction: column; }
-.fs-modal.active { display: flex !important; }
 .fs-header { height: 48px; min-height: 48px; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; background: #14251e; border-bottom: 1px solid #345947; }
 .fs-title { color: #9be4a8; font-size: .85rem; font-weight: 900; }
 .fs-header-actions { display: flex; gap: 8px; align-items: center; }
 .fs-header button { border: 0; border-radius: 6px; padding: 6px 14px; color: #fff; font-weight: 800; font-size: .7rem; cursor: pointer; }
 .fs-content { flex: 1; width: 100vw; height: calc(100vh - 48px - 72px); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #060c09; touch-action: none; position: relative; }
-.fs-content canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.fs-content canvas { 
+    width: 100%; 
+    height: 100%; 
+    display: block; 
+    touch-action: none;
+}
 .fs-hint { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: rgba(20,37,30,.88); color: #b8d8bf; padding: 3px 10px; border-radius: 20px; font-size: .52rem; pointer-events: none; white-space: nowrap; z-index: 10; display:flex; align-items:center; gap:8px; }
 
 /* EFFECT BAR & SLIDERS */
@@ -368,24 +372,8 @@ input, select {
 .cad-scale-ctrl { margin-bottom: 15px; }
 .cad-scale-ctrl label { font-size: 0.75rem; color: #f59e0b; display: flex; justify-content: space-between; margin-bottom: 6px; }
 
-/* CAD IN-PAGE PRINT CONTAINER */
-#cadPrintAreaContainer {
-    display: none;
-}
-
 /* PRINT — PROFESSIONAL DESIGN SHEET */
-.print-modal { 
-    display: none; 
-    position: fixed; 
-    inset: 0; 
-    background: #ffffff; 
-    z-index: 1000000; 
-    justify-content: center; 
-    align-items: center; 
-    padding: 12px;
-    overflow-y: auto;
-}
-.print-modal.active { display: flex !important; }
+.print-modal { display:none; position:fixed; inset:0; background:#ffffff; z-index:1000000; justify-content:center; align-items:center; padding:12px; }
 .print-sheet { background:#fff; color:#101615; width:100%; max-width:860px; max-height:96vh; overflow:auto; border-radius:14px; box-shadow:0 22px 70px rgba(0,0,0,.45); border:1px solid #789485; }
 .print-toolbar { position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:linear-gradient(135deg,#123b2b,#1f6045); color:#fff; border-radius:14px 14px 0 0; }
 .print-toolbar-title { font-size:.82rem; font-weight:900; letter-spacing:.3px; }
@@ -400,6 +388,9 @@ input, select {
 .print-sheet-inner { margin:12px; background:#fff; border:1px solid #c9d4ce; box-shadow:0 4px 18px rgba(20,50,35,.10); padding:12px; }
 .print-section-title { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:950; color:#153c2c; border-bottom:1.5px solid #315847; padding:5px 0 4px; margin:7px 0 5px; letter-spacing:.2px; }
 .print-section-title .section-code { margin-left:auto; font-size:6.5px; color:#708078; font-weight:800; }
+.print-order-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(38px,1fr)); gap:3px; max-height:68px; overflow:hidden; }
+.print-order-item { border:1px solid #a8b7af; background:#fff; min-width:0; padding:3px 4px; text-align:center; font-size:8px; font-weight:900; border-radius:3px; line-height:1.05; }
+.print-order-item span { color:#65766d; font-size:6.5px !important; }
 .print-graph-wrap { text-align:center; margin-top:3px; padding:5px 0 2px; page-break-inside:avoid; break-inside:avoid; overflow-x:auto; max-width:100%; }
 .print-graph-table { border-collapse:collapse; margin:auto; color:#000; }
 .print-graph-table td { border:1px solid #3f4d46; width:var(--gcell,8mm); height:var(--gcell,8mm); min-width:var(--gcell,8mm); text-align:center; vertical-align:middle; font-size:var(--gfont,13px); font-weight:950; padding:0; background:#fff; }
@@ -419,11 +410,13 @@ input, select {
     @page { size: A4 portrait; margin: 6mm; }
     html, body { 
         background: #ffffff !important; 
+        background-color: #ffffff !important;
         color: #000000 !important; 
         padding: 0 !important; 
         margin: 0 !important; 
-        height: auto !important; 
-        overflow: visible !important; 
+        height: 100% !important; 
+        max-height: 100% !important;
+        overflow: hidden !important; 
     }
     .container, .header, .action-bar, .denting-tabs, .pm-form-box, .print-hide, .fs-modal, #fsModal, .colour-popup, #dentingModal, .cad-print-modal { 
         display: none !important; 
@@ -431,39 +424,41 @@ input, select {
         height: 0 !important;
         overflow: hidden !important; 
     }
-    body.is-cad-printing #cadPrintAreaContainer {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 100% !important;
-        min-height: 96vh !important;
-    }
-    body.is-cad-printing #cadPrintAreaContainer img {
-        display: block !important;
-        margin: auto !important;
-        max-width: 100% !important;
-    }
-    body.is-sheet-printing .print-modal { 
+    .print-modal { 
         display: block !important; 
         position: static !important; 
         background: #ffffff !important; 
+        background-color: #ffffff !important;
         padding: 0 !important; 
-        height: auto !important;
+        inset: auto !important; 
+        box-shadow: none !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important; 
     }
     .print-sheet { 
         box-shadow: none !important; 
         max-width: 100% !important; 
         width: 100% !important; 
+        max-height: 100% !important; 
+        height: 100% !important;
         margin: 0 !important; 
         padding: 0 !important; 
         border: none !important; 
+        background: #ffffff !important; 
+        background-color: #ffffff !important;
+        overflow: hidden !important; 
     }
     .print-sheet-inner { 
         margin: 0 !important; 
         padding: 0 !important; 
         border: none !important; 
         box-shadow: none !important; 
+        background: #ffffff !important; 
+        background-color: #ffffff !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important; 
     }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
@@ -483,7 +478,7 @@ input, select {
 .colour-popup { display: none; position: fixed; inset: 0; z-index: 9999999; background: #14251e; flex-direction: column; padding: 10px; overflow: hidden; }
 .colour-popup.active { display: flex !important; }
 .colour-popup-box { width: 100vw !important; max-width: none !important; height: 100vh !important; max-height: none !important; background: #14251e !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.colour-popup-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
+.colour-popup-head { display: flex align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; padding: 10px; padding-bottom: 0;}
 .colour-popup-head b { color: #f59e0b; font-size: .95rem; }
 .colour-popup-close { background: #ef4444; border: 0; color: #fff; border-radius: 50%; width: 28px; height: 28px; font-weight: 900; font-size:0.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .search-box { width: calc(100% - 20px); padding: 8px; border-radius: 8px; border: 1px solid #395648; background: #0d1813; color: #fff; font-size: .8rem; margin: 10px; margin-top: 0; flex-shrink: 0; }
@@ -626,7 +621,7 @@ input, select {
             <input type="checkbox" id="fsSeerCheck" onchange="syncEffects('seer')">
             <span>🌊 3D Seersucker Puff:</span>
             <input type="range" id="seerIntensity" min="5" max="100" value="50" oninput="debounce3DRender()" title="Seersucker 3D Wave Depth">
-            <span id="seerValDisplay" style="color:#f59e0b; min-width:38px;">50%</span>
+            <span id="seerValDisplay" style="color:#f59e0b; min-width:38px;">75%</span>
         </div>
         <div class="effect-group">
             <input type="checkbox" id="fsBrushCheck" onchange="syncEffects('brush')">
@@ -649,8 +644,8 @@ input, select {
     <div class="cad-print-box">
         <h3>🖨️ A4 CAD Print Options</h3>
         <div class="cad-info-pill">
-            <div><b>டிசைன் 1 Repeat அளவு:</b> <span id="cadOrigSizeDisp" style="color:#78d18a; font-weight:bold;">0 × 0 cm</span></div>
-            <div style="font-size: 0.65rem; color:#9fc5aa; margin-top:2px;">A4 தாளின் உச்சபட்ச அச்சு எல்லை: 19.0 × 26.5 cm</div>
+            <div><b>டிசைன் ஒரிஜினல் அளவு (100%):</b> <span id="cadOrigSizeDisp" style="color:#78d18a; font-weight:bold;">0 × 0 cm</span></div>
+            <div style="font-size: 0.65rem; color:#9fc5aa; margin-top:2px;">A4 தாளின் உச்சபட்ச அச்சு எல்லை: 19.5 × 27.5 cm</div>
         </div>
 
         <div class="cad-scale-ctrl">
@@ -665,8 +660,7 @@ input, select {
                 <span>100% (Original cm)</span>
             </div>
         </div>
-
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:#0d1813; padding:8px; border-radius:6px;">
+       <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:#0d1813; padding:8px; border-radius:6px;">
             <input type="checkbox" id="cadAutoRepeatFill" checked style="width:16px;height:16px;accent-color:#22c55e;">
             <label for="cadAutoRepeatFill" style="margin:0; font-size:0.7rem; color:#a9d6b2; cursor:pointer;">
                 🔁 Repeat to Fill A4 Sheet (முழு தாள் நிரம்ப ரிப்பீட் செய்யவும்)
@@ -676,18 +670,12 @@ input, select {
         <div style="font-size:0.72rem; color:#cfdfd5; margin-bottom:12px;">
             A4-ல் பிரிண்ட் ஆகும் அளவு: <b id="cadPrintSizeDisp" style="color:#45c765;">0 × 0 cm</b>
         </div>
-
+        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
             <button class="btn btn-green" onclick="executeRealA4Print()">🖨️ Print Now</button>
             <button class="btn btn-dark" onclick="closeCadPrintModal()">✖ Cancel</button>
         </div>
     </div>
-</div>
-
-<!-- DEDICATED CAD PRINT AREA -->
-<div id="cadPrintAreaContainer">
-    <div id="cadPrintTitleBar" style="font-size:12px; font-weight:bold; margin-bottom:8px; color:#111; text-align:center;">Texfriend 3D Weave Print Preview</div>
-    <img id="cadPrintRealImg" src="" alt="3D Weave Fabric" style="border: 1px solid #e2e8f0; display:block;">
 </div>
 
 <!-- PROFESSIONAL DESIGN SHEET PRINT PREVIEW -->
@@ -703,18 +691,15 @@ input, select {
                     <option value="portrait">A4 Portrait</option>
                     <option value="landscape">A4 Landscape</option>
                 </select>
-
                 <select id="printGraphScale" aria-label="Graph size" onchange="applyPrintGraphScale()">
                     <option value="small">Graph Small</option>
                     <option value="medium" selected>Graph Medium</option>
                     <option value="large">Graph Large</option>
                 </select>
-
-                <button type="button" class="print-preview-only" onclick="triggerRealPrint()">🖨 PRINT</button>
+                <button type="button" class="print-preview-only" onclick="triggerRealPrint()">🖨️ PRINT</button>
                 <button type="button" class="print-close" onclick="closeGraphPrintPreview()">✕ CLOSE</button>
             </div>
         </div>
-
         <div class="print-sheet-inner">
             <div id="printDesignContent"></div>
         </div>
@@ -851,6 +836,21 @@ function getLocalizedColorName(engName) {
     return base;
 }
 
+function getShadeName(hex, orig) {
+    if (orig && orig.trim() !== "") {
+        return getLocalizedColorName(orig);
+    }
+    let h = String(hex).toLowerCase();
+    if (typeof texfriendColourMaster !== 'undefined') {
+        for(let m of texfriendColourMaster) {
+            for(let s of m.shades) {
+                if(s.hex.toLowerCase() === h) return getLocalizedColorName(m.name);
+            }
+        }
+    }
+    return orig || "Custom";
+}
+
 function expandPattern(str) {
     if(!str) return [];
     let s = String(str).toLowerCase().replace(/\s+/g, '').replace(/[x×X*]/g, '*'); 
@@ -891,7 +891,7 @@ function designName(d) { return String(d?.designNo ?? d?.design_no ?? d?.designN
 function setStatus(x) { const el = $("designStatus"); if(el) el.textContent = x; }
 function escapeColourText(value) { return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
-/* ================= 60 TONE ADVANCED COLOUR MASTER ================= */
+/* ================= COMPREHENSIVE 60 TONE ADVANCED COLOUR MASTER ================= */
 const MASTER_COLOR_SPECS = [
     { name: "Green", h: 125, sMin: 65, sMax: 96, lMin: 18, lMax: 82 },
     { name: "P. Green", h: 95, sMin: 70, sMax: 98, lMin: 25, lMax: 84 },
@@ -1000,7 +1000,7 @@ function colorName(n) {
     return "#94a3b8"; 
 }
 
-/* ================= 2/40 & SEERSUCKER ENGINE ================= */
+/* ================= 2/40 & SEERSUCKER THICKNESS ENGINE ================= */
 function parseYarnInfo(countStr, nameStr, colStr) {
     let s = String(countStr || "").trim().toLowerCase();
     let n = String(nameStr || "").trim().toLowerCase();
@@ -1227,7 +1227,7 @@ function renderUIWithData(w=[], f=[]) {
                 if(m) countVal = m[0];
             }
             let countPrefix = countVal ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(countVal)}]</span>` : "";
-            let shadeTagBadge = x.shadeTag ? `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;" id="wShadeBadge${i+1}">${escapeColourText(x.shadeTag)}</span>` : `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;display:none;" id="wShadeBadge${i+1}"></span>`;
+            let shadeTagBadge = x.shadeTag ? `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;">${escapeColourText(x.shadeTag)}</span>` : "";
 
             wh += `<div>
                 <label>W${i+1}</label>
@@ -1256,7 +1256,7 @@ function renderUIWithData(w=[], f=[]) {
                 if(m) countVal = m[0];
             }
             let countPrefix = countVal ? `<span style="color:#f59e0b; font-size:0.72rem; font-weight:bold; margin-right:5px;">[${escapeColourText(countVal)}]</span>` : "";
-            let shadeTagBadge = x.shadeTag ? `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;" id="weftShadeBadge${i+1}">${escapeColourText(x.shadeTag)}</span>` : `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;display:none;" id="weftShadeBadge${i+1}"></span>`;
+            let shadeTagBadge = x.shadeTag ? `<span style="background:#2563eb;color:#fff;padding:1px 4px;border-radius:3px;font-size:0.58rem;margin-left:4px;">${escapeColourText(x.shadeTag)}</span>` : "";
 
             fh += `<div>
                 <label>Wft${i+1}</label>
@@ -1439,7 +1439,7 @@ async function importFromFirebase(manual = false) {
             }
         }
     } catch(e) {
-        setStatus("⚠ Error: " + e.message);
+        setStatus("⚠️ Error: " + e.message);
     }
 }
 
@@ -1579,6 +1579,9 @@ function loadSelectedDesign(){
         activeDesignObj.dentingPattern = dentVal;
         activeDesignObj.pickPattern = sourceObj.pickPattern || `(1-${weavePatterns.custom.length})`;
 
+        if(document.getElementById("dentingPatternInput")) document.getElementById("dentingPatternInput").value = dentVal;
+        if(document.getElementById("drawingPatternInput")) document.getElementById("drawingPatternInput").value = drawVal;
+
         let type = (matrixToUse && matrixToUse.length > 0) ? "custom" : (sourceObj.type || "custom");
         if(document.getElementById("weaveType")) document.getElementById("weaveType").value = type;
 
@@ -1645,8 +1648,8 @@ function getCurrentData() {
         }
     }
 
-    let dentP = activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
-    let drawP = activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4,5,6";
+    let dentP = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
+    let drawP = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4,5,6";
     let expandedDent = expandPattern(dentP).join(",");
     let expandedDraw = expandPattern(drawP).join(",");
 
@@ -1714,7 +1717,7 @@ function onWeaveChange() {
         if($("gridEditorSection")) $("gridEditorSection").style.display = "block";
         buildGridEditor();
     }
-    if($("fsModal")?.classList.contains('active')) {
+    if($("fsModal")?.style.display === "flex") {
         draw3DWeave();
     }
 }
@@ -1760,7 +1763,7 @@ function buildGridEditor() {
             cell.onclick = () => {
                 m[r][c] = m[r][c] ? 0 : 1;
                 buildGridEditor();
-                if($("fsModal")?.classList.contains('active')) draw3DWeave();
+                if($("fsModal")?.style.display === "flex") draw3DWeave();
             };
             rd.appendChild(cell);
         });
@@ -1776,7 +1779,10 @@ function buildGridEditor() {
 }
 function addCol() { weavePatterns.custom.forEach(r => r.push(0)); buildGridEditor(); draw3DWeave(); }
 function removeCol(c) { if(!weavePatterns.custom.length || weavePatterns.custom[0].length<=2) return; weavePatterns.custom.forEach(r => r.splice(c,1)); buildGridEditor(); draw3DWeave(); }
+function addRowTop() { let cols = weavePatterns.custom[0]?.length || 4; weavePatterns.custom.unshift(new Array(cols).fill(0)); buildGridEditor(); draw3DWeave(); }
 function removeRow(i) { if(weavePatterns.custom.length<=2) return; weavePatterns.custom.splice(i,1); buildGridEditor(); draw3DWeave(); }
+function removeLastRow() { removeRow(weavePatterns.custom.length-1); }
+function removeLastCol() { removeCol((weavePatterns.custom[0]?.length||1)-1); }
 
 /* ================= CANVAS 3D RENDER ENGINE ================= */
 let renderTimer = null;
@@ -1790,7 +1796,7 @@ function debounce3DRender() {
 }
 
 function autoRefresh3D() { 
-    if($("fsModal")?.classList.contains('active')) {
+    if($("fsModal")?.style.display === "flex") {
         debounce3DRender();
     }
 }
@@ -1994,6 +2000,7 @@ function draw3DWeave(){
         const singleWarp = baseWarp.slice(); 
         const singleWeft = baseWeft.slice();
         
+        // REPEAT 1.25 DESIGN (1 Repeat + 25% extra)[span_11](start_span)[span_11](end_span)
         const extraWarpCount = Math.max(1, Math.round(singleWarp.length * 0.25));
         const warp = [...singleWarp, ...singleWarp.slice(0, extraWarpCount)]; 
         const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, extraWarpCount)]; 
@@ -2013,6 +2020,7 @@ function draw3DWeave(){
         const physW_mm = (realWarpLength / reed) * 25.4; 
         const physH_mm = (realWeftLength / pick) * 25.4;
         
+        // EXACT 1 REPEAT DIMENSIONS FOR INFO BOX[span_12](start_span)[span_12](end_span)
         const singleWarpVal = singleWarp.length;
         const singleWeftVal = singleWeft.length;
         const singleW_mm = (singleWarpVal / reed) * 25.4;
@@ -2021,8 +2029,8 @@ function draw3DWeave(){
         const physH_cm = singleH_mm / 10;
         liveDesignDimensions = { widthCm: physW_cm, heightCm: physH_cm };
         
-        let rawDent = activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
-        let rawDraw = activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
+        let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
+        let rawDraw = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
         let dentArr = expandPattern(rawDent); if(!dentArr.length) dentArr = [2];
         let drawArr = expandPattern(rawDraw); if(!drawArr.length) drawArr = [1,2,3,4];
         
@@ -2036,6 +2044,8 @@ function draw3DWeave(){
         if(dentsRequired <= 0) dentsRequired = realWarpLength;
         
         const RULER = 32; 
+
+        // ================= EXACT STEEL RULER 1:1 CALIBRATION ENGINE =================
         const base_steel_ruler_px_per_mm = 6.29; 
         let px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier;
 
@@ -2044,6 +2054,10 @@ function draw3DWeave(){
         const drawW = Math.round(physW_mm * px_per_mm); 
         const drawH = Math.round(physH_mm * px_per_mm);
 
+        const totalBlockW = drawW + RULER;
+        const totalBlockH = drawH + RULER;
+        
+        // துணி திரையின் மையத்தில் அமரவும், ரூலருக்கு இடம் ஒதுக்கவுமான சரியான கணக்கீடு
         const left = -drawW / 2;
         const top = -drawH / 2;
         const bottom = top + drawH;
@@ -2053,11 +2067,11 @@ function draw3DWeave(){
         const cellH = drawH / Math.max(1, realWeftLength);
         
         const isSeerActive = $("fsSeerCheck")?.checked ?? false;
-        const rawSeer = parseInt($("seerIntensity")?.value || 50, 10);
+        const rawSeer = parseInt($("seerIntensity")?.value || 75, 10);
         if($("seerValDisplay")) $("seerValDisplay").textContent = rawSeer + "%";
 
         const isBrushActive = $("fsBrushCheck")?.checked || false;
-        const rawBrush = parseInt($("brushIntensity")?.value || 100, 10);
+        const rawBrush = parseInt($("brushIntensity")?.value || 60, 10);
         if($("brushValDisplay")) $("brushValDisplay").textContent = rawBrush + "%";
 
         const warpPositions = []; let endIndex = 0; let dentIndex = 0;
@@ -2239,22 +2253,25 @@ function draw3DWeave(){
                     ctx.stroke();
                 }
                 ctx.restore();
-            } catch(e) {}
+            } catch(e) { console.log(e); }
         }
 
         const rulerBgColor = "#ffffff";
         const rulerBorderColor = "#475569";
 
+        // கீழ் ரூலர்
         ctx.fillStyle = rulerBgColor; 
         ctx.fillRect(left, bottom, drawW, RULER); 
         ctx.strokeStyle = rulerBorderColor; 
         ctx.lineWidth = 1;
         ctx.strokeRect(left, bottom, drawW, RULER);
 
+        // இடது செங்குத்து ரூலர் (Left Vertical Ruler - துணியை ஒட்டியே நிற்கும்)
         ctx.fillStyle = rulerBgColor; 
         ctx.fillRect(left - RULER, top, RULER, drawH);  
         ctx.strokeRect(left - RULER, top, RULER, drawH);
 
+        // மூலை சதுரம்
         ctx.fillStyle = "#f1f5f9";
         ctx.fillRect(left - RULER, bottom, RULER, RULER);         
         ctx.strokeRect(left - RULER, bottom, RULER, RULER);
@@ -2262,6 +2279,7 @@ function draw3DWeave(){
         ctx.fillStyle = "#0f172a"; 
         ctx.font = "bold 9px Arial, sans-serif"; 
 
+        // கிடைமட்ட ரூலர் எண்கள் (Horizontal CM)
         const total_mm_x = Math.round(physW_mm);
         ctx.textAlign = "center"; 
         ctx.textBaseline = "top";
@@ -2284,6 +2302,7 @@ function draw3DWeave(){
             }
         }
 
+        // இடது செங்குத்து ரூலர் எண்கள் (Vertical CM - Left Ruler)
         const total_mm_y = Math.round(physH_mm);
         ctx.textAlign = "right"; 
         ctx.textBaseline = "middle";
@@ -2312,6 +2331,7 @@ function draw3DWeave(){
         ctx.font = "bold 10px Arial, sans-serif";
         ctx.fillText("cm", left - RULER / 2, bottom + RULER / 2);
 
+        // BOX DISPLAY: STRICTLY 1 REPEAT ORIGINAL DIMENSIONS[span_13](start_span)[span_13](end_span)
         const line1 = `Original Width : ${physW_cm.toFixed(2)} cm (${singleW_mm.toFixed(1)} mm/rep)`;
         const line2 = `Original Height: ${physH_cm.toFixed(2)} cm (${singleH_mm.toFixed(1)} mm/rep)`;
 
@@ -2342,10 +2362,10 @@ function draw3DWeave(){
     }); 
 }
 
-/* ================= FULLSCREEN & TOUCH EVENTS ================= */
+/* ================= ALL-OVER FULL SCREEN SCROLLING & PINCH ENGINE ================= */
 function openFullscreen() { 
     const modal = $("fsModal"); if(!modal) return; 
-    modal.classList.add('active');
+    modal.style.display="flex"; 
     document.body.style.overflow = "hidden";
     scale = 1; pointX = 0; pointY = 0; panning = false; 
     updateRulerCalDisplay();
@@ -2356,32 +2376,56 @@ function refreshFullscreen3D() { scale = 1; pointX = 0; pointY = 0; draw3DWeave(
 
 function closeFullscreen() { 
     const modal = $("fsModal"); if(!modal) return; 
-    modal.classList.remove('active');
+    modal.style.display="none"; 
     document.body.style.overflow = "";
     scale = 1; pointX = 0; pointY = 0; panning = false; lastDist = 0; 
 }
 
+let wasPinching = false;
+let touchMoved = false;
+let touchStartClientX = 0, touchStartClientY = 0;
 const fsContent = $("fsContent");
+
 if(fsContent) {
     fsContent.addEventListener("touchstart", e => { 
         if(e.touches.length === 1) { 
             panning = true; 
+            wasPinching = false;
+            touchMoved = false;
+            touchStartClientX = e.touches[0].clientX;
+            touchStartClientY = e.touches[0].clientY;
             startX = e.touches[0].clientX - pointX; 
             startY = e.touches[0].clientY - pointY; 
         } else if(e.touches.length >= 2) { 
             panning = false; 
-            lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
+            wasPinching = true; 
+            touchMoved = true;
+            lastDist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX, 
+                e.touches[0].clientY - e.touches[1].clientY
+            ); 
         } 
     }, {passive:false});
 
     fsContent.addEventListener("touchmove", e => { 
         e.preventDefault();
         if(e.touches.length === 1 && panning) { 
+            const dx = Math.abs(e.touches[0].clientX - touchStartClientX);
+            const dy = Math.abs(e.touches[0].clientY - touchStartClientY);
+            if(dx > 4 || dy > 4) touchMoved = true;
+
             pointX = e.touches[0].clientX - startX; 
             pointY = e.touches[0].clientY - startY; 
+
             autoRefresh3D(); 
-        } else if(e.touches.length >= 2) { 
-            let d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
+        }
+        else if(e.touches.length >= 2) { 
+            touchMoved = true;
+            wasPinching = true;
+            let d = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX, 
+                e.touches[0].clientY - e.touches[1].clientY
+            ); 
             if(lastDist && lastDist > 0) {
                 let factor = d / lastDist;
                 scale = Math.max(0.2, Math.min(15, scale * factor)); 
@@ -2391,7 +2435,20 @@ if(fsContent) {
         }
     }, {passive:false});
 
-    fsContent.addEventListener("touchend", () => { panning = false; lastDist = 0; });
+    fsContent.addEventListener("touchend", (e) => { 
+        if (e.touches.length === 0) {
+            panning = false; 
+            lastDist = 0; 
+            wasPinching = false;
+            touchMoved = false;
+        } else if (e.touches.length === 1) {
+            panning = true;
+            startX = e.touches[0].clientX - pointX;
+            startY = e.touches[0].clientY - pointY;
+            touchStartClientX = e.touches[0].clientX;
+            touchStartClientY = e.touches[0].clientY;
+        }
+    });
     
     fsContent.addEventListener("wheel", e => {
         e.preventDefault();
@@ -2401,9 +2458,17 @@ if(fsContent) {
     }, {passive:false});
 }
 
-document.addEventListener("keydown", e => { if(e.key==="Escape" && $("fsModal")?.classList.contains('active')) closeFullscreen(); });
+document.addEventListener("keydown", e => { if(e.key==="Escape" && $("fsModal")?.style.display==="flex") closeFullscreen(); });
 
-/* ================= SMART COLOR STUDIO POPUP (60 TONES) ================= */
+window.addEventListener("focus", () => {
+    let lastEdit = localStorage.getItem("last_edit_timestamp");
+    if (window._lastEditStamp !== lastEdit) {
+        window._lastEditStamp = lastEdit;
+        importFromFirebase(false);
+    }
+});
+
+/* ================= SMART COLOR STUDIO LOGIC (60 TONES) ================= */
 function setToneFilter(tone, btn) {
     currentToneFilter = tone;
     document.querySelectorAll('.tone-chip').forEach(el => el.classList.remove('active'));
@@ -2532,15 +2597,13 @@ function applySelectedColour() {
 
     function updateRowDisplay(inp, btn, disp, badge) {
         if(!inp) return;
+        // Keep the original colour name (e.g. "L. Pink") as-is; only the hex/shade tag change.
         let preservedName = inp.getAttribute("data-orig") || baseColorName;
         inp.value = newHex;
         inp.setAttribute("data-tag", shadeTagText);
 
         if (btn) btn.style.background = newHex;
-        if (badge) {
-            badge.textContent = shadeTagText;
-            badge.style.display = "inline-block";
-        }
+        if (badge) badge.textContent = shadeTagText;
         if (disp) {
             let localized = getLocalizedColorName(preservedName);
             let cnt = inp.getAttribute("data-cnt") || "";
@@ -2652,12 +2715,12 @@ function updateCadPrintScale(val) {
     const factor = selectedCadScalePercent / 100;
     const printW = (widthCm * factor).toFixed(2);
     const printH = (heightCm * factor).toFixed(2);
-    $("cadPrintSizeDisp").textContent = `${printW} × ${printH} cm (Single Repeat)`;
+    $("cadPrintSizeDisp").textContent = `${printW} × ${printH} cm`;
 }
 
 function autoFitToA4() {
     const { widthCm, heightCm } = liveDesignDimensions;
-    const maxW = 19.0, maxH = 26.5;
+    const maxW = 19.5, maxH = 27.5;
     let ratioW = (maxW / Math.max(0.1, widthCm)) * 100;
     let ratioH = (maxH / Math.max(0.1, heightCm)) * 100;
     let fitVal = Math.min(100, Math.floor(Math.min(ratioW, ratioH)));
@@ -2668,6 +2731,7 @@ function autoFitToA4() {
 
 function executeRealA4Print() {
     try {
+        // 1. முழு Warp & Weft நூல் விவரங்களை எடுத்தல்
         let baseWarp = []; let w_idx = 1; let warpSeerMap = []; let baseWarpYarnInfo = [];
         while(w_idx <= currentWarpCount){
             const co = $("wC"+w_idx); const e = $("wE"+w_idx); const sInp = $("wSpan"+w_idx); const rInp = $("wRep"+w_idx);
@@ -2750,27 +2814,15 @@ function executeRealA4Print() {
         const singleWarp = baseWarp.slice();
         const singleWeft = baseWeft.slice();
 
-        let shouldRepeat = $("cadAutoRepeatFill") ? $("cadAutoRepeatFill").checked : true;
-        let warp = [...singleWarp];
-        let seerMap = [...warpSeerMap];
-        let warpYarnInfos = [...baseWarpYarnInfo];
+        // 1 Repeat + 25% கூடுதல் Repeat (1.25 Repeats)
+        const extraWarpCount = Math.max(1, Math.round(singleWarp.length * 0.25));
+        const warp = [...singleWarp, ...singleWarp.slice(0, extraWarpCount)];
+        const seerMap = [...warpSeerMap, ...warpSeerMap.slice(0, extraWarpCount)];
+        const warpYarnInfos = [...baseWarpYarnInfo, ...baseWarpYarnInfo.slice(0, extraWarpCount)];
 
-        let weft = [...singleWeft];
-        let weftYarnInfos = [...baseWeftYarnInfo];
-
-        if(shouldRepeat) {
-            let targetEnds = 360;
-            let targetPicks = 480;
-            while(warp.length < targetEnds) {
-                warp.push(...singleWarp);
-                seerMap.push(...warpSeerMap);
-                warpYarnInfos.push(...baseWarpYarnInfo);
-            }
-            while(weft.length < targetPicks) {
-                weft.push(...singleWeft);
-                weftYarnInfos.push(...baseWeftYarnInfo);
-            }
-        }
+        const extraWeftCount = Math.max(1, Math.round(singleWeft.length * 0.25));
+        const weft = [...singleWeft, ...singleWeft.slice(0, extraWeftCount)];
+        const weftYarnInfos = [...baseWeftYarnInfo, ...baseWeftYarnInfo.slice(0, extraWeftCount)];
 
         const realWarpLength = warp.length;
         const realWeftLength = weft.length;
@@ -2779,12 +2831,15 @@ function executeRealA4Print() {
         let pick = parseFloat(activeDesignObj?.pick || activeDesignObj?.onloomPick || activeDesignObj?.finishedPick || activeDesignObj?.finishPick || activeDesignObj?.weftPick || activeDesignObj?.pickCount);
         if(!isFinite(reed) || reed <= 0) reed = 80; if(!isFinite(pick) || pick <= 0) pick = 74;
 
+        // 1.25 Repeat-க்கான முழுமையான mm அளவு
         const physW_mm = (realWarpLength / reed) * 25.4;
         const physH_mm = (realWeftLength / pick) * 25.4;
 
+        // 1 Repeat அசல் அளவு (Display-க்காக)
         const singleW_cm = ((singleWarp.length / reed) * 25.4) / 10;
         const singleH_cm = ((singleWeft.length / pick) * 25.4) / 10;
 
+        // உயர் தெளிவுத்திறன் ஸ்கேலிங்
         const base_steel_ruler_px_per_mm = 6.29;
         const printDpr = 2.0;
         const px_per_mm = base_steel_ruler_px_per_mm * rulerCalibrationMultiplier * printDpr;
@@ -2793,8 +2848,8 @@ function executeRealA4Print() {
         const printH = Math.round(physH_mm * px_per_mm);
         const RULER_px = Math.round(32 * printDpr);
 
-        let rawDent = activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
-        let rawDraw = activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
+        let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
+        let rawDraw = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
         let dentArr = expandPattern(rawDent); if(!dentArr.length) dentArr = [2];
         let drawArr = expandPattern(rawDraw); if(!drawArr.length) drawArr = [1,2,3,4];
 
@@ -2837,7 +2892,7 @@ function executeRealA4Print() {
         const pickSeq = getSimulationPicks(mRows, storedFormula);
 
         const isSeerActive = $("fsSeerCheck")?.checked ?? false;
-        const rawSeer = parseInt($("seerIntensity")?.value || 50, 10);
+        const rawSeer = parseInt($("seerIntensity")?.value || 75, 10);
         const puff = rawSeer / 100;
 
         const printCanvas = document.createElement("canvas");
@@ -2849,6 +2904,7 @@ function executeRealA4Print() {
         pCtx.fillStyle = "#ffffff";
         pCtx.fillRect(0, 0, printCanvas.width, printCanvas.height);
 
+        // 1. துணி நெசவு வரைதல் (1.25 Repeat முழுமை)
         for(let r = realWeftLength - 1; r >= 0; r--){
             const y = printH - ((r + 1) * cellH);
             const weftColor = weft[r % weft.length];
@@ -2907,7 +2963,7 @@ function executeRealA4Print() {
                     if(cellH >= 2.0) {
                         pCtx.fillStyle = "rgba(0, 0, 0, 0.28)";
                         const edgeH = Math.max(0.3, cellH * 0.12);
-                        pCtx.fillRect(curX, y, edgeH, cellH);
+                        pCtx.fillRect(curX, y, curW, edgeH);
                         pCtx.fillRect(curX, y + cellH - edgeH, curW, edgeH);
                     }
                     if(curW >= 2.0) {
@@ -2920,15 +2976,16 @@ function executeRealA4Print() {
             }
         }
 
+        // 2. Micro-Fibre Brush எஃபெக்ட்
         const isBrushActive = $("fsBrushCheck")?.checked || false;
-        const rawBrush = parseInt($("brushIntensity")?.value || 100, 10);
+        const rawBrush = parseInt($("brushIntensity")?.value || 60, 10);
         if(isBrushActive && rawBrush > 0){
             try {
                 let snap = document.createElement('canvas');
                 snap.width = printCanvas.width; snap.height = printCanvas.height;
                 let sCtx = snap.getContext('2d');
                 sCtx.drawImage(printCanvas, 0, 0);
-                let imgData = sCtx.getImageData(0, 0, snap.width, snap.height);
+                let imgData = sCtx.getImageData(0, 0, printCanvas.width, printCanvas.height);
 
                 pCtx.save();
                 pCtx.beginPath();
@@ -2966,33 +3023,39 @@ function executeRealA4Print() {
             } catch(e) {}
         }
 
+        // 3. STEEL RULER வரைதல் (கீழ் & இடது செங்குத்து அளவுகோல்)
         const rulerBgColor = "#ffffff";
         const rulerBorderColor = "#475569";
 
+        // கீழ் கிடைமட்ட ரூலர் பாக்ஸ்
         pCtx.fillStyle = rulerBgColor;
         pCtx.fillRect(RULER_px, printH, printW, RULER_px);
         pCtx.strokeStyle = rulerBorderColor;
         pCtx.lineWidth = 1 * printDpr;
         pCtx.strokeRect(RULER_px, printH, printW, RULER_px);
 
+        // இடது செங்குத்து ரூலர் பாக்ஸ்
         pCtx.fillStyle = rulerBgColor;
         pCtx.fillRect(0, 0, RULER_px, printH);
         pCtx.strokeStyle = rulerBorderColor;
         pCtx.lineWidth = 1 * printDpr;
         pCtx.strokeRect(0, 0, RULER_px, printH);
 
+        // இடது-கீழ் மூலை சதுரம்
         pCtx.fillStyle = "#f1f5f9";
         pCtx.fillRect(0, printH, RULER_px, RULER_px);
         pCtx.strokeStyle = rulerBorderColor;
         pCtx.lineWidth = 1 * printDpr;
         pCtx.strokeRect(0, printH, RULER_px, RULER_px);
 
+        // "cm" உரை
         pCtx.fillStyle = "#334155";
         pCtx.font = "bold " + Math.round(10 * printDpr) + "px Arial, sans-serif";
         pCtx.textAlign = "center";
         pCtx.textBaseline = "middle";
         pCtx.fillText("cm", RULER_px / 2, printH + RULER_px / 2);
 
+        // கீழ் கிடைமட்ட ரூலர் கோடுகள் & எண்கள் (Horizontal CM)
         const total_mm_x = Math.round(physW_mm);
         pCtx.textAlign = "center";
         pCtx.textBaseline = "top";
@@ -3002,256 +3065,111 @@ function executeRealA4Print() {
             const drawX = Math.floor(x) + 0.5;
             const isCm = (mm % 10 === 0);
             const isHalf = (mm % 5 === 0 && !isCm);
-function executeRealA4Print() {
-    try {
-        let baseWarp = []; let w_idx = 1; let warpSeerMap = []; let baseWarpYarnInfo = [];
-        while(w_idx <= currentWarpCount){
-            const co = $("wC"+w_idx); const e = $("wE"+w_idx); const sInp = $("wSpan"+w_idx); const rInp = $("wRep"+w_idx);
-            if(!co || !e){ w_idx++; continue; }
-            const n = Math.max(0, parseInt(e.value) || 0); const span = Math.max(1, parseInt(sInp?.value) || 1); const repeat = Math.max(1, parseInt(rInp?.value) || 1);
-            const origStr = (co.getAttribute("data-orig") || "").toLowerCase(); const hexVal = (co.value || "").toLowerCase(); const cntStr = (co.getAttribute("data-cnt") || "").toLowerCase();
-            const yInfo = parseYarnInfo(cntStr, origStr, hexVal);
-            const isSeer = yInfo.isSpecialSeer || isSeersuckerThread(hexVal, origStr, cntStr);
-            const rgbColor = hexToRgb(co.value);
-            if(span > 1 && repeat > 1){
-                const setSequence = []; const setSeerSeq = []; const setInfoSeq = [];
-                for(let s = 0; s < span; s++){
-                    const currIdx = w_idx + s; if(currIdx > currentWarpCount) break;
-                    const rCo = $("wC"+currIdx); const rE = $("wE"+currIdx);
-                    if(rCo && rE){
-                        const rN = Math.max(0, parseInt(rE.value) || 0); const rColor = hexToRgb(rCo.value);
-                        const rOrig = (rCo.getAttribute("data-orig") || "").toLowerCase(); const rHex = (rCo.value || "").toLowerCase(); const rCnt = (rCo.getAttribute("data-cnt") || "").toLowerCase();
-                        const rInfo = parseYarnInfo(rCnt, rOrig, rHex);
-                        const rIsSeer = rInfo.isSpecialSeer || isSeersuckerThread(rHex, rOrig, rCnt);
-                        for(let j = 0; j < rN; j++){ setSequence.push(rColor); setSeerSeq.push(rIsSeer); setInfoSeq.push(rInfo); }
-                    }
-                }
-                for(let rep = 0; rep < repeat; rep++){ 
-                    baseWarp.push(...setSequence); 
-                    warpSeerMap.push(...setSeerSeq); 
-                    baseWarpYarnInfo.push(...setInfoSeq);
-                }
-                w_idx += span;
-            } else {
-                if(n > 0){ 
-                    for(let j = 0; j < n; j++){ 
-                        baseWarp.push(rgbColor); 
-                        warpSeerMap.push(isSeer); 
-                        baseWarpYarnInfo.push(yInfo);
-                    } 
-                }
-                w_idx++;
+            const tickLen = (isCm ? 11 : (isHalf ? 7 : 4)) * printDpr;
+
+            pCtx.beginPath();
+            pCtx.moveTo(drawX, printH);
+            pCtx.lineTo(drawX, printH + tickLen);
+            pCtx.strokeStyle = isCm ? "#0f172a" : "#94a3b8";
+            pCtx.lineWidth = (isCm ? 1.2 : 0.8) * printDpr;
+            pCtx.stroke();
+
+            if(isCm && mm > 0){
+                pCtx.fillStyle = "#0f172a";
+                pCtx.font = "bold " + Math.round(9 * printDpr) + "px Arial, sans-serif";
+                pCtx.fillText(mm / 10, drawX, printH + 13 * printDpr);
             }
         }
 
-        let baseWeft = []; let f_idx = 1; let baseWeftYarnInfo = [];
-        while(f_idx <= currentWeftCount){
-            const co = $("weftC"+f_idx); const p = $("weftP"+f_idx); const sInp = $("weftSpan"+f_idx); const rInp = $("weftRep"+f_idx);
-            if(!co || !p){ f_idx++; continue; }
-            const n = Math.max(0, parseInt(p.value) || 0); const span = Math.max(1, parseInt(sInp?.value) || 1); const repeat = Math.max(1, parseInt(rInp?.value) || 1);
-            const cntStr = (co.getAttribute("data-cnt") || "").toLowerCase();
-            const yInfo = parseYarnInfo(cntStr, "", "");
-            const rgbColor = hexToRgb(co.value);
-            if(span > 1 && repeat > 1){
-                const setSequence = []; const setInfoSeq = [];
-                for(let s = 0; s < span; s++){
-                    const currIdx = f_idx + s; if(currIdx > currentWeftCount) break;
-                    const rCo = $("weftC"+currIdx); const rP = $("weftP"+currIdx);
-                    if(rCo && rP){
-                        const rN = Math.max(0, parseInt(rP.value) || 0); const rColor = hexToRgb(rCo.value);
-                        const rCnt = (rCo.getAttribute("data-cnt") || "").toLowerCase();
-                        const rInfo = parseYarnInfo(rCnt, "", "");
-                        for(let j = 0; j < rN; j++){ setSequence.push(rColor); setInfoSeq.push(rInfo); }
-                    }
-                }
-                for(let rep = 0; rep < repeat; rep++){ 
-                    baseWeft.push(...setSequence); 
-                    baseWeftYarnInfo.push(...setInfoSeq);
-                }
-                f_idx += span;
-            } else {
-                if(n > 0){ 
-                    for(let j = 0; j < n; j++){ 
-                        baseWeft.push(rgbColor); 
-                        baseWeftYarnInfo.push(yInfo);
-                    } 
-                }
-                f_idx++;
+        // இடது செங்குத்து ரூலர் கோடுகள் & எண்கள் (Vertical CM)
+        const total_mm_y = Math.round(physH_mm);
+        pCtx.textAlign = "right";
+        pCtx.textBaseline = "middle";
+        for(let mm = 0; mm <= total_mm_y; mm++){
+            const y = printH - (mm * px_per_mm);
+            if(y < -0.5) break;
+            const drawY = Math.floor(y) + 0.5;
+            const isCm = (mm % 10 === 0);
+            const isHalf = (mm % 5 === 0 && !isCm);
+            const tickLen = (isCm ? 11 : (isHalf ? 7 : 4)) * printDpr;
+
+            pCtx.beginPath();
+            pCtx.moveTo(RULER_px, drawY);
+            pCtx.lineTo(RULER_px - tickLen, drawY);
+            pCtx.strokeStyle = isCm ? "#0f172a" : "#94a3b8";
+            pCtx.lineWidth = (isCm ? 1.2 : 0.8) * printDpr;
+            pCtx.stroke();
+
+            if(isCm && mm > 0){
+                pCtx.fillStyle = "#0f172a";
+                pCtx.font = "bold " + Math.round(9 * printDpr) + "px Arial, sans-serif";
+                pCtx.fillText(mm / 10, RULER_px - 13 * printDpr, drawY);
             }
         }
 
-        if(!baseWarp.length){ baseWarp = [{r:30,g:58,b:138}, {r:255,g:255,b:255}]; warpSeerMap = [false, false]; baseWarpYarnInfo = [{thicknessMultiplier: 1.0, diameter_mm: 0.14}, {thicknessMultiplier: 1.0, diameter_mm: 0.14}]; }
-        if(!baseWeft.length){ baseWeft = [{r:239,g:68,b:68}, {r:30,g:58,b:138}]; baseWeftYarnInfo = [{thicknessMultiplier: 1.0, diameter_mm: 0.14}, {thicknessMultiplier: 1.0, diameter_mm: 0.14}]; }
+        const dataURL = printCanvas.toDataURL("image/jpeg", 0.95);
+        const ruler_mm = RULER_px / px_per_mm;
+        const scaleFactor = selectedCadScalePercent / 100;
 
-        const singleWarp = baseWarp.slice();
-        const singleWeft = baseWeft.slice();
+        // பிரிண்ட் தாளுக்கான துல்லியமான செ.மீ அளவு (ரூலருடன் சேர்த்து)
+        const totalPrintW_cm = (((physW_mm + ruler_mm) / 10) * scaleFactor).toFixed(2);
+        const totalPrintH_cm = (((physH_mm + ruler_mm) / 10) * scaleFactor).toFixed(2);
 
-        let shouldRepeat = $("cadAutoRepeatFill") ? $("cadAutoRepeatFill").checked : true;
-        let warp = [...singleWarp];
-        let seerMap = [...warpSeerMap];
-        let warpYarnInfos = [...baseWarpYarnInfo];
+        const isPortrait = parseFloat(totalPrintH_cm) >= parseFloat(totalPrintW_cm);
 
-        let weft = [...singleWeft];
-        let weftYarnInfos = [...baseWeftYarnInfo];
+        const printWin = window.open("", "_blank", "width=950,height=1100");
+        if (!printWin) return alert("Print window open ஆகவில்லை. Pop-up allow செய்யவும்.");
 
-        if(shouldRepeat) {
-            let targetEnds = 180;
-            let targetPicks = 240;
-            while(warp.length < targetEnds) {
-                warp.push(...singleWarp);
-                seerMap.push(...warpSeerMap);
-                warpYarnInfos.push(...baseWarpYarnInfo);
-            }
-            while(weft.length < targetPicks) {
-                weft.push(...singleWeft);
-                weftYarnInfos.push(...baseWeftYarnInfo);
-            }
+        printWin.document.open();
+        printWin.document.write("<!DOCTYPE html>");
+        printWin.document.write('<html><head><meta charset="UTF-8"><title>3D Weave A4 Print</title>');
+        printWin.document.write(`
+            <style>
+                @page { size: A4 ${isPortrait ? "portrait" : "landscape"}; margin: 8mm; }
+                * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                html, body { margin: 0; padding: 0; background: #fff; width: 100%; height: 100%; font-family: sans-serif; }
+                body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+                .cad-header { font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #111; text-align: center; }
+                img { display: block; width: ${totalPrintW_cm}cm; height: ${totalPrintH_cm}cm; max-width: 100%; max-height: 94vh; object-fit: contain; border: 1px solid #e2e8f0; }
+            </style>
+        `);
+        printWin.document.write('</head><body>');
+        printWin.document.write(`<div class="cad-header">Texfriend (Scale: ${selectedCadScalePercent}% = 1 Repeat: ${singleW_cm.toFixed(2)} × ${singleH_cm.toFixed(2)} cm)</div>`);
+        printWin.document.write('<img id="print3DImage" src="' + dataURL + '" alt="3D Weave">');
+        printWin.document.write('</body></html>');
+        printWin.document.close();
+
+        const doPrint = function() {
+            printWin.focus();
+            printWin.print();
+        };
+
+        const img = printWin.document.getElementById("print3DImage");
+        if (img) {
+            img.onload = function() { setTimeout(doPrint, 250); };
+        } else {
+            setTimeout(doPrint, 500);
         }
-
-        const realWarpLength = warp.length;
-        const realWeftLength = weft.length;
-
-        let reed = parseFloat(activeDesignObj?.finishedReed || activeDesignObj?.reed || activeDesignObj?.reedCount) || 80;
-        let pick = parseFloat(activeDesignObj?.pick || activeDesignObj?.onloomPick || activeDesignObj?.finishedPick || activeDesignObj?.finishPick || activeDesignObj?.weftPick || activeDesignObj?.pickCount) || 74;
-
-        const physW_mm = (realWarpLength / reed) * 25.4;
-        const physH_mm = (realWeftLength / pick) * 25.4;
-
-        const singleW_cm = ((singleWarp.length / reed) * 25.4) / 10;
-        const singleH_cm = ((singleWeft.length / pick) * 25.4) / 10;
-
-        const printDpr = 1.25; 
-        const px_per_mm = 5.0 * printDpr;
-
-        const printW = Math.round(physW_mm * px_per_mm);
-        const printH = Math.round(physH_mm * px_per_mm);
-        const RULER_px = Math.round(24 * printDpr);
-
-        let rawDent = activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
-        let rawDraw = activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
-        let dentArr = expandPattern(rawDent); if(!dentArr.length) dentArr = [2];
-        let drawArr = expandPattern(rawDraw); if(!drawArr.length) drawArr = [1,2,3,4];
-
-        let dentsRequired = 0; let endsRemaining = realWarpLength; let dIdx = 0;
-        while(endsRemaining > 0) {
-            const patternValue = Math.max(0, parseInt(dentArr[dIdx % dentArr.length]) || 0);
-            dentsRequired++;
-            if(patternValue > 0) { endsRemaining -= Math.min(patternValue, endsRemaining); }
-            dIdx++; if(dIdx > 50000) break;
-        }
-        if(dentsRequired <= 0) dentsRequired = realWarpLength;
-
-        const dentWidthPx = printW / Math.max(1, dentsRequired);
-        const cellH = printH / Math.max(1, realWeftLength);
-
-        const warpPositions = []; let endIndex = 0; let dentIndex = 0;
-        while(endIndex < realWarpLength && dentIndex < dentsRequired){
-            const requestedEnds = Math.max(0, parseInt(dentArr[dentIndex % dentArr.length]) || 0);
-            const x = RULER_px + (dentIndex * dentWidthPx);
-            if(requestedEnds === 0) {
-                warpPositions.push({ colIndex: -1, x, w: dentWidthPx, isEmpty: true });
-            } else {
-                const actualEnds = Math.min(requestedEnds, realWarpLength - endIndex);
-                const baseYarnW = dentWidthPx / Math.max(1, actualEnds);
-                for(let e = 0; e < actualEnds; e++) {
-                    warpPositions.push({ colIndex: endIndex, x: x + e * baseYarnW, w: baseYarnW, isEmpty: false });
-                    endIndex++;
-                }
-            }
-            dentIndex++;
-        }
-
-        let type = $("weaveType")?.value || "custom";
-        let mRows = (weavePatterns.custom && weavePatterns.custom.length) ? weavePatterns.custom.length : 4;
-        let storedFormula = activeDesignObj?.pickPattern || "";
-        const pickSeq = getSimulationPicks(mRows, storedFormula);
-
-        const printCanvas = document.createElement("canvas");
-        printCanvas.width = printW + RULER_px;
-        printCanvas.height = printH + RULER_px;
-        const pCtx = printCanvas.getContext("2d");
-        pCtx.imageSmoothingEnabled = false;
-
-        pCtx.fillStyle = "#ffffff";
-        pCtx.fillRect(0, 0, printCanvas.width, printCanvas.height);
-
-        for(let r = realWeftLength - 1; r >= 0; r--){
-            const y = printH - ((r + 1) * cellH);
-            const weftColor = weft[r % weft.length];
-
-            for(let wpIdx = 0; wpIdx < warpPositions.length; wpIdx++){
-                const wp = warpPositions[wpIdx];
-                if(wp.isEmpty) continue;
-
-                const up = isWarpUp(r, wp.colIndex, type, drawArr, pickSeq);
-                const warpColor = warp[wp.colIndex % warp.length];
-
-                if(up) {
-                    pCtx.fillStyle = shadeFast(warpColor.r, warpColor.g, warpColor.b, 0.95);
-                    pCtx.fillRect(wp.x, y, wp.w, cellH);
-                } else {
-                    pCtx.fillStyle = shadeFast(weftColor.r, weftColor.g, weftColor.b, 0.90);
-                    pCtx.fillRect(wp.x, y, wp.w, cellH);
-                }
-            }
-        }
-
-        // Draw rulers
-        pCtx.fillStyle = "#ffffff";
-        pCtx.fillRect(RULER_px, printH, printW, RULER_px);
-        pCtx.fillRect(0, 0, RULER_px, printH);
-        pCtx.strokeStyle = "#475569";
-        pCtx.lineWidth = 1;
-        pCtx.strokeRect(RULER_px, printH, printW, RULER_px);
-        pCtx.strokeRect(0, 0, RULER_px, printH);
-
-        const dataURL = printCanvas.toDataURL("image/jpeg", 0.85); // Light JPEG format prevents memory lock
-        let imgTag = $("cadPrintRealImg");
-        imgTag.src = dataURL;
-        imgTag.style.width = "18cm";
-        imgTag.style.height = "auto";
-
         closeCadPrintModal();
-        document.body.classList.add("is-cad-printing");
-
-        setTimeout(() => {
-            window.print();
-            setTimeout(() => {
-                document.body.classList.remove("is-cad-printing");
-            }, 800);
-        }, 100);
-
     } catch(e) {
         alert("Print Error: " + e.message);
     }
 }
 
+
 function printDesign() {
     try {
         const modal = $("printModalBox");
         const container = $("printDesignContent");
-
         if (!modal || !container) {
             alert("Print template container கிடைக்கவில்லை.");
             return;
         }
-
-        if (!window._printPreviewHistoryOpen) {
-            history.pushState(
-                { texforeverPrintPreview: true },
-                "",
-                window.location.href
-            );
-            window._printPreviewHistoryOpen = true;
-        }
-
         container.innerHTML = buildDesignPrintContent();
         applyPrintGraphScale();
-
-        modal.classList.add('active');
+        modal.style.display = "flex";
         document.body.style.overflow = "hidden";
-
-    } catch (err) {
+    } catch(err) {
         console.error("Print Design Error:", err);
         alert("Print error: " + err.message);
     }
@@ -3260,57 +3178,26 @@ function printDesign() {
 function applyPrintGraphScale() {
     const box = $("printDesignContent");
     if (!box) return;
-
-    const sizes = {
-        small: ["5mm", "9px"],
-        medium: ["8mm", "13px"],
-        large: ["11mm", "18px"]
-    };
-
-    const v =
-        sizes[$("printGraphScale")?.value] ||
-        sizes.medium;
-
+    const sizes = { small: ["5mm","9px"], medium: ["8mm","13px"], large: ["11mm","18px"] };
+    const v = sizes[$("printGraphScale")?.value] || sizes.medium;
     box.style.setProperty("--gcell", v[0]);
     box.style.setProperty("--gfont", v[1]);
 }
 
-function closeGraphPrintPreview(fromPopState = false) {
+function closeGraphPrintPreview() {
     const modal = $("printModalBox");
-
     if (modal) {
-        modal.classList.remove('active');
+        modal.style.display = "none";
         document.body.style.overflow = "";
-    }
-
-    if (window._printPreviewHistoryOpen) {
-        window._printPreviewHistoryOpen = false;
-
-        if (!fromPopState) {
-            history.back();
-        }
     }
 }
 
-window.addEventListener("popstate", function () {
-    if (window._printPreviewHistoryOpen) {
-        closeGraphPrintPreview(true);
-    }
-});
-
 function triggerRealPrint() {
-    document.body.classList.add("is-sheet-printing");
-    setTimeout(() => {
-        try {
-            window.print();
-        } catch (e) {
-            console.error("Print Preview Error:", e);
-        } finally {
-            setTimeout(() => {
-                document.body.classList.remove("is-sheet-printing");
-            }, 1000);
-        }
-    }, 80);
+    const fs = $("fsModal");
+    const wasFsOpen = fs && fs.style.display === "flex";
+    if (wasFsOpen) fs.style.display = "none";
+    window.print();
+    if (wasFsOpen) fs.style.display = "flex";
 }
 
 function updatePrintOrientation() {
@@ -3397,6 +3284,7 @@ function buildPrintGraph(m, pickStr) {
     return html;
 }
 
+// PRINT TABLE - STRICTLY SHOWING ORIGINAL COLOR NAME ONLY[span_14](start_span)[span_14](end_span)
 function buildWarpTable(lines, drawArr) {
     if(!lines || !lines.length) return "<div style='font-size:8px;text-align:center;padding:5px;border:1px solid #ccc;'>No Yarns</div>";
     
@@ -3531,8 +3419,11 @@ function buildDesignPrintContent() {
     const data = getCurrentData();
     const dName = activeDesignObj ? designName(activeDesignObj) : ($("activeDesignText")?.textContent || "Design");
     
-    const dentArr = expandPattern(activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2");
-    const drawArr = expandPattern(activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4");
+    let rawDent = $("dentingPatternInput")?.value || activeDesignObj?.dentingPatternFormula || activeDesignObj?.dentingPattern || "2";
+    let rawDraw = $("drawingPatternInput")?.value || activeDesignObj?.drawingPatternFormula || activeDesignObj?.drawingPattern || "1,2,3,4";
+    
+    const dentArr = expandPattern(rawDent);
+    const drawArr = expandPattern(rawDraw);
     const pickStr = activeDesignObj?.pickPattern || "";
 
     let warpTotal = 0, weftTotal = 0;
@@ -3580,6 +3471,7 @@ function buildDesignPrintContent() {
     `;
 }
 
+// Immediate execution loader
 (function() {
     try {
         let combinedDesigns = [];
@@ -3608,8 +3500,14 @@ function buildDesignPrintContent() {
             allCloudDesigns = [{
                 designNo: "",
                 name: "",
-                warpLines: [{ color: "" }, { color: "" }],
-                weftLines: [{ color: "" }, { color: "" }]
+                warpLines: [
+                    { color: "" },
+                    { color: "" }
+                ],
+                weftLines: [
+                    { color: "" },
+                    { color: "" }
+                ]
             }];
         }
     } catch (err) {
