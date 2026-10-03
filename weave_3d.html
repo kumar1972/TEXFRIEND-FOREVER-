@@ -660,11 +660,17 @@ input, select {
                 <span>100% (Original cm)</span>
             </div>
         </div>
+       <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:#0d1813; padding:8px; border-radius:6px;">
+            <input type="checkbox" id="cadAutoRepeatFill" checked style="width:16px;height:16px;accent-color:#22c55e;">
+            <label for="cadAutoRepeatFill" style="margin:0; font-size:0.7rem; color:#a9d6b2; cursor:pointer;">
+                🔁 Repeat to Fill A4 Sheet (முழு தாள் நிரம்ப ரிப்பீட் செய்யவும்)
+            </label>
+        </div>
 
         <div style="font-size:0.72rem; color:#cfdfd5; margin-bottom:12px;">
             A4-ல் பிரிண்ட் ஆகும் அளவு: <b id="cadPrintSizeDisp" style="color:#45c765;">0 × 0 cm</b>
         </div>
-
+        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
             <button class="btn btn-green" onclick="executeRealA4Print()">🖨️ Print Now</button>
             <button class="btn btn-dark" onclick="closeCadPrintModal()">✖ Cancel</button>
